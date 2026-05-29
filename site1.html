@@ -13,6 +13,9 @@
 <meta property="og:url" content="https://www.neconome.com/003180/">
 <meta property="og:site_name" content="混雑ナビ! ネコの目.com">
 
+<!-- =================================================================
+  ★【追加】CSSや画像を本物サイトから読み込むためのベースURL設定
+================================================================== -->
 <base href="https://www.neconome.com/">
 
 <script async="" src="https://www.googletagmanager.com/gtm.js?id=GTM-PLS2ZT9"></script><script type="text/javascript" async="" src="https://ssl.google-analytics.com/ga.js"></script><script type="text/javascript" async="" src="https://www.googletagmanager.com/gtag/js?id=G-7T0RWY8CD7&cx=c&gtm=4e65q0h2" nonce=""></script><script async="" src="https://www.googletagmanager.com/gtm.js?id=GTM-PLS2ZT9"></script><script type="text/javascript" async="" src="https://ssl.google-analytics.com/ga.js"></script><script type="text/javascript" src="/src/view/assets_new/js/jquery-3.7.1.min.js?date=202604170858"></script><script type="text/javascript" src="/src/view/assets_new/js/menu.js?date=202604170858"></script><script type="text/javascript" src="/src/view/assets_new/js/modal_S0K.js?date=202604170858"></script><link rel="stylesheet" type="text/css" href="/src/view/assets_new/css/style.css?date=202604170858">
@@ -89,7 +92,7 @@ a.dont-show:hover {color:#FFF;}
   </script><script type="text/javascript" charset="utf-8" nonce="">
   
   // =================================================================
-  // ★【修正】エラーの原因になる本番用アクセスログ送信（fun_InsKonzatsuaccess）を一時期的に停止
+  // ★【修正】エラーの原因になる本番用アクセスログ送信プログラムを完全に停止
   // =================================================================
   /*
   try {
@@ -100,82 +103,36 @@ a.dont-show:hover {color:#FFF;}
   */
   
   function fun_InsKonzatsuaccess(c) {
-    let uniqueid = "";
-    let para = "";
-    let curr_para=getQueryParam("p");
-    let path = window.location.pathname;
-
-    if (getCookie("KONZATSUACCESSID")) {
-        uniqueid = getCookie("KONZATSUACCESSID");
-    } else {
-        let rn = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-        let d = new Date().toISOString() + rn;
-        uniqueid = CybozuLabs.MD5.calc(d);
-        setCookie("KONZATSUACCESSID", uniqueid);
-    }
-
-    if (getCookie("KONZATSUACCESSPARAM")) {
-      para = getCookie("KONZATSUACCESSPARAM");
-      if (curr_para !== '') {
-          setCookie("KONZATSUACCESSPARAM", curr_para);
-          para = curr_para;
-      }
-    } else {
-        setCookie("KONZATSUACCESSPARAM", curr_para);
-        para = curr_para;
-    }
-
-    const data = {
-        clientcode: c,
-        uniqueid: uniqueid,
-        para: para,
-        curr_para: curr_para,
-        path: path
-    };
-
-    const url = "https://"+window.location.hostname.replace("www", "apigw")+"/prd/addAccesslog";
-
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
-
-
-
-
+    // 画面停止を防ぐため中身を空にしました
   }
   function getQueryParam(param) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param) || "";
+      return "";
   }
   function getCookie(name) {
-      let matches = document.cookie.match(new RegExp(
-          "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-      ));
-      return matches ? decodeURIComponent(matches[1]) : undefined;
+      return undefined;
   }
   function setCookie(name, value) {
-    let days = 400;
-    let expires = "";
-    if (days) {
-        let date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
   }
-</script><script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAYRJMb6ipoJnUnjhz0N08DXzfoBUpjQmY&libraries=drawing"></script><script type="text/javascript" charset="utf-8" src="/src/view/assets_new/js/S0K_new.js?date=202604170858"></script><script type="text/javascript" src="/src/view/assets/js/jquery.qrcode.min.js"></script><script type="text/javascript" charset="utf-8" src="/src/view/assets_new/js/title.js?date=202604170858"></script>
+</script>
+<!-- 本物のGoogleマップJS（エラー原因）を無効化 -->
+<!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAYRJMb6ipoJnUnjhz0N08DXzfoBUpjQmY&amp;libraries=drawing"></script> -->
 
+<!-- =================================================================
+  ★【修正】テスト環境の画面をフリーズさせていた本物JS（S0K_new.js等）を
+  読み込まないようにコメントアウトし、代わりに安全なダミー関数を配置
+================================================================== -->
+<!-- <script type="text/javascript" charset="utf-8" src="/src/view/assets_new/js/S0K_new.js?date=202604170858"></script> -->
+<script type="text/javascript">
+  // 本物JSが実行しようとして画面を真っ白にさせていた原因のシステム関数を偽装（フリーズ防止）
+  function fun_change_html() {}
+  function fun_set_status() {}
+</script>
+
+<script type="text/javascript" src="/src/view/assets/js/jquery.qrcode.min.js"></script><script type="text/javascript" charset="utf-8" src="/src/view/assets_new/js/title.js?date=202604170858"></script>
+
+<!-- =================================================================
+  ★【追加】最低限の動作（ボタン・現在時刻・更新・天気）を保証するJS
+================================================================== -->
 <script type="text/javascript">
   $(document).ready(function() {
     // 1. 開いた瞬間の「現在時刻」を自動セット
@@ -188,13 +145,15 @@ a.dont-show:hover {color:#FFF;}
     $('.time').html(yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + min + ' 現在');
 
     // 2. 「続きを見る」ボタンが確実に開閉する処理
-    $(document).on('click', '.button.more', function() {
+    $(document).on('click', '.button.more', function(e) {
+      e.preventDefault();
       var $parent = $(this).closest('div');
       $parent.find('.comment.clamp').removeClass('clamp');
       $(this).hide();
       $parent.find('.button.nomore').show();
     });
-    $(document).on('click', '.button.nomore', function() {
+    $(document).on('click', '.button.nomore', function(e) {
+      e.preventDefault();
       var $parent = $(this).closest('div');
       $parent.find('.comment').addClass('clamp');
       $(this).hide();
