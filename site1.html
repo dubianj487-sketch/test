@@ -87,11 +87,17 @@ a.dont-show:hover {color:#FFF;}
   var ServerDate = '2026/05/27';
   var arrXslKinkyu = new Array();
   </script><script type="text/javascript" charset="utf-8" nonce="">
+  
+  // =================================================================
+  // ★【修正】エラーの原因になる本番用アクセスログ送信（fun_InsKonzatsuaccess）を一時期的に停止
+  // =================================================================
+  /*
   try {
     fun_InsKonzatsuaccess(clientcode);
   } catch (error) {
     console.error('Initialization Error:', error);
   }
+  */
   
   function fun_InsKonzatsuaccess(c) {
     let uniqueid = "";
