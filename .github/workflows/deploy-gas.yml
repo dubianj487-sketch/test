@@ -27,19 +27,29 @@ jobs:
         run: npm install -g @google/clasp
 
       - name: Write clasp credentials
-        run: echo '${{ secrets.CLASP_CREDENTIALS }}' | base64 -d > ~/.clasprc.json
+        run: |
+          CREDS="${{ secrets.CLASP_CREDENTIALS }}"
+          if [ -z "$CREDS" ]; then
+            echo "⚠️ CLASP_CREDENTIALS が未設定のため GAS デプロイをスキップします"
+            echo "SKIP_GAS=true" >> $GITHUB_ENV
+          else
+            echo "$CREDS" | base64 -d > ~/.clasprc.json
+            echo "SKIP_GAS=false" >> $GITHUB_ENV
+          fi
 
       - name: Push to Google Apps Script
+        if: env.SKIP_GAS == 'false'
         run: clasp push --force
 
       - name: Deploy Web App and update URL in HTML
+        if: env.SKIP_GAS == 'false'
         run: |
           # 既存デプロイを確認
           DEPLOY_LIST=$(clasp deployments 2>&1)
           echo "=== 既存デプロイ一覧 ==="
           echo "$DEPLOY_LIST"
 
-          # HEAD以外のデプロイIDを取得（既存Webアプリデプロイ）
+          # HEAD以外のデプロイIDを取得
           EXISTING_ID=$(echo "$DEPLOY_LIST" | grep -v '@HEAD' | grep -oP '(?<=- )[A-Za-z0-9_-]{30,}' | head -1)
 
           if [ -n "$EXISTING_ID" ]; then
@@ -67,14 +77,10 @@ jobs:
           sed -i "s|YOUR_GAS_URL_HERE|${WEB_APP_URL}|g" docs/index.html
           sed -i "s|https://script\.google\.com/macros/s/[A-Za-z0-9_-]*/exec|${WEB_APP_URL}|g" docs/index.html
 
-          # 変更があればコミット＆プッシュ
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
           git add docs/index.html
           if ! git diff --staged --quiet; then
             git commit -m "auto: GAS Web App URLを設定 [skip ci]"
             git push
-            echo "✅ index.html を更新してpushしました"
-          else
-            echo "ℹ️ URLに変更なし"
           fi
