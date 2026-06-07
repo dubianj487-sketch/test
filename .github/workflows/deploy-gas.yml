@@ -20,7 +20,12 @@ jobs:
         run: npm install -g @google/clasp
 
       - name: Write clasp credentials
-        run: echo '${{ secrets.CLASPRC_JSON_BASE64 }}' | base64 -d > ~/.clasprc.json
+        env:
+          CLASPRC: ${{ secrets.CLASPRC_JSON_BASE64 }}
+        run: echo "$CLASPRC" | base64 -d > ~/.clasprc.json
+
+      - name: Verify credentials JSON
+        run: python3 -c "import json; d=json.load(open('$HOME/.clasprc.json')); print('JSON OK, keys:', list(d.keys()))"
 
       - name: Push to Google Apps Script
         run: clasp push --force
