@@ -24,8 +24,33 @@ jobs:
           CLASPRC: ${{ secrets.CLASPRC_JSON_BASE64 }}
         run: echo "$CLASPRC" | base64 -d > ~/.clasprc.json
 
-      - name: Verify credentials JSON
-        run: python3 -c "import json; d=json.load(open('$HOME/.clasprc.json')); print('JSON OK, keys:', list(d.keys()))"
+      - name: Refresh access token
+        run: |
+          python3 << 'EOF'
+          import json, os, urllib.request, urllib.parse
+
+          path = os.path.expanduser('~/.clasprc.json')
+          with open(path) as f:
+              clasprc = json.load(f)
+
+          t = clasprc['tokens']['default']
+          data = urllib.parse.urlencode({
+              'client_id': t['client_id'],
+              'client_secret': t['client_secret'],
+              'refresh_token': t['refresh_token'],
+              'grant_type': 'refresh_token'
+          }).encode()
+
+          req = urllib.request.Request('https://oauth2.googleapis.com/token', data=data)
+          resp = json.loads(urllib.request.urlopen(req).read())
+          t['access_token'] = resp['access_token']
+          clasprc['tokens']['default'] = t
+
+          with open(path, 'w') as f:
+              json.dump(clasprc, f)
+
+          print("Token refreshed successfully")
+          EOF
 
       - name: Push to Google Apps Script
         run: clasp push --force
