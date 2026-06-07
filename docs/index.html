@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>🌙 しゅんのドライバーメモ</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Opti:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{color-scheme:light only}
+html{-webkit-color-scheme:light;color-scheme:light}
+:root{
+  --pk:#e88fac;--pkl:#fde8ef;--pkp:#fef3f7;
+  --pu:#c478a8;--pul:#f7e4f2;--lav:#f0cfe0;
+  --gr:#6a9e8a;--tx:#2a1218;--txs:#7a4a68;
+  --night:#9b3a6a;--card:rgba(255,255,255,.97);
+  --sh:0 4px 20px rgba(200,100,140,.12);
+  --gold:#e88fac;--teal:#c4608a;
+}
+body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#E5C1D4 !important;background-color:#E5C1D4 !important;min-height:100vh;color:var(--tx) !important;padding-bottom:72px}
+html{background:#E5C1D4 !important;background-color:#E5C1D4 !important}
+/* ===== フォント切り替え ===== */
+body.font-shun{--app-font:'Noto Sans JP'}
+body.font-shun .auto-dep-time,body.font-shun .shift-stepper-time,
+body.font-shun .tl-time,body.font-shun .today-banner-date,
+body.font-shun .today-banner::before,body.font-shun .hist-item-date,
+body.font-shun .hist-detail-date{font-family:'Noto Sans JP',sans-serif!important}
+body.font-shun .nb,body.font-shun input,body.font-shun select,
+body.font-shun .btn,body.font-shun .bmap,body.font-shun .dep-tab,
+body.font-shun .otab,body.font-shun .obox.boy{font-family:'Noto Sans JP',sans-serif!important}
+.font-toggle{margin-left:auto;background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.4);border-radius:20px;padding:5px 11px;cursor:pointer;font-size:12px;color:#fde8e8;font-weight:700;display:flex;align-items:center;gap:5px;transition:all .2s;white-space:nowrap}
+.font-toggle:active{transform:scale(.96)}
+.font-toggle .ft-icon{font-size:14px}
+
+.hdr{background:#CE95B0;padding:13px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
+.hdr-moon{font-size:24px;animation:mf 4s ease-in-out infinite}
+@keyframes mf{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(5deg)}}
+.hdr-t{font-size:20px;color:#fde8e8;font-weight:700}
+.hdr-s{font-size:12px;color:rgba(253,220,220,.7);margin-top:2px}
+
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#fff;border-top:2px solid var(--lav);display:flex;box-shadow:0 -4px 16px rgba(80,60,140,.08)}
+.nb{flex:1;padding:9px 4px 7px;border:none;background:none;cursor:pointer;font-family:'Zen Maru Gothic',sans-serif;font-size:12px;color:#aaa8c0;display:flex;flex-direction:column;align-items:center;gap:2px;border-top:3px solid transparent;transition:all .2s}
+.nb .ni{font-size:20px}
+.nb.active{color:var(--teal);border-top-color:var(--teal);font-weight:700}
+
+.pg{display:none;padding:14px;animation:fi .25s ease}
+.pg.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.card{background:var(--card);border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:var(--sh);border:1px solid rgba(220,130,170,.12)}
+.ctitle{font-size:16px;font-weight:700;color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+label{display:block;font-size:14px;color:var(--txs);margin-bottom:4px;font-weight:600}
+input,select{width:100%;padding:10px 14px;border:2px solid var(--lav);border-radius:11px;font-family:'Zen Maru Gothic',sans-serif;font-size:14px;color:var(--tx);background:#fff;outline:none;margin-bottom:12px;-webkit-appearance:none;transition:border .2s}
+input:focus,select:focus{border-color:var(--pk)}
+input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:13px;border:none;border-radius:13px;cursor:pointer;font-family:'Zen Maru Gothic',sans-serif;font-size:14px;font-weight:700;transition:all .18s;margin-bottom:8px}
+.btn:active{transform:scale(.97)}
+.bp{background:#CE95B0;color:#fff;box-shadow:0 4px 14px rgba(180,100,140,.3)}
+.bg{background:var(--pul);color:var(--teal);border:2px solid var(--lav)}
+.bo{background:#fff;color:var(--pk);border:2px dashed var(--pk)}
+.bd{background:#fee2e2;color:#ef4444;border:2px solid #fca5a5}
+.bgr{background:linear-gradient(135deg,#6a9e8a,#4a8070);color:#fff}
+.bdk{background:var(--night);color:#fde8e8}
+.bsave{background:linear-gradient(135deg,#e88fac,#c4608a);color:#fff;box-shadow:0 4px 14px rgba(200,100,140,.3)}
+.sm{padding:7px 14px;font-size:12px;border-radius:9px;width:auto;margin-bottom:0}
+.bmap{background:linear-gradient(135deg,#d4709a,#c4608a);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Zen Maru Gothic',sans-serif;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
+.bmap:active{transform:scale(.95)}
+.bmap.calculating{background:linear-gradient(135deg,#f0a0c0,#e88fac);animation:blink .8s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
+
+.dep-tabs{display:flex;gap:8px;margin-bottom:10px}
+.dep-tab{flex:1;padding:9px 6px;border:2px solid var(--lav);border-radius:11px;background:#fff;color:#aaa8c0;font-family:'Zen Maru Gothic',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s}
+.dep-tab.sel{border-color:var(--pk);background:var(--pkl);color:#a83868}
+
+.auto-dep-box{background:linear-gradient(135deg,#fef6f9,var(--pul));border-radius:14px;padding:14px 16px;border:2px solid var(--lav);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.auto-dep-label{font-size:13px;color:var(--txs);font-weight:600}
+.auto-dep-time{font-size:28px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx)}
+.auto-dep-note{font-size:12px;color:#aaa8c0;margin-top:2px}
+
+.gi-card{background:var(--pkp);border-radius:14px;padding:12px 14px;margin-bottom:10px;border:1.5px solid rgba(220,130,170,.18)}
+.gi-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.gi-badge{font-size:12px;font-weight:700;color:var(--teal);background:var(--pul);padding:3px 10px;border-radius:20px}
+.rm-btn{background:none;border:none;font-size:17px;color:#c0a8c8;cursor:pointer;padding:0}
+
+.shift-stepper{display:flex;align-items:center;gap:0;margin-bottom:10px;background:#fff;border:2px solid var(--lav);border-radius:12px;overflow:hidden}
+.shift-stepper-btn{width:44px;height:44px;border:none;background:none;cursor:pointer;font-size:18px;font-weight:700;color:var(--pk);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.shift-stepper-btn:active{background:var(--pkl)}
+.shift-stepper-time{flex:1;text-align:center;font-size:20px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);padding:0 4px;line-height:44px}
+.shift-stepper-hint{font-size:10px;color:#aaa8c0;text-align:center;margin-top:-6px;margin-bottom:8px}
+
+.min-row{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.min-row input{margin-bottom:0;flex:1}
+.min-row span{font-size:11px;color:#aaa8c0;white-space:nowrap}
+
+.run-block{background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:12px;border:1.5px solid rgba(220,130,170,.15)}
+.run-label{font-size:11px;font-weight:700;color:var(--teal);background:var(--pul);padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:10px}
+.tl-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--lav)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dot-pick{background:var(--pk)}
+.dot-drop{background:#7ab8c8}
+.tl-time{font-size:17px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);min-width:48px}
+.tl-name{font-size:14px;flex:1}
+.tl-badge{font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0}
+.badge-pick{background:var(--pkl);color:var(--teal)}
+.badge-drop{background:#dff0f5;color:#4a8098}
+.tl-min{font-size:12px;color:var(--txs);background:var(--pul);padding:2px 8px;border-radius:20px;flex-shrink:0}
+
+.otabs{display:flex;gap:6px;margin-bottom:10px}
+.otab{flex:1;padding:9px;text-align:center;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;border:2px solid var(--lav);font-family:'Zen Maru Gothic',sans-serif;background:#fff;color:var(--txs);transition:all .2s}
+.otab.active{background:var(--night);color:#fde8e8;border-color:var(--night)}
+.obox{border-radius:13px;padding:14px;font-size:14px;line-height:2.1;white-space:pre-wrap;word-break:break-all;margin-bottom:10px;min-height:70px}
+.obox.shun{background:linear-gradient(135deg,#9b3a6a,#c4608a);color:#fff;font-family:monospace}
+.obox.boy{background:#fff;color:var(--tx);font-family:'Zen Maru Gothic',sans-serif;border:2px dashed var(--lav)}
+
+.mcard{border-radius:13px;padding:11px 13px;margin-bottom:9px;display:flex;align-items:center;gap:10px}
+.mcard.girl{background:var(--pkp);border:1.5px solid rgba(220,130,170,.18)}
+.mcard.place{background:var(--pul);border:1.5px solid var(--lav)}
+.mcard.dep{background:#f0faf6;border:1.5px solid #b8ddd0}
+.mc-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.mc-av.g{background:linear-gradient(135deg,#e88fac,#c4608a)}
+.mc-av.p{background:linear-gradient(135deg,#c4608a,#a84878);border-radius:9px}
+.mc-av.d{background:linear-gradient(135deg,#6a9e8a,#4a8070);border-radius:9px}
+.mc-info{flex:1;min-width:0}
+.mc-name{font-size:14px;font-weight:700;color:var(--tx)}
+.mc-sub{font-size:12px;color:#8888a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+
+.mo{display:none;position:fixed;inset:0;background:rgba(20,18,40,.55);z-index:500;align-items:flex-end}
+.mo.open{display:flex}
+.mbox{background:#fff;border-radius:22px 22px 0 0;padding:20px 18px 34px;width:100%;max-height:88vh;overflow-y:auto;animation:su .28s ease}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mtitle{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.mclose{background:none;border:none;font-size:22px;color:#aaa8c0;cursor:pointer}
+
+.today-banner{background:linear-gradient(135deg,#c4608a,#e88fac);border-radius:18px;padding:16px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden}
+.today-banner::before{content:'TODAY';position:absolute;right:-8px;top:-8px;font-size:60px;font-weight:700;opacity:.1;font-family:'Kaisei Opti',serif;line-height:1;color:#fff}
+.today-banner-label{font-size:11px;font-weight:700;opacity:.75;margin-bottom:4px}
+.today-banner-date{font-size:20px;font-weight:700;font-family:'Kaisei Opti',serif;margin-bottom:10px}
+.today-banner-empty{font-size:13px;opacity:.65}
+
+.month-acc{background:var(--card);border-radius:18px;margin-bottom:10px;box-shadow:var(--sh);border:1px solid rgba(220,130,170,.12);overflow:hidden}
+.month-acc-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;user-select:none}
+.month-acc-title{font-size:14px;font-weight:700;color:var(--tx)}
+.month-acc-count{font-size:11px;font-weight:700;color:#fff;background:var(--teal);padding:2px 9px;border-radius:20px}
+.month-acc-arr{font-size:14px;color:var(--txs);transition:transform .25s}
+.month-acc.open .month-acc-arr{transform:rotate(180deg)}
+.month-acc-body{display:none;padding:0 12px 12px}
+.month-acc.open .month-acc-body{display:block}
+
+.hist-item{background:var(--pkp);border-radius:13px;padding:12px 14px;margin-bottom:8px;border:1.5px solid rgba(220,130,170,.15);cursor:pointer;transition:all .15s}
+.hist-item:active{transform:scale(.98);background:var(--pkl)}
+.hist-item-hdr{display:flex;align-items:center;justify-content:space-between}
+.hist-item-date{font-size:15px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx)}
+.hist-item-sub{font-size:12px;color:#aaa8c0;margin-top:2px}
+.hist-item-badge{font-size:12px;font-weight:700;color:var(--teal);background:var(--pul);padding:2px 9px;border-radius:20px}
+.hist-item-arr{font-size:14px;color:var(--txs)}
+
+.hist-detail-date{font-size:18px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);margin-bottom:14px}
+.hist-detail-run{background:var(--pkp);border-radius:13px;padding:12px;margin-bottom:10px;border:1.5px solid rgba(220,130,170,.18)}
+.hist-detail-run-lbl{font-size:11px;font-weight:700;color:var(--teal);background:var(--pul);padding:2px 9px;border-radius:20px;display:inline-block;margin-bottom:10px}
+.edit-time-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px dashed var(--lav)}
+.edit-time-row:last-child{border-bottom:none}
+.edit-time-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.edit-time-inp{font-size:15px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);border:none;border-bottom:2px solid var(--lav);background:transparent;outline:none;width:54px;padding:0 2px}
+.edit-time-inp:focus{border-bottom-color:var(--pk)}
+.edit-time-name{font-size:12px;flex:1;color:var(--tx)}
+.edit-time-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;flex-shrink:0}
+
+.empty-hist{text-align:center;padding:36px 14px;color:#aaa8c0}
+.empty-hist .ei{font-size:40px;margin-bottom:8px}
+.fab{position:fixed;bottom:58px;right:14px;z-index:190;width:90px;height:110px;background:none;border:none;cursor:pointer;padding:0;transition:transform .25s cubic-bezier(.34,1.56,.64,1);transform:translateY(30px)}
+.fab:hover,.fab:focus{transform:translateY(10px)}
+.fab:active{transform:translateY(14px) scale(.96)}
+.fab img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 -4px 12px rgba(200,100,140,.35))}
+@keyframes pawPeek{0%{transform:translateY(60px)}60%{transform:translateY(5px)}80%{transform:translateY(14px)}100%{transform:translateY(30px)}}
+.fab.init{animation:pawPeek .8s cubic-bezier(.34,1.56,.64,1) forwards}
+
+.empty-hist p{font-size:13px}
+
+.save-success-bar{background:linear-gradient(135deg,#c4608a,#e88fac);border-radius:13px;padding:13px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;animation:fi .3s ease}
+.save-success-bar span{font-size:13px;font-weight:700;color:#fde8e8;flex:1}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--night);color:#fff;padding:10px 24px;border-radius:30px;font-size:13px;z-index:999;pointer-events:none;white-space:nowrap;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+.toast.show{opacity:1;visibility:visible}
+.empty-note{font-size:12px;color:#aaa8c0;text-align:center;padding:14px}
+hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
+
+/* ローディングオーバーレイ */
+.loading-overlay{position:fixed;inset:0;background:rgba(206,149,176,.92);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.loading-spinner{width:48px;height:48px;border:5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:15px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
+.loading-sub{font-size:12px;opacity:.75;margin-top:6px;font-family:'Zen Maru Gothic',sans-serif}
+</style>
+</head>
+<body>
+
+<!-- ローディング -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">🌙 読み込み中...</div>
+  <div class="loading-sub">スプレッドシートからデータを取得しています</div>
+</div>
+
+<div class="hdr">
+  <div class="hdr-moon">🌙</div>
+  <div>
+    <div class="hdr-t">しゅんのドライバーメモ</div>
+    <div class="hdr-s">出勤時間から逆算・全自動スケジュール</div>
+  </div>
+  <button class="font-toggle" id="fontToggleBtn" onclick="toggleFont()" title="フォント切り替え">
+    <span class="ft-icon" id="ftIcon">🌸</span>
+    <span id="ftLabel">ひーちゃん</span>
+  </button>
+</div>
+
+<!-- SCHEDULE MODAL (bottom sheet) -->
+<div class="mo" id="moSched">
+  <div class="mbox" style="max-height:92vh">
+    <div class="mtitle" style="position:sticky;top:0;background:#fff;z-index:10;padding-bottom:10px;margin-bottom:4px">
+      <span style="font-size:16px;font-weight:700">🚗 スケジュール作成</span>
+      <button class="mclose" style="font-size:14px;color:#fff;background:var(--teal);border-radius:20px;padding:5px 14px;font-family:'Zen Maru Gothic',sans-serif;font-weight:700" onclick="closeSchedModal()">✕ キャンセル</button>
+    </div>
+    <div id="schedFormContent">
+    <div class="card">
+      <div class="ctitle">📅 日付</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="date" id="dateInp" style="flex:1;margin-bottom:0">
+        <button class="btn bg sm" onclick="setToday()">今日</button>
+        <button class="btn bg sm" onclick="setTomorrow()">明日</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle">🚩 出発地</div>
+      <div class="dep-tabs">
+        <button class="dep-tab sel" id="dt-saved" onclick="setDepMode('saved')">📍 登録済み</button>
+        <button class="dep-tab" id="dt-manual" onclick="setDepMode('manual')">✏️ 直接入力</button>
+      </div>
+      <div id="dep-saved-area">
+        <label>出発地を選ぶ</label>
+        <select id="depLocSel" onchange="onDepChange()" style="margin-bottom:0"></select>
+      </div>
+      <div id="dep-manual-area" style="display:none">
+        <label>出発地名</label>
+        <input type="text" id="depManualName" placeholder="○○カフェ、友達の家など" oninput="onDepChange()" style="margin-bottom:10px">
+        <label>出発時刻（手動）</label>
+        <input type="time" id="depManualTime" value="18:30" onchange="onDepChange()" style="margin-bottom:0">
+      </div>
+      <div id="autoDepDisplay" style="display:none;margin-top:10px">
+        <div class="auto-dep-box">
+          <div>
+            <div class="auto-dep-label">🔮 逆算した出発時刻</div>
+            <div class="auto-dep-time" id="autoDepTime">--:--</div>
+            <div class="auto-dep-note">移動時間を入力すると自動で更新されるよ</div>
+          </div>
+          <div style="font-size:28px">🚗</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle">👩 女の子の出勤情報</div>
+      <div id="girlInputs"></div>
+    </div>
+    <button class="btn bp" onclick="buildSchedule()">✨ スケジュール生成</button>
+    <div id="resultSection" style="display:none">
+      <div class="card">
+        <div class="ctitle">🗓 スケジュール</div>
+        <div id="resultBlocks"></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">📋 コピー用テキスト</div>
+        <div class="otabs">
+          <button class="otab active" id="tabS" onclick="switchOutTab('shun')">🌙 しゅんくん用</button>
+          <button class="otab" id="tabB" onclick="switchOutTab('boy')">📤 ボーイさん用</button>
+        </div>
+        <div id="outShun" class="obox shun"></div>
+        <div id="outBoy" class="obox boy" style="display:none"></div>
+        <button class="btn bdk" id="cpyS" onclick="copyOut('shun')">📋 しゅんくん用をコピー</button>
+        <button class="btn bgr" id="cpyB" style="display:none" onclick="copyOut('boy')">📤 ボーイさん用をコピー</button>
+      </div>
+      <button class="btn bsave" onclick="saveSchedule()">💾 このスケジュールを保存</button>
+    </div>
+    </div>
+  </div>
+</div>
+
+<div class="pg active" id="pg-hist">
+  <div id="histContent"></div>
+</div>
+
+<div class="pg" id="pg-master">
+  <div class="card">
+    <div class="ctitle">🚩 出発地マスター</div>
+    <div id="depMasterList"></div>
+    <button class="btn bo" onclick="openDepMo(null)">＋ 出発地を追加</button>
+  </div>
+  <div class="card">
+    <div class="ctitle">👩 女の子マスター</div>
+    <div id="girlMasterList"></div>
+    <button class="btn bo" onclick="openGirlMo(null)">＋ 女の子を追加</button>
+  </div>
+  <div class="card">
+    <div class="ctitle">🏠 送り先マスター</div>
+    <div id="placeMasterList"></div>
+    <button class="btn bg" onclick="openPlaceMo(null)">＋ 送り先を追加</button>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openSchedModal()" aria-label="スケジュール作成">
+  <img src="data:image/png;base64,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" alt="🐾" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 -4px 10px rgba(200,100,140,.3))">
+</button>
+
+<div class="bnav">
+  <button class="nb active" id="nb-hist" onclick="switchPg('hist')"><span class="ni">📅</span>履歴</button>
+  <button class="nb" id="nb-master" onclick="switchPg('master')"><span class="ni">📋</span>名簿・場所</button>
+</div>
+
+<div class="mo" id="moDepLoc">
+  <div class="mbox">
+    <div class="mtitle"><span id="moDepTitle">🚩 出発地を登録</span><button class="mclose" onclick="closeMo('moDepLoc')">✕</button></div>
+    <input type="hidden" id="edId">
+    <label>場所名</label><input type="text" id="dNameInp" placeholder="職場・家・〇〇など">
+    <label>住所（任意）</label><input type="text" id="dAddrInp" placeholder="大阪市〇〇区…">
+    <button class="btn bp" onclick="saveDepLoc()">💾 保存</button>
+    <button class="btn bd" id="delDepBtn" style="display:none" onclick="delDepLoc()">🗑️ 削除</button>
+  </div>
+</div>
+
+<div class="mo" id="moGirl">
+  <div class="mbox">
+    <div class="mtitle"><span id="moGirlTitle">👩 女の子を登録</span><button class="mclose" onclick="closeMo('moGirl')">✕</button></div>
+    <input type="hidden" id="egId">
+    <label>名前</label><input type="text" id="gNameInp" placeholder="さなさん">
+    <label>迎え場所（通称）</label><input type="text" id="gNickInp" placeholder="さなさんマンション前">
+    <label>住所</label><input type="text" id="gAddrInp" placeholder="大阪市北区〇〇 1-2-3">
+    <button class="btn bp" onclick="saveGirl()">💾 保存</button>
+    <button class="btn bd" id="delGirlBtn" style="display:none" onclick="delGirl()">🗑️ 削除</button>
+  </div>
+</div>
+
+<div class="mo" id="moPlace">
+  <div class="mbox">
+    <div class="mtitle"><span id="moPlaceTitle">🏠 送り先を登録</span><button class="mclose" onclick="closeMo('moPlace')">✕</button></div>
+    <input type="hidden" id="epId">
+    <label>場所名</label><input type="text" id="pNameInp" placeholder="Venus">
+    <label>住所</label><input type="text" id="pAddrInp" placeholder="大阪市中央区〇〇">
+    <button class="btn bp" onclick="savePlace()">💾 保存</button>
+    <button class="btn bd" id="delPlaceBtn" style="display:none" onclick="delPlace()">🗑️ 削除</button>
+  </div>
+</div>
+
+<div class="mo" id="moHistDetail">
+  <div class="mbox">
+    <div class="mtitle">
+      <span id="moHistTitle">📅 スケジュール詳細</span>
+      <button class="mclose" onclick="closeMo('moHistDetail')">✕</button>
+    </div>
+    <div id="moHistBody"></div>
+  </div>
+</div>
+
+<div class="mo" id="moOverwrite">
+  <div class="mbox">
+    <div class="mtitle"><span>⚠️ 上書き確認</span></div>
+    <div id="moOverwriteMsg" style="font-size:13px;color:var(--tx);margin-bottom:16px;line-height:1.7"></div>
+    <button class="btn bp" onclick="doSave()">✅ 上書きして保存</button>
+    <button class="btn bg" onclick="closeMo('moOverwrite')">キャンセル</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== GAS設定 ==========
+// GASをデプロイした後、ここにURLを貼り付けてください
+const GAS_URL = 'YOUR_GAS_URL_HERE';
+
+// ========== 状態変数 ==========
+let depLocs = [];
+let girls = [];
+let places = [];
+let dCnt = 20, gCnt = 20, pCnt = 20;
+let schedHistory = [];
+let histCnt = 0;
+
+let depMode = 'saved';
+let girlRows = [];
+let rowUid = 0;
+let builtRuns = [];
+let outShunTxt='', outBoyTxt='', outTab='shun';
+let currentBuiltDate='', currentBuiltDateLabel='';
+
+// ========== GAS通信 ==========
+async function gasGet() {
+  const res = await fetch(GAS_URL + '?action=all');
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+function gasPost(data) {
+  if (!GAS_URL || GAS_URL === 'YOUR_GAS_URL_HERE') return;
+  fetch(GAS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(data)
+  }).catch(function(e) { console.warn('GAS save failed:', e); });
+}
+
+function saveCounters() {
+  gasPost({action:'saveCounters', payload:{dCnt:dCnt,gCnt:gCnt,pCnt:pCnt,histCnt:histCnt}});
+}
+
+// ========== 起動処理（非同期） ==========
+(async function(){
+  const overlay = document.getElementById('loadingOverlay');
+
+  if (!GAS_URL || GAS_URL === 'YOUR_GAS_URL_HERE') {
+    overlay.querySelector('.loading-text').textContent = '⚠️ GAS URLが未設定です';
+    overlay.querySelector('.loading-sub').textContent = 'docs/index.html の GAS_URL を設定してください';
+    overlay.querySelector('.loading-spinner').style.display = 'none';
+    setTimeout(function(){ overlay.style.display='none'; initApp(); }, 2000);
+    return;
+  }
+
+  try {
+    const res = await gasGet();
+    if (res.ok) {
+      girls        = res.data.girls        || [];
+      places       = res.data.places       || [];
+      depLocs      = res.data.depLocs      || [];
+      schedHistory = res.data.schedHistory || [];
+      const c      = res.data.counters     || {};
+      dCnt    = c.dCnt    || 20;
+      gCnt    = c.gCnt    || 20;
+      pCnt    = c.pCnt    || 20;
+      histCnt = c.histCnt || 0;
+    }
+  } catch(e) {
+    console.error('GAS load failed:', e);
+    showToast('⚠️ データの読み込みに失敗しました');
+  }
+
+  overlay.style.display = 'none';
+  initApp();
+})();
+
+function initApp() {
+  const t = new Date();
+  document.getElementById('dateInp').value = fmtDV(t);
+  addGirlRow();
+  refreshDepSel();
+  renderMasters();
+  updateAutoDepDisplay();
+  switchPg('hist');
+  document.querySelector('.fab').classList.add('init');
+}
+
+// ========== ユーティリティ ==========
+function fmtDV(d){return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
+function p2(n){return String(n).padStart(2,'0')}
+function fmtDL(v){if(!v)return'';const d=new Date(v+'T00:00:00');return `${d.getMonth()+1}/${d.getDate()}(${'日月火水木金土'[d.getDay()]})`}
+function fmtDLFull(v){if(!v)return'';const d=new Date(v+'T00:00:00');return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日(${'日月火水木金土'[d.getDay()]})`}
+function fmtMonth(v){if(!v)return'';const d=new Date(v+'T00:00:00');return `${d.getFullYear()}年${d.getMonth()+1}月`}
+function addMin(hhmm,min){const[h,m]=hhmm.split(':').map(Number);const t=h*60+m+Number(min);return `${p2(Math.floor(t/60)%24)}:${p2(t%60)}`}
+function subMin(hhmm,min){const[h,m]=hhmm.split(':').map(Number);let t=h*60+m-Number(min);if(t<0)t+=1440;return `${p2(Math.floor(t/60)%24)}:${p2(t%60)}`}
+function ceil5(min){return Math.ceil(Number(min)/5)*5;}
+function roundTime5(hhmm){const[h,m]=hhmm.split(':').map(Number);const t=Math.floor((h*60+m)/5)*5;return `${p2(Math.floor(t/60)%24)}:${p2(t%60)}`}
+function setToday(){document.getElementById('dateInp').value=fmtDV(new Date())}
+function setTomorrow(){const t=new Date();t.setDate(t.getDate()+1);document.getElementById('dateInp').value=fmtDV(t)}
+function todayVal(){return fmtDV(new Date())}
+
+// ========== ページ切り替え ==========
+function switchPg(p){
+  document.querySelectorAll('.pg').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(e=>e.classList.remove('active'));
+  document.getElementById('pg-'+p).classList.add('active');
+  document.getElementById('nb-'+p).classList.add('active');
+  if(p==='hist') renderHistPage();
+}
+
+function openSchedModal(){
+  document.getElementById('moSched').classList.add('open');
+}
+function closeSchedModal(){
+  document.getElementById('moSched').classList.remove('open');
+}
+
+// ========== 出発地モード ==========
+function setDepMode(m){
+  depMode=m;
+  document.getElementById('dt-saved').classList.toggle('sel',m==='saved');
+  document.getElementById('dt-manual').classList.toggle('sel',m==='manual');
+  document.getElementById('dep-saved-area').style.display=m==='saved'?'block':'none';
+  document.getElementById('dep-manual-area').style.display=m==='manual'?'block':'none';
+  document.getElementById('autoDepDisplay').style.display=m==='saved'?'block':'none';
+  updateAutoDepDisplay();
+}
+
+function refreshDepSel(){
+  const sel=document.getElementById('depLocSel');
+  sel.innerHTML='<option value="">-- 選択 --</option>'+
+    depLocs.map(d=>`<option value="${d.id}">${d.name}${d.addr?' ('+d.addr+')':''}</option>`).join('');
+}
+function onDepChange(){ updateAutoDepDisplay(); }
+
+function getDepName(){
+  if(depMode==='manual') return document.getElementById('depManualName').value||'出発地';
+  const id=document.getElementById('depLocSel').value;
+  const d=depLocs.find(x=>x.id==id);
+  return d?d.name:'出発地';
+}
+
+function calcFirstRunDepartTime(){
+  const groups=getGroups();
+  const sortedTimes=Object.keys(groups).filter(k=>k!=='_notime').sort();
+  if(!sortedTimes.length) return null;
+  const firstGroup=groups[sortedTimes[0]];
+  const segs=buildSegments(firstGroup, true, getDepName());
+  const refRow=firstGroup[0];
+  for(const seg of segs){if(!refRow.mins[seg.key]) return null;}
+  const shiftTime=sortedTimes[0];
+  const storeArrival=subMin(shiftTime,10);
+  let cursor=storeArrival;
+  const revSegs=[...segs].reverse();
+  for(const seg of revSegs){cursor=subMin(cursor, ceil5(refRow.mins[seg.key]));}
+  return roundTime5(cursor);
+}
+
+function updateAutoDepDisplay(){
+  if(depMode!=='saved') return;
+  const t=calcFirstRunDepartTime();
+  const el=document.getElementById('autoDepTime');
+  if(t){el.textContent=t;el.style.color='var(--tx)';}
+  else{el.textContent='--:--';el.style.color='#9ca3af';}
+}
+
+// ========== 女の子入力 ==========
+function stepShiftTime(uid, delta){
+  const r=girlRows.find(x=>x.uid===uid);
+  if(!r) return;
+  let [h,m]=r.shiftTime ? r.shiftTime.split(':').map(Number) : [19,0];
+  let total=h*60+m;
+  total+=delta*30;
+  total=((total%1440)+1440)%1440;
+  total=Math.round(total/30)*30;
+  r.shiftTime=`${p2(Math.floor(total/60))}:${p2(total%60)}`;
+  const el=document.getElementById('stepper_'+uid);
+  if(el) el.textContent=r.shiftTime;
+  renderGroupMinInputs();
+  updateAutoDepDisplay();
+}
+
+function addGirlRow(){
+  const uid=++rowUid;
+  girlRows.push({uid, girlId:'', customName:'', shiftTime:'19:00', mins:{}});
+  renderGirlInputs();
+}
+function removeGirlRow(uid){
+  girlRows=girlRows.filter(r=>r.uid!==uid);
+  renderGirlInputs();
+  updateAutoDepDisplay();
+}
+function onGirlSel(uid,val){
+  const r=girlRows.find(x=>x.uid===uid);
+  if(r){r.girlId=val;r.customName='';}
+  renderGirlInputs();
+}
+function onCustomName(uid,val){const r=girlRows.find(x=>x.uid===uid);if(r)r.customName=val;}
+function getGirlName(row){
+  if(row.girlId==='_c') return row.customName||'???';
+  const g=girls.find(x=>x.id==row.girlId);
+  return g?g.name:'???';
+}
+function getStoreName(){return places.length?places[0].name:'Venus'}
+
+function getGroups(){
+  const map={};
+  girlRows.forEach(r=>{
+    const k=r.shiftTime||'_notime';
+    if(!map[k])map[k]=[];
+    map[k].push(r);
+  });
+  return map;
+}
+
+function renderGirlInputs(){
+  const c=document.getElementById('girlInputs');
+  c.innerHTML='';
+  girlRows.forEach((row,i)=>{
+    const d=document.createElement('div');
+    d.className='gi-card';
+    const gopts=girls.map(g=>`<option value="${g.id}" ${row.girlId==g.id?'selected':''}>${g.name}</option>`).join('');
+    const addrHtml=(row.girlId&&row.girlId!=='_c')?(()=>{const g=girls.find(x=>x.id==row.girlId);return g?`<div style="font-size:11px;color:#6b7280;background:var(--pkp);border-radius:8px;padding:5px 10px;margin-bottom:8px;border:1px solid var(--lav)">📍 ${g.nick}</div>`:''})():'';
+    d.innerHTML=`
+      <div class="gi-head">
+        <span class="gi-badge">👩 ${i+1}人目</span>
+        ${girlRows.length>1?`<button class="rm-btn" onclick="removeGirlRow(${row.uid})">✕</button>`:''}
+      </div>
+      <label>女の子</label>
+      <select onchange="onGirlSel(${row.uid},this.value)" style="margin-bottom:8px">
+        <option value="">-- 選択 --</option>
+        ${gopts}
+        <option value="_c" ${row.girlId==='_c'?'selected':''}>✏️ 直接入力</option>
+      </select>
+      ${row.girlId==='_c'?`<input type="text" placeholder="名前" value="${row.customName}" oninput="onCustomName(${row.uid},this.value)" style="margin-bottom:8px">`:addrHtml}
+      <label>出勤時間</label>
+      <div class="shift-stepper">
+        <button class="shift-stepper-btn" onclick="stepShiftTime(${row.uid},-1)">－</button>
+        <div class="shift-stepper-time" id="stepper_${row.uid}">${row.shiftTime||'19:00'}</div>
+        <button class="shift-stepper-btn" onclick="stepShiftTime(${row.uid},+1)">＋</button>
+      </div>
+      <div class="shift-stepper-hint">30分単位で調整</div>
+      ${i===girlRows.length-1?`<button class="btn bo" style="margin-top:6px;margin-bottom:0" onclick="addGirlRow()">＋ 女の子を追加</button>`:''}
+    `;
+    c.appendChild(d);
+  });
+  renderGroupMinInputs();
+}
+
+function renderGroupMinInputs(){
+  const existing=document.getElementById('groupMinSection');
+  if(existing) existing.remove();
+  const c=document.getElementById('girlInputs');
+  const groups=getGroups();
+  const sortedTimes=Object.keys(groups).filter(k=>k!=='_notime').sort();
+  if(!sortedTimes.length) return;
+  const section=document.createElement('div');
+  section.id='groupMinSection';
+  const header=document.createElement('div');
+  header.style.cssText='font-size:16px;font-weight:700;color:var(--teal);margin:14px 0 8px;';
+  header.textContent='🗺 区間ごとの移動時間';
+  section.appendChild(header);
+  const depName=getDepName();
+  sortedTimes.forEach((shiftTime,gi)=>{
+    const group=groups[shiftTime];
+    const isFirst=gi===0;
+    const startLabel=isFirst?depName:getStoreName();
+    const segs=buildSegments(group,isFirst,startLabel);
+    const refRow=group[0];
+    const wrap=document.createElement('div');
+    wrap.style.cssText='background:#fef0f5;border-radius:14px;padding:12px 14px;margin-bottom:10px;border:1.5px solid var(--lav)';
+    let html=`<div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:10px">🚗 ${shiftTime} 出勤グループ（${group.length}人）</div>`;
+    segs.forEach(seg=>{
+      const stored=refRow.mins[seg.key]||'';
+      html+=`
+        <div style="font-size:13px;color:#6b7280;margin-bottom:3px">📍 ${seg.from} → ${seg.to}</div>
+        <div class="min-row">
+          <input type="number" min="1" max="90" placeholder="分" value="${stored}"
+            id="seginp_${refRow.uid}_${seg.key}"
+            oninput="onSegMin(${refRow.uid},'${seg.key}',this.value)">
+          <span>分</span>
+          <button class="bmap" id="bmapbtn_${refRow.uid}_${seg.key}"
+            onclick="mockMapCalc(${refRow.uid},'${seg.key}','${seg.from.replace(/'/g,'').replace(/"/g,'')}','${seg.to.replace(/'/g,'').replace(/"/g,'')}')">🗺 自動</button>
+        </div>
+      `;
+    });
+    wrap.innerHTML=html;
+    section.appendChild(wrap);
+    autoCalcEmptySegs(refRow.uid, segs, null, null);
+  });
+  c.appendChild(section);
+}
+
+function buildSegments(group, isFirstRun, startLabel){
+  const segs=[];
+  const store=getStoreName();
+  segs.push({key:'start_to_0', from:startLabel, to:getGirlName(group[0])});
+  for(let i=0;i<group.length-1;i++){
+    segs.push({key:`${i}_to_${i+1}`, from:getGirlName(group[i]), to:getGirlName(group[i+1])});
+  }
+  segs.push({key:`${group.length-1}_to_store`, from:getGirlName(group[group.length-1]), to:store});
+  return segs;
+}
+
+function onSegMin(refUid, key, val){
+  const r=girlRows.find(x=>x.uid==refUid);
+  if(r) r.mins[key]=val;
+  updateAutoDepDisplay();
+}
+
+function mockMapCalc(refUid, key, from, to, silent){
+  const btnId=`bmapbtn_${refUid}_${key}`;
+  const btn=document.getElementById(btnId);
+  if(btn){btn.classList.add('calculating');btn.textContent='⏳';}
+  setTimeout(()=>{
+    const rawMin=5+Math.floor(Math.random()*41);
+    const min=ceil5(rawMin);
+    onSegMin(refUid, key, String(min));
+    const inp=document.getElementById(`seginp_${refUid}_${key}`);
+    if(inp) inp.value=min;
+    if(btn){btn.classList.remove('calculating');btn.textContent='🗺 自動';}
+    if(!silent) showToast(`🗺 ${from}→${to}: ${min}分`);
+  }, 700+Math.random()*600);
+}
+
+function autoCalcEmptySegs(refUid, segs, from, to){
+  segs.forEach(seg=>{
+    const r=girlRows.find(x=>x.uid==refUid);
+    if(r && !r.mins[seg.key]){
+      mockMapCalc(refUid, seg.key, seg.from, seg.to, true);
+    }
+  });
+}
+
+// ========== スケジュール生成 ==========
+function buildSchedule(){
+  const groups=getGroups();
+  const sortedTimes=Object.keys(groups).filter(k=>k!=='_notime').sort();
+  if(!sortedTimes.length){showToast('出勤時間を入れてね！');return;}
+  for(const t of sortedTimes){
+    const g=groups[t];
+    if(g.some(r=>!r.girlId&&!r.customName)){showToast('名前が未入力の子がいるよ！');return;}
+    const segs=buildSegments(g, sortedTimes.indexOf(t)===0, getDepName());
+    const refRow=g[0];
+    for(const seg of segs){
+      if(!refRow.mins[seg.key]){showToast(`移動時間が未入力:\n${seg.from}→${seg.to}`);return;}
+    }
+  }
+
+  const dateVal=document.getElementById('dateInp').value;
+  const dateLabel=fmtDL(dateVal);
+  const store=getStoreName();
+  const depName=getDepName();
+  builtRuns=[];
+  currentBuiltDate=dateVal;
+  currentBuiltDateLabel=dateLabel;
+
+  sortedTimes.forEach((shiftTime,gi)=>{
+    const group=groups[shiftTime];
+    const isFirst=gi===0;
+    const startLabel=isFirst?depName:store;
+    const segs=buildSegments(group,isFirst,startLabel);
+    const refRow=group[0];
+    const storeArrival=subMin(shiftTime,10);
+    let times=new Array(group.length+2);
+    times[group.length+1]=storeArrival;
+    for(let i=group.length-1;i>=0;i--){
+      const key=i===group.length-1?`${i}_to_store`:`${i}_to_${i+1}`;
+      const m=ceil5(refRow.mins[key]);
+      times[i+1]=roundTime5(subMin(times[i+2], m));
+    }
+    times[0]=roundTime5(subMin(times[1], ceil5(refRow.mins['start_to_0'])));
+    let departTime;
+    if(isFirst && depMode==='manual'){
+      departTime=document.getElementById('depManualTime').value||times[0];
+    } else {
+      departTime=times[0];
+    }
+    const departLabel=`${departTime}${startLabel}出発`;
+    const stops=[];
+    group.forEach((row,i)=>{
+      const minKey=i===0?'start_to_0':`${i-1}_to_${i}`;
+      stops.push({time:times[i+1], name:getGirlName(row), type:'pick', min:refRow.mins[minKey]});
+    });
+    stops.push({time:storeArrival, name:store, type:'drop', min:refRow.mins[`${group.length-1}_to_store`]});
+    builtRuns.push({departTime, departLabel, stops});
+  });
+
+  renderResult(dateLabel);
+  buildOutputText(dateLabel);
+  document.getElementById('resultSection').style.display='block';
+  document.getElementById('resultSection').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderResult(dateLabel){
+  const c=document.getElementById('resultBlocks');
+  c.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--txs);margin-bottom:10px">${dateLabel}</div>`;
+  builtRuns.forEach(run=>{
+    const d=document.createElement('div');
+    d.className='run-block';
+    let html=`<div class="run-label">🚗 ${run.departLabel}</div>`;
+    run.stops.forEach(s=>{
+      const badge=s.type==='pick'?'<span class="tl-badge badge-pick">迎え</span>':'<span class="tl-badge badge-drop">店着</span>';
+      const dot=s.type==='pick'?'dot-pick':'dot-drop';
+      html+=`<div class="tl-item">
+        <div class="tl-dot ${dot}"></div>
+        <span class="tl-time">${s.time}</span>
+        <span class="tl-name">${s.name}</span>
+        ${badge}
+        <span class="tl-min">${s.min}分</span>
+      </div>`;
+    });
+    d.innerHTML=html;
+    c.appendChild(d);
+  });
+}
+
+function buildOutputText(dateLabel){
+  let shun=[dateLabel,''], boy=[dateLabel,''];
+  builtRuns.forEach((run,ri)=>{
+    shun.push(run.departLabel);
+    run.stops.forEach(s=>{
+      shun.push(`${s.min}分`);
+      shun.push(`${s.time}${s.name}${s.type==='pick'?'迎え':'着'}`);
+      boy.push(`${s.time}${s.name}${s.type==='pick'?'迎え':'着'}`);
+    });
+    if(ri<builtRuns.length-1){shun.push('');boy.push('');}
+  });
+  outShunTxt=shun.join('\n'); outBoyTxt=boy.join('\n');
+  document.getElementById('outShun').textContent=outShunTxt;
+  document.getElementById('outBoy').textContent=outBoyTxt;
+  switchOutTab(outTab);
+}
+
+function switchOutTab(t){
+  outTab=t;
+  document.getElementById('tabS').className='otab'+(t==='shun'?' active':'');
+  document.getElementById('tabB').className='otab'+(t==='boy'?' active':'');
+  document.getElementById('outShun').style.display=t==='shun'?'block':'none';
+  document.getElementById('outBoy').style.display=t==='boy'?'block':'none';
+  document.getElementById('cpyS').style.display=t==='shun'?'flex':'none';
+  document.getElementById('cpyB').style.display=t==='boy'?'flex':'none';
+}
+function copyOut(who){
+  const txt=who==='shun'?outShunTxt:outBoyTxt;
+  if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>showToast('コピーしました！📋'));
+  else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('コピーしました！📋');}
+}
+
+// ========== スケジュール保存 ==========
+function saveSchedule(){
+  if(!builtRuns.length){showToast('先にスケジュールを生成してね！');return;}
+  const existing=schedHistory.findIndex(x=>x.dateVal===currentBuiltDate);
+  if(existing>=0){
+    document.getElementById('moOverwriteMsg').textContent=
+      `${currentBuiltDateLabel} のスケジュールはすでに保存されています。上書きしますか？`;
+    document.getElementById('moOverwrite').classList.add('open');
+    return;
+  }
+  doSave();
+}
+
+function doSave(){
+  closeMo('moOverwrite');
+  const existing=schedHistory.findIndex(x=>x.dateVal===currentBuiltDate);
+  const savedShunTxt=outShunTxt, savedBoyTxt=outBoyTxt;
+  const savedDateLabel=currentBuiltDateLabel;
+  const entry={
+    id: existing>=0 ? schedHistory[existing].id : ++histCnt,
+    dateVal: currentBuiltDate,
+    dateLabel: savedDateLabel,
+    runs: JSON.parse(JSON.stringify(builtRuns)),
+    shunTxt: savedShunTxt,
+    boyTxt: savedBoyTxt,
+    savedAt: new Date().toISOString()
+  };
+  if(existing>=0) schedHistory[existing]=entry;
+  else schedHistory.unshift(entry);
+
+  gasPost({action:'saveSchedule', payload:entry});
+  if(existing<0) saveCounters();
+
+  resetSchedForm();
+  closeSchedModal();
+  showSaveSuccessBar(savedDateLabel, savedShunTxt, savedBoyTxt);
+}
+
+function resetSchedForm(){
+  document.getElementById('dateInp').value=fmtDV(new Date());
+  girlRows=[];rowUid=0;
+  addGirlRow();
+  document.getElementById('depLocSel').value='';
+  document.getElementById('depManualName').value='';
+  document.getElementById('resultSection').style.display='none';
+  builtRuns=[];outShunTxt='';outBoyTxt='';
+  updateAutoDepDisplay();
+}
+
+let _savedShunTxt='', _savedBoyTxt='';
+
+function showSaveSuccessBar(dateLabel, shunTxt, boyTxt){
+  _savedShunTxt=shunTxt;
+  _savedBoyTxt=boyTxt;
+  switchPg('hist');
+  showToast('💾 保存完了！'+dateLabel);
+}
+
+function copyText(txt){
+  if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>showToast('コピーしました！📋'));
+  else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('コピーしました！📋');}
+}
+
+// ========== 履歴ページ ==========
+function renderHistPage(){
+  const c=document.getElementById('histContent');
+  if(!schedHistory.length){
+    c.innerHTML=`<div class="empty-hist"><div class="ei">📭</div><p>まだ保存されたスケジュールはないよ</p><p style="margin-top:6px;font-size:11px">スケジュールを生成して「保存」ボタンを押してね！</p></div>`;
+    return;
+  }
+  const today=todayVal();
+  const todayEntry=schedHistory.find(x=>x.dateVal===today);
+  const others=schedHistory.filter(x=>x.dateVal!==today);
+  let html='';
+  html+=`<div class="today-banner">
+    <div class="today-banner-label">📅 今日のスケジュール</div>`;
+  if(todayEntry){
+    html+=`<div class="today-banner-date">${fmtDLFull(todayEntry.dateVal)}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bdk sm" style="flex:1" onclick="openHistDetail('${todayEntry.id}')">👀 詳細を見る</button>
+        <button class="btn bgr sm" style="flex:1" onclick="quickCopyBoy('${todayEntry.id}')">📤 ボーイ用コピー</button>
+      </div>`;
+  } else {
+    html+=`<div class="today-banner-date" style="opacity:.7">登録なし</div>
+      <div class="today-banner-empty">スケジュールタブで生成・保存してね</div>`;
+  }
+  html+=`</div>`;
+  const monthMap={};
+  others.forEach(e=>{
+    const m=fmtMonth(e.dateVal);
+    if(!monthMap[m])monthMap[m]=[];
+    monthMap[m].push(e);
+  });
+  Object.entries(monthMap).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([month, entries],mi)=>{
+    const accId=`acc_${mi}`;
+    html+=`<div class="month-acc" id="${accId}">
+      <div class="month-acc-hdr" onclick="toggleAcc('${accId}')">
+        <span class="month-acc-title">📆 ${month}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="month-acc-count">${entries.length}件</span>
+          <span class="month-acc-arr">▼</span>
+        </div>
+      </div>
+      <div class="month-acc-body">`;
+    entries.sort((a,b)=>b.dateVal.localeCompare(a.dateVal)).forEach(e=>{
+      const girlNames=e.runs.flatMap(r=>r.stops.filter(s=>s.type==='pick').map(s=>s.name)).join('・');
+      html+=`<div class="hist-item" onclick="openHistDetail(${e.id})">
+        <div class="hist-item-hdr">
+          <div>
+            <div class="hist-item-date">${fmtDLFull(e.dateVal)}</div>
+            <div class="hist-item-sub">👩 ${girlNames||'データなし'}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="hist-item-badge">${e.runs.length}便</span>
+            <span class="hist-item-arr">›</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+  c.innerHTML=html;
+}
+
+function toggleAcc(id){document.getElementById(id).classList.toggle('open');}
+
+function quickCopyBoy(id){
+  const e=schedHistory.find(x=>x.id==id);
+  if(!e) return;
+  if(navigator.clipboard)navigator.clipboard.writeText(e.boyTxt).then(()=>showToast('ボーイ用をコピーしました！📤'));
+  else{const ta=document.createElement('textarea');ta.value=e.boyTxt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('ボーイ用をコピーしました！📤');}
+}
+
+function openHistDetail(id){
+  const e=schedHistory.find(x=>x.id==id);
+  if(!e) return;
+  document.getElementById('moHistTitle').textContent=`📅 ${fmtDLFull(e.dateVal)}`;
+  let html='';
+  e.runs.forEach((run,ri)=>{
+    html+=`<div class="hist-detail-run">
+      <div class="hist-detail-run-lbl">🚗 ${run.departLabel}</div>`;
+    run.stops.forEach((s,si)=>{
+      const dot=s.type==='pick'?'dot-pick':'dot-drop';
+      const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">店着</span>';
+      const minBadge=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
+      html+=`<div class="edit-time-row">
+        <div class="tl-dot ${dot}"></div>
+        <input class="edit-time-inp" type="time" value="${s.time}"
+          onchange="updateHistStop(${e.id},${ri},${si},this.value)">
+        <span class="edit-time-name">${s.name}</span>
+        ${badge}
+        ${minBadge}
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`<div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn bdk" style="flex:1;margin-bottom:0" onclick="copyHistText(${e.id},'shun')">🌙 しゅん用コピー</button>
+    <button class="btn bgr" style="flex:1;margin-bottom:0" onclick="copyHistText(${e.id},'boy')">📤 ボーイ用コピー</button>
+  </div>`;
+  html+=`<button class="btn bd" style="margin-top:8px" onclick="deleteHist(${e.id})">🗑️ このスケジュールを削除</button>`;
+  document.getElementById('moHistBody').innerHTML=html;
+  document.getElementById('moHistDetail').classList.add('open');
+}
+
+function updateHistStop(entryId, runIdx, stopIdx, newTime){
+  const e=schedHistory.find(x=>x.id==entryId);
+  if(!e) return;
+  e.runs[runIdx].stops[stopIdx].time=newTime;
+  rebuildHistTexts(e);
+  gasPost({action:'updateSchedule', payload:e});
+  showToast('時間を更新しました ✏️');
+}
+
+function rebuildHistTexts(e){
+  const dateLabel=e.dateLabel||'';
+  let shun=[dateLabel,''], boy=[dateLabel,''];
+  e.runs.forEach((run,ri)=>{
+    shun.push(run.departLabel);
+    run.stops.forEach(s=>{
+      shun.push(`${s.min}分`);
+      shun.push(`${s.time}${s.name}${s.type==='pick'?'迎え':'着'}`);
+      boy.push(`${s.time}${s.name}${s.type==='pick'?'迎え':'着'}`);
+    });
+    if(ri<e.runs.length-1){shun.push('');boy.push('');}
+  });
+  e.shunTxt=shun.join('\n');
+  e.boyTxt=boy.join('\n');
+}
+
+function copyHistText(id, who){
+  const e=schedHistory.find(x=>x.id==id);
+  if(!e) return;
+  const txt=who==='shun'?e.shunTxt:e.boyTxt;
+  if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>showToast('コピーしました！📋'));
+  else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('コピーしました！📋');}
+}
+
+function deleteHist(id){
+  schedHistory=schedHistory.filter(x=>x.id!=id);
+  gasPost({action:'deleteSchedule', id:id});
+  closeMo('moHistDetail');
+  renderHistPage();
+  showToast('削除しました 🗑️');
+}
+
+// ========== マスター管理 ==========
+function renderMasters(){
+  document.getElementById('depMasterList').innerHTML=depLocs.length?depLocs.map(d=>`
+    <div class="mcard dep">
+      <div class="mc-av d">🚩</div>
+      <div class="mc-info"><div class="mc-name">${d.name}</div><div class="mc-sub">${d.addr||'住所なし'}</div></div>
+      <button class="btn bg sm" onclick="openDepMo(${d.id})">編集</button>
+    </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
+  document.getElementById('girlMasterList').innerHTML=girls.length?girls.map(g=>`
+    <div class="mcard girl">
+      <div class="mc-av g">👩</div>
+      <div class="mc-info"><div class="mc-name">${g.name}</div><div class="mc-sub">${g.nick} / ${g.addr}</div></div>
+      <button class="btn bg sm" onclick="openGirlMo(${g.id})">編集</button>
+    </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
+  document.getElementById('placeMasterList').innerHTML=places.length?places.map(p=>`
+    <div class="mcard place">
+      <div class="mc-av p">🏠</div>
+      <div class="mc-info"><div class="mc-name">${p.name}</div><div class="mc-sub">${p.addr}</div></div>
+      <button class="btn bg sm" onclick="openPlaceMo(${p.id})">編集</button>
+    </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
+}
+
+function openDepMo(id){
+  ['dNameInp','dAddrInp'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('edId').value='';
+  document.getElementById('moDepTitle').textContent='🚩 出発地を登録';
+  document.getElementById('delDepBtn').style.display='none';
+  if(id){const d=depLocs.find(x=>x.id===id);if(d){document.getElementById('dNameInp').value=d.name;document.getElementById('dAddrInp').value=d.addr||'';document.getElementById('edId').value=d.id;document.getElementById('moDepTitle').textContent='🚩 編集';document.getElementById('delDepBtn').style.display='flex';}}
+  document.getElementById('moDepLoc').classList.add('open');
+}
+function saveDepLoc(){
+  const name=document.getElementById('dNameInp').value.trim();
+  if(!name){showToast('名前を入れてね！');return;}
+  const addr=document.getElementById('dAddrInp').value.trim();
+  const eid=parseInt(document.getElementById('edId').value);
+  if(eid){const d=depLocs.find(x=>x.id===eid);if(d){d.name=name;d.addr=addr;}}
+  else{depLocs.push({id:++dCnt,name,addr});saveCounters();}
+  gasPost({action:'saveDepLocs', payload:depLocs});
+  closeMo('moDepLoc');renderMasters();refreshDepSel();showToast('保存しました！💾');
+}
+function delDepLoc(){
+  const eid=parseInt(document.getElementById('edId').value);
+  depLocs=depLocs.filter(x=>x.id!==eid);
+  gasPost({action:'saveDepLocs', payload:depLocs});
+  closeMo('moDepLoc');renderMasters();refreshDepSel();showToast('削除しました');
+}
+
+function openGirlMo(id){
+  ['gNameInp','gNickInp','gAddrInp'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('egId').value='';
+  document.getElementById('moGirlTitle').textContent='👩 登録';
+  document.getElementById('delGirlBtn').style.display='none';
+  if(id){const g=girls.find(x=>x.id===id);if(g){document.getElementById('gNameInp').value=g.name;document.getElementById('gNickInp').value=g.nick;document.getElementById('gAddrInp').value=g.addr;document.getElementById('egId').value=g.id;document.getElementById('moGirlTitle').textContent='👩 編集';document.getElementById('delGirlBtn').style.display='flex';}}
+  document.getElementById('moGirl').classList.add('open');
+}
+function saveGirl(){
+  const name=document.getElementById('gNameInp').value.trim();
+  if(!name){showToast('名前を入れてね！');return;}
+  const nick=document.getElementById('gNickInp').value.trim(),addr=document.getElementById('gAddrInp').value.trim();
+  const eid=parseInt(document.getElementById('egId').value);
+  if(eid){const g=girls.find(x=>x.id===eid);if(g){g.name=name;g.nick=nick;g.addr=addr;}}
+  else{girls.push({id:++gCnt,name,nick,addr});saveCounters();}
+  gasPost({action:'saveGirls', payload:girls});
+  closeMo('moGirl');renderMasters();renderGirlInputs();showToast('保存しました！💾');
+}
+function delGirl(){
+  const eid=parseInt(document.getElementById('egId').value);
+  girls=girls.filter(x=>x.id!==eid);
+  gasPost({action:'saveGirls', payload:girls});
+  closeMo('moGirl');renderMasters();renderGirlInputs();showToast('削除しました');
+}
+
+function openPlaceMo(id){
+  ['pNameInp','pAddrInp'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('epId').value='';
+  document.getElementById('moPlaceTitle').textContent='🏠 登録';
+  document.getElementById('delPlaceBtn').style.display='none';
+  if(id){const p=places.find(x=>x.id===id);if(p){document.getElementById('pNameInp').value=p.name;document.getElementById('pAddrInp').value=p.addr;document.getElementById('epId').value=p.id;document.getElementById('moPlaceTitle').textContent='🏠 編集';document.getElementById('delPlaceBtn').style.display='flex';}}
+  document.getElementById('moPlace').classList.add('open');
+}
+function savePlace(){
+  const name=document.getElementById('pNameInp').value.trim();
+  if(!name){showToast('名前を入れてね！');return;}
+  const addr=document.getElementById('pAddrInp').value.trim();
+  const eid=parseInt(document.getElementById('epId').value);
+  if(eid){const p=places.find(x=>x.id===eid);if(p){p.name=name;p.addr=addr;}}
+  else{places.push({id:++pCnt,name,addr});saveCounters();}
+  gasPost({action:'savePlaces', payload:places});
+  closeMo('moPlace');renderMasters();showToast('保存しました！💾');
+}
+function delPlace(){
+  const eid=parseInt(document.getElementById('epId').value);
+  places=places.filter(x=>x.id!==eid);
+  gasPost({action:'savePlaces', payload:places});
+  closeMo('moPlace');renderMasters();showToast('削除しました');
+}
+
+function closeMo(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.mo').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
+
+// ========== トースト ==========
+let _toastTimer=null;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  if(_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>{t.classList.remove('show');_toastTimer=null;},2200);
+}
+
+// ========== フォント切り替え（UI設定のみlocalStorage） ==========
+function toggleFont(){
+  const body = document.body;
+  const isShun = body.classList.toggle('font-shun');
+  document.getElementById('ftIcon').textContent  = isShun ? '📋' : '🌸';
+  document.getElementById('ftLabel').textContent = isShun ? 'しゅん' : 'ひーちゃん';
+  localStorage.setItem('fontMode', isShun ? 'shun' : 'hee');
+}
+(function(){
+  if(localStorage.getItem('fontMode') === 'shun'){
+    document.body.classList.add('font-shun');
+    document.getElementById('ftIcon').textContent  = '📋';
+    document.getElementById('ftLabel').textContent = 'しゅん';
+  }
+})();
+</script>
+</body>
+</html>
