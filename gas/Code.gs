@@ -95,7 +95,7 @@ function readScheduleHistory(ss) {
     .map(function(row) {
       return {
         id:        Number(row[0]),
-        dateVal:   String(row[1]),
+        dateVal:   row[1] instanceof Date ? Utilities.formatDate(row[1], Session.getScriptTimeZone(), 'yyyy-MM-dd') : String(row[1]),
         dateLabel: String(row[2]),
         runs:      JSON.parse(row[3] || '[]'),
         shunTxt:   String(row[4]),
