@@ -161,8 +161,10 @@ input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
 .hist-dot.active{background:#c4608a}
 #histSlider{display:flex;flex:1;min-height:0;overflow-x:scroll;scroll-snap-type:x mandatory;scrollbar-width:none}
 #histSlider::-webkit-scrollbar{display:none}
-#histPageToday,#histPageMonths{min-width:100%;scroll-snap-align:start;overflow-y:scroll;overscroll-behavior:contain;padding:14px 14px 0}
-.memo-box{background:var(--pkp);border-radius:14px;padding:14px;margin:0;border:1.5px solid rgba(220,130,170,.2);flex-shrink:0;border-bottom-left-radius:0;border-bottom-right-radius:0}
+#histPageToday,#histPageMonths{min-width:100%;scroll-snap-align:start;overflow-y:scroll;overscroll-behavior:contain;padding:14px 14px 160px}
+.memo-box{background:var(--pkp);border-radius:14px 14px 0 0;padding:0 14px 14px;border:1.5px solid rgba(220,130,170,.2);border-bottom:none;position:absolute;bottom:0;left:0;right:0;z-index:20;transition:transform 0.4s cubic-bezier(0.32,0.72,0,1)}
+.memo-handle{display:flex;justify-content:center;padding:8px 0 4px;cursor:pointer;touch-action:none}
+.memo-handle-bar{width:40px;height:4px;border-radius:2px;background:rgba(180,100,140,.3)}
 .memo-hdr{font-size:13px;font-weight:700;color:var(--txs);margin-bottom:8px}
 .memo-inp{width:100%;min-height:90px;border:1.5px solid rgba(220,130,170,.3);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;resize:vertical;background:#fff;color:var(--tx);outline:none}
 
@@ -313,6 +315,7 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
     <div id="histPageMonths"><div id="histContent" style="min-height:60vh"></div></div>
   </div>
   <div class="memo-box">
+    <div class="memo-handle"><div class="memo-handle-bar"></div></div>
     <div class="memo-hdr">📝 共有メモ</div>
     <textarea id="memoInp" class="memo-inp" oninput="onMemoInput()" placeholder="ここに共有メモを入力..."></textarea>
   </div>
@@ -485,6 +488,10 @@ function onMemoInput(){
   initApp();
   renderHistPage();
   document.getElementById('memoInp').value = memoText;
+  var seenMemo = localStorage.getItem('memoSeen') || '';
+  if (memoText && memoText !== seenMemo) openMemo(false);
+  else closeMemoSheet(false);
+  localStorage.setItem('memoSeen', memoText);
 
   setInterval(async function(){
     try {
@@ -512,6 +519,20 @@ function slideTo(idx){
   var s=document.getElementById('histSlider');
   s.scrollTo({left:idx*s.offsetWidth,behavior:'smooth'});
 }
+var _memoIsOpen=false,_memoStartY=0,_memoStartTransY=0;
+function _memoClosedY(){var b=document.querySelector('.memo-box');return b.offsetHeight-20;}
+function openMemo(animate){
+  _memoIsOpen=true;
+  var b=document.querySelector('.memo-box');
+  b.style.transition=animate?'transform 0.4s cubic-bezier(0.32,0.72,0,1)':'none';
+  b.style.transform='translateY(0)';
+}
+function closeMemoSheet(animate){
+  _memoIsOpen=false;
+  var b=document.querySelector('.memo-box');
+  b.style.transition=animate?'transform 0.4s cubic-bezier(0.32,0.72,0,1)':'none';
+  b.style.transform='translateY('+_memoClosedY()+'px)';
+}
 function initApp() {
   setPgHeight();
   window.addEventListener('resize',setPgHeight);
@@ -521,6 +542,25 @@ function initApp() {
     document.getElementById('dot-today').classList.toggle('active',!m);
     document.getElementById('dot-months').classList.toggle('active',m);
   });
+  var handle=document.querySelector('.memo-handle');
+  handle.addEventListener('touchstart',function(e){
+    _memoStartY=e.touches[0].clientY;
+    _memoStartTransY=_memoIsOpen?0:_memoClosedY();
+    document.querySelector('.memo-box').style.transition='none';
+  },{passive:true});
+  handle.addEventListener('touchmove',function(e){
+    var dy=e.touches[0].clientY-_memoStartY;
+    var y=Math.max(0,Math.min(_memoClosedY(),_memoStartTransY+dy));
+    document.querySelector('.memo-box').style.transform='translateY('+y+'px)';
+  },{passive:true});
+  handle.addEventListener('touchend',function(e){
+    var dy=e.changedTouches[0].clientY-_memoStartY;
+    if(_memoIsOpen&&dy>60)closeMemoSheet(true);
+    else if(!_memoIsOpen&&dy<-40)openMemo(true);
+    else if(_memoIsOpen)openMemo(true);
+    else closeMemoSheet(true);
+  },{passive:true});
+  handle.addEventListener('click',function(){if(!_memoIsOpen)openMemo(true);});
   const t = new Date();
   document.getElementById('dateInp').value = fmtDV(t);
   addGirlRow();
