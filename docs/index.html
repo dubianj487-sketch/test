@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#CE95B0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
 <title>🌙 SILDE</title>
@@ -38,7 +38,7 @@ body.font-shun .otab,body.font-shun .obox.boy{font-family:'Noto Sans JP',sans-se
 .font-toggle:active{transform:scale(.96)}
 .font-toggle .ft-icon{font-size:14px}
 
-.hdr{background:#CE95B0;padding:max(13px,env(safe-area-inset-top)) 18px 13px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
+.hdr{background:#CE95B0;padding:13px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
 .hdr-moon{font-size:24px;animation:mf 4s ease-in-out infinite}
 @keyframes mf{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(5deg)}}
 .hdr-t{font-size:20px;color:#fde8e8;font-weight:700}
@@ -237,7 +237,7 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 
 <!-- SCHEDULE MODAL (bottom sheet) -->
 <div class="mo" id="moSched">
-  <div class="mbox" style="max-height:92vh">
+  <div class="mbox" style="max-height:calc(100dvh - 80px)">
     <div class="mtitle" style="position:sticky;top:0;background:#fff;z-index:10;padding-bottom:10px;margin-bottom:4px">
       <span style="font-size:16px;font-weight:700">🚗 スケジュール作成</span>
       <button class="mclose" style="font-size:14px;color:#fff;background:var(--teal);border-radius:20px;padding:5px 14px;font-family:'Zen Maru Gothic',sans-serif;font-weight:700" onclick="closeSchedModal()">✕ キャンセル</button>
