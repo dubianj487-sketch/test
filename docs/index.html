@@ -45,7 +45,7 @@ body.font-shun .otab,body.font-shun .obox.boy{font-family:'Noto Sans JP',sans-se
 .nb .ni{font-size:20px}
 .nb.active{color:var(--teal);border-top-color:var(--teal);font-weight:700}
 
-.pg{display:none;padding:14px 14px 80px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0}
+.pg{display:none;padding:14px 14px 80px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
 .pg.active{display:block}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
@@ -292,7 +292,7 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 </div>
 
 <div class="pg active" id="pg-hist">
-  <div id="histContent"></div>
+  <div id="histContent" style="min-height:60vh"></div>
   <div class="memo-box">
     <div class="memo-hdr">📝 共有メモ</div>
     <textarea id="memoInp" class="memo-inp" oninput="onMemoInput()" placeholder="ここに共有メモを入力..."></textarea>
