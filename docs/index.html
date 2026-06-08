@@ -23,7 +23,7 @@ html{-webkit-color-scheme:light;color-scheme:light}
   --sh:0 4px 20px rgba(200,100,140,.12);
   --gold:#e88fac;--teal:#c4608a;
 }
-body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#E5C1D4 !important;background-color:#E5C1D4 !important;height:100dvh;overflow:hidden;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation}
+body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#CE95B0 !important;background-color:#CE95B0 !important;height:100dvh;overflow:hidden;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation;padding-top:env(safe-area-inset-top)}
 html{background:#CE95B0 !important;background-color:#CE95B0 !important;overscroll-behavior:none;height:100dvh}
 /* ===== フォント切り替え ===== */
 body.font-shun{--app-font:'Noto Sans JP'}
@@ -38,7 +38,7 @@ body.font-shun .otab,body.font-shun .obox.boy{font-family:'Noto Sans JP',sans-se
 .font-toggle:active{transform:scale(.96)}
 .font-toggle .ft-icon{font-size:14px}
 
-.hdr{background:#CE95B0;padding:env(safe-area-inset-top) 14px 7px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
+.hdr{background:#CE95B0;padding:0 14px 7px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
 .hdr-moon{font-size:24px;line-height:1;animation:mf 4s ease-in-out infinite}
 @keyframes mf{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(5deg)}}
 .hdr-t{font-size:20px;color:#fde8e8;font-weight:700;line-height:1}
@@ -49,7 +49,7 @@ body.font-shun .otab,body.font-shun .obox.boy{font-family:'Noto Sans JP',sans-se
 .nb .ni{font-size:20px}
 .nb.active{color:var(--teal);border-top-color:var(--teal);font-weight:700}
 
-.pg{display:none;padding:14px 14px 56px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+.pg{display:none;padding:14px 14px 56px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0;-webkit-overflow-scrolling:touch;background:#E5C1D4}
 .pg.active{display:block}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
@@ -213,7 +213,7 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 .loading-text{font-size:15px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
 .loading-sub{font-size:12px;opacity:.75;margin-top:6px;font-family:'Zen Maru Gothic',sans-serif}
 @media (display-mode: standalone) {
-  .hdr{padding-top:max(7px,env(safe-area-inset-top))}
+  body{padding-top:max(env(safe-area-inset-top),7px)}
   .bnav{padding-bottom:env(safe-area-inset-bottom)}
   .pg{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
   #pg-hist{padding:0 0 calc(52px + env(safe-area-inset-bottom))}
@@ -518,8 +518,8 @@ function onMemoInput(){
 })();
 
 function setPgHeight(){
-  const h=document.querySelector('.hdr').offsetHeight;
-  document.querySelectorAll('.pg').forEach(function(el){el.style.height=(window.innerHeight-h)+'px';});
+  const hdrBottom=document.querySelector('.hdr').getBoundingClientRect().bottom;
+  document.querySelectorAll('.pg').forEach(function(el){el.style.height=(window.innerHeight-hdrBottom)+'px';});
 }
 function slideTo(idx){
   var s=document.getElementById('histSlider');
