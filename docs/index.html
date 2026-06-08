@@ -1463,7 +1463,7 @@ function toggleFont(){
 
 // ========== マップ ==========
 var _mapObj = null;
-var _mapInited = false;
+var _mapLayer = null;
 
 function _geocacheKey(addr){ return 'geo_' + addr; }
 
@@ -1498,34 +1498,26 @@ async function initMap() {
   var container = document.getElementById('map-container');
   if (!container) return;
 
-  // Fix height: pg-map is flex, so container fills remaining space
-  var pgMap = document.getElementById('pg-map');
-  var legendH = document.getElementById('mapLegend').offsetHeight || 44;
-  var navH = document.querySelector('.bnav').offsetHeight || 56;
-  var topH = pgMap.offsetTop || 0;
+  var hdrH = (document.querySelector('.hdr') || {}).offsetHeight || 44;
+  var navH = (document.querySelector('.bnav') || {}).offsetHeight || 56;
+  var legendH = (document.getElementById('mapLegend') || {}).offsetHeight || 44;
   var safeTop = parseInt(getComputedStyle(document.body).paddingTop) || 0;
-  container.style.height = (window.innerHeight - safeTop - document.querySelector('.hdr').offsetHeight - legendH - navH) + 'px';
+  container.style.height = (window.innerHeight - safeTop - hdrH - legendH - navH) + 'px';
 
-  if (_mapInited) {
-    _mapObj && _mapObj.invalidateSize();
-    return;
+  if (!_mapObj) {
+    _mapObj = L.map('map-container', {center:[34.6937,135.5023], zoom:13, zoomControl:true});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'© OpenStreetMap contributors', maxZoom:19
+    }).addTo(_mapObj);
+    _mapLayer = L.layerGroup().addTo(_mapObj);
+  } else {
+    _mapObj.invalidateSize();
+    _mapLayer.clearLayers();
   }
-  _mapInited = true;
-
-  _mapObj = L.map('map-container', {
-    center: [34.6937, 135.5023],
-    zoom: 13,
-    zoomControl: true
-  });
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 19
-  }).addTo(_mapObj);
 
   var bounds = [];
 
-  // しゅん仮位置（家）— Geolocation or fallback Osaka center
+  // しゅん仮位置 — Geolocation or fallback Osaka center
   var shunLatLng = [34.6937, 135.5023];
   try {
     await new Promise(function(resolve) {
@@ -1537,25 +1529,26 @@ async function initMap() {
     });
   } catch(e) {}
 
-  var shunM = L.marker(shunLatLng, {icon: _divIcon('📍','#2a5a8a')})
-    .addTo(_mapObj)
-    .bindPopup('<b>しゅん（仮）</b>');
+  L.marker(shunLatLng, {icon: _divIcon('📍','#2a5a8a')})
+    .addTo(_mapLayer).bindPopup('<b>しゅん（仮）</b>');
   bounds.push(shunLatLng);
 
-  // Rate-limit Nominatim: 1 req/sec
+  // キューに全住所を積む
   var queue = [];
-  places.forEach(function(p){ if(p.addr) queue.push({item:p, emoji:'🏠', bg:'#e88fac', label:p.name}); });
-  girls.forEach(function(g){ if(g.addr) queue.push({item:g, emoji:'👧', bg:'#c478a8', label:g.name+(g.nick?'（'+g.nick+'）':'')}); });
-  depLocs.forEach(function(d){ if(d.addr) queue.push({item:d, emoji:'🚩', bg:'#6a9e8a', label:d.name}); });
+  places.forEach(function(p){ if(p.addr) queue.push({addr:p.addr, emoji:'🏠', bg:'#e88fac', label:p.name}); });
+  girls.forEach(function(g){ if(g.addr) queue.push({addr:g.addr, emoji:'👧', bg:'#c478a8', label:g.name+(g.nick?'（'+g.nick+'）':'')}); });
+  depLocs.forEach(function(d){ if(d.addr) queue.push({addr:d.addr, emoji:'🚩', bg:'#6a9e8a', label:d.name}); });
 
   for (var i = 0; i < queue.length; i++) {
-    if (i > 0) await new Promise(function(r){ setTimeout(r, 1100); });
+    // キャッシュ済みなら待機不要、未キャッシュなら1秒間隔でNominatim制限に従う
     var q = queue[i];
-    var pt = await _geocode(q.item.addr);
+    var cached = localStorage.getItem(_geocacheKey(q.addr));
+    if (!cached && i > 0) await new Promise(function(r){ setTimeout(r, 1100); });
+    var pt = await _geocode(q.addr);
     if (pt) {
       L.marker([pt.lat, pt.lng], {icon: _divIcon(q.emoji, q.bg)})
-        .addTo(_mapObj)
-        .bindPopup('<b>' + q.label + '</b><br><small>' + q.item.addr + '</small>');
+        .addTo(_mapLayer)
+        .bindPopup('<b>' + q.label + '</b><br><small>' + q.addr + '</small>');
       bounds.push([pt.lat, pt.lng]);
     }
   }
