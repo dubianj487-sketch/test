@@ -18,7 +18,8 @@ function doGet(e) {
         schedHistory: readScheduleHistory(ss),
         counters:    readCounters(ss),
         memo:        readMemo(ss),
-        battery:     readBattery()
+        battery:     readBattery(),
+        lineNotifs:  readLineNotifs()
       }});
     }
 
@@ -32,6 +33,14 @@ function doGet(e) {
       case 'deleteSchedule': deleteScheduleEntry(ss, body.id); break;
       case 'saveCounters': writeCounters(ss, body.payload); break;
       case 'saveMemo':     writeMemo(ss, body.memo); break;
+      case 'saveLineNotif':
+        saveLineNotif({
+          user:    e.parameter.user,
+          sender:  String(e.parameter.sender||'').replace(/[\[\]]/g,'').trim(),
+          message: String(e.parameter.message||'').replace(/[\[\]]/g,'').trim(),
+          at:      new Date().toISOString()
+        });
+        break;
       case 'updateBattery':
         writeBattery({
           user:     e.parameter.user,
@@ -208,6 +217,18 @@ function readMemo(ss) {
 function writeMemo(ss, text) {
   const sheet = getOrCreateSheet(ss, 'memo');
   sheet.getRange(1, 1).setValue(text || '');
+}
+
+function readLineNotifs() {
+  const props = PropertiesService.getScriptProperties();
+  return JSON.parse(props.getProperty('lineNotifs') || '[]');
+}
+
+function saveLineNotif(notif) {
+  const props = PropertiesService.getScriptProperties();
+  const list = JSON.parse(props.getProperty('lineNotifs') || '[]');
+  list.unshift(notif);
+  props.setProperty('lineNotifs', JSON.stringify(list.slice(0, 10)));
 }
 
 function readBattery() {
