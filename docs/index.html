@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="build-hash" content="DEPLOY_HASH_PLACEHOLDER">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#CE95B0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
 <title>🌙 SILDE</title>
@@ -38,18 +38,18 @@ body.font-shun .otab,body.font-shun .obox.boy{font-family:'Noto Sans JP',sans-se
 .font-toggle:active{transform:scale(.96)}
 .font-toggle .ft-icon{font-size:14px}
 
-.hdr{background:#CE95B0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
+.hdr{background:#CE95B0;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));display:flex;align-items:center;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
 .hdr-moon{font-size:24px;animation:mf 4s ease-in-out infinite}
 @keyframes mf{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(5deg)}}
 .hdr-t{font-size:20px;color:#fde8e8;font-weight:700}
 .hdr-s{font-size:12px;color:rgba(253,220,220,.7);margin-top:2px}
 
-.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#fff;border-top:2px solid var(--lav);display:flex;box-shadow:0 -4px 16px rgba(80,60,140,.08)}
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#fff;border-top:2px solid var(--lav);display:flex;box-shadow:0 -4px 16px rgba(80,60,140,.08);padding-bottom:env(safe-area-inset-bottom)}
 .nb{flex:1;padding:8px 4px 6px;border:none;background:none;cursor:pointer;font-family:'Zen Maru Gothic',sans-serif;font-size:12px;color:#aaa8c0;display:flex;flex-direction:column;align-items:center;gap:2px;border-top:3px solid transparent;transition:all .2s}
 .nb .ni{font-size:20px}
 .nb.active{color:var(--teal);border-top-color:var(--teal);font-weight:700}
 
-.pg{display:none;padding:14px 14px 64px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+.pg{display:none;padding:14px 14px calc(64px + env(safe-area-inset-bottom));animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
 .pg.active{display:block}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
@@ -154,7 +154,7 @@ input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
 .month-acc.open .month-acc-arr{transform:rotate(180deg)}
 .month-acc-body{display:none;padding:0 12px 12px}
 .month-acc.open .month-acc-body{display:block}
-#pg-hist{overflow:hidden !important;flex-direction:column;padding:0 0 60px}
+#pg-hist{overflow:hidden !important;flex-direction:column;padding:0 0 calc(60px + env(safe-area-inset-bottom))}
 #pg-hist.active{display:flex !important}
 .hist-dots{display:flex;justify-content:center;gap:7px;padding:8px 0 4px;flex-shrink:0}
 .hist-dot{width:7px;height:7px;border-radius:50%;background:rgba(180,100,140,.25);transition:background .2s;cursor:pointer}
