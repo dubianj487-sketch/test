@@ -150,7 +150,10 @@ input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
 .month-acc.open .month-acc-arr{transform:rotate(180deg)}
 .month-acc-body{display:none;padding:0 12px 12px}
 .month-acc.open .month-acc-body{display:block}
-.memo-box{background:var(--pkp);border-radius:14px;padding:14px;margin:16px 0 8px;border:1.5px solid rgba(220,130,170,.2)}
+#pg-hist{overflow:hidden !important;display:flex;flex-direction:column;padding:0}
+#todayFixed{padding:12px 14px 0;flex-shrink:0}
+#histScroll{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;min-height:0;padding:8px 14px 0}
+.memo-box{background:var(--pkp);border-radius:14px;padding:14px;margin:0;border:1.5px solid rgba(220,130,170,.2);flex-shrink:0;border-bottom-left-radius:0;border-bottom-right-radius:0}
 .memo-hdr{font-size:13px;font-weight:700;color:var(--txs);margin-bottom:8px}
 .memo-inp{width:100%;min-height:90px;border:1.5px solid rgba(220,130,170,.3);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;resize:vertical;background:#fff;color:var(--tx);outline:none}
 
@@ -292,7 +295,10 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 </div>
 
 <div class="pg active" id="pg-hist">
-  <div id="histContent" style="min-height:60vh"></div>
+  <div id="todayFixed"></div>
+  <div id="histScroll">
+    <div id="histContent" style="min-height:60vh"></div>
+  </div>
   <div class="memo-box">
     <div class="memo-hdr">📝 共有メモ</div>
     <textarea id="memoInp" class="memo-inp" oninput="onMemoInput()" placeholder="ここに共有メモを入力..."></textarea>
@@ -931,27 +937,29 @@ function copyText(txt){
 // ========== 履歴ページ ==========
 function renderHistPage(){
   const c=document.getElementById('histContent');
+  const tf=document.getElementById('todayFixed');
   if(!schedHistory.length){
+    tf.innerHTML='';
     c.innerHTML=`<div class="empty-hist"><div class="ei">📭</div><p>まだ保存されたスケジュールはないよ</p><p style="margin-top:6px;font-size:11px">スケジュールを生成して「保存」ボタンを押してね！</p></div>`;
     return;
   }
   const today=todayVal();
   const todayEntry=schedHistory.find(x=>x.dateVal===today);
   const others=schedHistory.filter(x=>x.dateVal!==today);
-  let html='';
-  html+=`<div class="today-banner">
-    <div class="today-banner-label">📅 今日のスケジュール</div>`;
+  let todayHtml=`<div class="today-banner"><div class="today-banner-label">📅 今日のスケジュール</div>`;
   if(todayEntry){
-    html+=`<div class="today-banner-date">${fmtDLFull(todayEntry.dateVal)}</div>
+    todayHtml+=`<div class="today-banner-date">${fmtDLFull(todayEntry.dateVal)}</div>
       <div style="display:flex;gap:8px">
         <button class="btn bdk sm" style="flex:1" onclick="openHistDetail('${todayEntry.id}')">👀 詳細を見る</button>
         <button class="btn bgr sm" style="flex:1" onclick="quickCopyBoy('${todayEntry.id}')">📤 ボーイ用コピー</button>
       </div>`;
   } else {
-    html+=`<div class="today-banner-date" style="opacity:.7">登録なし</div>
+    todayHtml+=`<div class="today-banner-date" style="opacity:.7">登録なし</div>
       <div class="today-banner-empty">スケジュールタブで生成・保存してね</div>`;
   }
-  html+=`</div>`;
+  todayHtml+=`</div>`;
+  tf.innerHTML=todayHtml;
+  let html='';
   const monthMap={};
   others.forEach(e=>{
     const m=fmtMonth(e.dateVal);
