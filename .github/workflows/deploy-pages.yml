@@ -36,6 +36,9 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Embed commit hash
+        run: sed -i 's/DEPLOY_HASH_PLACEHOLDER/${{ github.sha }}/g' docs/index.html
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -45,8 +48,20 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Notify Discord Complete
+      - name: Wait for CDN propagation and notify
         run: |
+          PAGE_URL="${{ steps.deployment.outputs.page_url }}"
+          EXPECTED="${{ github.sha }}"
+          for i in $(seq 1 60); do
+            FOUND=$(curl -s "${PAGE_URL}index.html" | grep -oP '(?<=build-hash" content=")[a-f0-9]+' || true)
+            if [ "$FOUND" = "$EXPECTED" ]; then
+              curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+                -H "Content-Type: application/json" \
+                -d "{\"content\":\"🌐 ブラウザで確認できます！\\n${PAGE_URL}\"}"
+              exit 0
+            fi
+            sleep 5
+          done
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\":\"✅ SILDEが更新されました！\\n${{ steps.deployment.outputs.page_url }}\"}"
+            -d "{\"content\":\"✅ デプロイ完了（CDN反映待ちタイムアウト）\\n${PAGE_URL}\"}"
