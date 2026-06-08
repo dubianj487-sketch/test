@@ -460,9 +460,10 @@ function initApp() {
 // ========== ユーティリティ ==========
 function fmtDV(d){return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
 function p2(n){return String(n).padStart(2,'0')}
-function fmtDL(v){if(!v)return'';const d=new Date(v+'T00:00:00');return `${d.getMonth()+1}/${d.getDate()}(${'日月火水木金土'[d.getDay()]})`}
-function fmtDLFull(v){if(!v)return'';const d=new Date(v+'T00:00:00');return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日(${'日月火水木金土'[d.getDay()]})`}
-function fmtMonth(v){if(!v)return'';const d=new Date(v+'T00:00:00');return `${d.getFullYear()}年${d.getMonth()+1}月`}
+function normDV(v){return String(v).replace(/\//g,'-').slice(0,10);}
+function fmtDL(v){if(!v)return'';const d=new Date(normDV(v)+'T00:00:00');if(isNaN(d.getTime()))return'';return `${d.getMonth()+1}/${d.getDate()}(${'日月火水木金土'[d.getDay()]})`}
+function fmtDLFull(v){if(!v)return'';const d=new Date(normDV(v)+'T00:00:00');if(isNaN(d.getTime()))return'';return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日(${'日月火水木金土'[d.getDay()]})`}
+function fmtMonth(v){if(!v)return'';const d=new Date(normDV(v)+'T00:00:00');if(isNaN(d.getTime()))return'';return `${d.getFullYear()}年${d.getMonth()+1}月`}
 function addMin(hhmm,min){const[h,m]=hhmm.split(':').map(Number);const t=h*60+m+Number(min);return `${p2(Math.floor(t/60)%24)}:${p2(t%60)}`}
 function subMin(hhmm,min){const[h,m]=hhmm.split(':').map(Number);let t=h*60+m-Number(min);if(t<0)t+=1440;return `${p2(Math.floor(t/60)%24)}:${p2(t%60)}`}
 function ceil5(min){return Math.ceil(Number(min)/5)*5;}
