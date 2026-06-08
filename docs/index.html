@@ -1472,8 +1472,8 @@ async function _geocode(addr) {
   var cached = localStorage.getItem(k);
   if (cached) { try { return JSON.parse(cached); } catch(e){} }
   try {
-    var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr);
-    var res = await fetch(url, {headers:{'Accept-Language':'ja'}});
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=jp&q=' + encodeURIComponent(addr);
+    var res = await fetch(url, {headers:{'Accept-Language':'ja,en'}});
     var data = await res.json();
     if (data && data.length > 0) {
       var pt = {lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon)};
@@ -1510,6 +1510,7 @@ async function initMap() {
       attribution:'© OpenStreetMap contributors', maxZoom:19
     }).addTo(_mapObj);
     _mapLayer = L.layerGroup().addTo(_mapObj);
+    setTimeout(function(){ _mapObj && _mapObj.invalidateSize(); }, 200);
   } else {
     _mapObj.invalidateSize();
     _mapLayer.clearLayers();
@@ -1535,9 +1536,12 @@ async function initMap() {
 
   // キューに全住所を積む
   var queue = [];
-  places.forEach(function(p){ if(p.addr) queue.push({addr:p.addr, emoji:'🏠', bg:'#e88fac', label:p.name}); });
-  girls.forEach(function(g){ if(g.addr) queue.push({addr:g.addr, emoji:'👧', bg:'#c478a8', label:g.name+(g.nick?'（'+g.nick+'）':'')}); });
-  depLocs.forEach(function(d){ if(d.addr) queue.push({addr:d.addr, emoji:'🚩', bg:'#6a9e8a', label:d.name}); });
+  places.forEach(function(p){ var a=String(p.addr||'').trim(); if(a) queue.push({addr:a, emoji:'🏠', bg:'#e88fac', label:p.name}); });
+  girls.forEach(function(g){ var a=String(g.addr||'').trim(); if(a) queue.push({addr:a, emoji:'👧', bg:'#c478a8', label:g.name+(g.nick?'（'+g.nick+'）':'')}); });
+  depLocs.forEach(function(d){ var a=String(d.addr||'').trim(); if(a) queue.push({addr:a, emoji:'🚩', bg:'#6a9e8a', label:d.name}); });
+
+  var legend = document.getElementById('mapLegend');
+  if (queue.length > 0) legend.innerHTML += '<span id="mapGeoStatus" style="margin-left:auto;color:var(--txs);font-size:11px">📡 ジオコーディング中 0/' + queue.length + '</span>';
 
   for (var i = 0; i < queue.length; i++) {
     // キャッシュ済みなら待機不要、未キャッシュなら1秒間隔でNominatim制限に従う
@@ -1545,6 +1549,8 @@ async function initMap() {
     var cached = localStorage.getItem(_geocacheKey(q.addr));
     if (!cached && i > 0) await new Promise(function(r){ setTimeout(r, 1100); });
     var pt = await _geocode(q.addr);
+    var st = document.getElementById('mapGeoStatus');
+    if (st) st.textContent = '📡 ジオコーディング中 ' + (i+1) + '/' + queue.length;
     if (pt) {
       L.marker([pt.lat, pt.lng], {icon: _divIcon(q.emoji, q.bg)})
         .addTo(_mapLayer)
@@ -1552,6 +1558,9 @@ async function initMap() {
       bounds.push([pt.lat, pt.lng]);
     }
   }
+
+  var st = document.getElementById('mapGeoStatus');
+  if (st) st.remove();
 
   if (bounds.length > 1) {
     _mapObj.fitBounds(bounds, {padding:[30,30]});
