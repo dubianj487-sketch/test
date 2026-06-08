@@ -212,6 +212,9 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:15px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
 .loading-sub{font-size:12px;opacity:.75;margin-top:6px;font-family:'Zen Maru Gothic',sans-serif}
+@media (min-width: 768px) {
+  .hdr{position:relative;top:auto}
+}
 @media (display-mode: standalone) {
   body{padding-top:max(env(safe-area-inset-top),7px)}
   .bnav{padding-bottom:env(safe-area-inset-bottom)}
