@@ -150,9 +150,9 @@ input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
 .month-acc.open .month-acc-arr{transform:rotate(180deg)}
 .month-acc-body{display:none;padding:0 12px 12px}
 .month-acc.open .month-acc-body{display:block}
-#pg-hist{overflow:hidden !important;display:flex;flex-direction:column;padding:0}
-#todayFixed{padding:12px 14px 0;flex-shrink:0}
-#histScroll{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;min-height:0;padding:8px 14px 0}
+#pg-hist{overflow:hidden !important;display:flex;flex-direction:column;padding:0 0 72px}
+#todayFixed{padding:12px 14px 0;flex-shrink:0;position:relative;z-index:10;background:#E5C1D4}
+#histScroll{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior-y:auto;min-height:0;padding:8px 14px 0}
 .memo-box{background:var(--pkp);border-radius:14px;padding:14px;margin:0;border:1.5px solid rgba(220,130,170,.2);flex-shrink:0;border-bottom-left-radius:0;border-bottom-right-radius:0}
 .memo-hdr{font-size:13px;font-weight:700;color:var(--txs);margin-bottom:8px}
 .memo-inp{width:100%;min-height:90px;border:1.5px solid rgba(220,130,170,.3);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;resize:vertical;background:#fff;color:var(--tx);outline:none}
