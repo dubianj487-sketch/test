@@ -397,7 +397,7 @@ let currentBuiltDate='', currentBuiltDateLabel='';
 
 // ========== GAS通信 ==========
 async function gasGet() {
-  const res = await fetch(GAS_URL + '?action=all');
+  const res = await fetch(GAS_URL + '?action=all&_=' + Date.now());
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }
@@ -453,7 +453,7 @@ function saveCounters() {
       histCnt = (res.data.counters || {}).histCnt || histCnt;
       if (document.getElementById('pg-hist').classList.contains('active')) renderHistPage();
     } catch(e) {}
-  }, 30000);
+  }, 10000);
 })();
 
 function initApp() {
