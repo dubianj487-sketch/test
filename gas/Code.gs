@@ -13,7 +13,8 @@ function doGet(e) {
         depLocs:     readRows(ss, 'depLocs',     ['id','name','addr']),
         schedHistory: readScheduleHistory(ss),
         counters:    readCounters(ss),
-        memo:        readMemo(ss)
+        memo:        readMemo(ss),
+        battery:     readBattery()
       }});
     }
 
@@ -27,6 +28,7 @@ function doGet(e) {
       case 'deleteSchedule': deleteScheduleEntry(ss, body.id); break;
       case 'saveCounters': writeCounters(ss, body.payload); break;
       case 'saveMemo':     writeMemo(ss, body.memo); break;
+      case 'updateBattery': writeBattery(body); break;
     }
     return makeResponse({ok: true});
   } catch(err) {
@@ -196,6 +198,22 @@ function readMemo(ss) {
 function writeMemo(ss, text) {
   const sheet = getOrCreateSheet(ss, 'memo');
   sheet.getRange(1, 1).setValue(text || '');
+}
+
+function readBattery() {
+  const props = PropertiesService.getScriptProperties();
+  return JSON.parse(props.getProperty('battery') || '{}');
+}
+
+function writeBattery(data) {
+  const props = PropertiesService.getScriptProperties();
+  const bat = JSON.parse(props.getProperty('battery') || '{}');
+  bat[data.user] = {
+    level: Number(data.level) || 0,
+    charging: data.charging === true || data.charging === 'true',
+    at: new Date().toISOString()
+  };
+  props.setProperty('battery', JSON.stringify(bat));
 }
 
 function writeCounters(ss, counters) {
