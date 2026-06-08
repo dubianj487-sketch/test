@@ -3,15 +3,32 @@ const SPREADSHEET_ID = '15wgBIMQNXmvPi52LeaSfGFk4lPfe0edpa0GzVt_TFS8';
 
 function doGet(e) {
   try {
+    const action = (e.parameter && e.parameter.action) || 'all';
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const data = {
-      girls:       readRows(ss, 'girls',       ['id','name','nick','addr']),
-      places:      readRows(ss, 'places',      ['id','name','addr']),
-      depLocs:     readRows(ss, 'depLocs',     ['id','name','addr']),
-      schedHistory: readScheduleHistory(ss),
-      counters:    readCounters(ss)
-    };
-    return makeResponse({ok: true, data: data});
+
+    if (action === 'all') {
+      return makeResponse({ok: true, data: {
+        girls:       readRows(ss, 'girls',       ['id','name','nick','addr']),
+        places:      readRows(ss, 'places',      ['id','name','addr']),
+        depLocs:     readRows(ss, 'depLocs',     ['id','name','addr']),
+        schedHistory: readScheduleHistory(ss),
+        counters:    readCounters(ss),
+        memo:        readMemo(ss)
+      }});
+    }
+
+    const body = JSON.parse(e.parameter.data || '{}');
+    switch(action) {
+      case 'saveGirls':    writeRows(ss, 'girls', ['id','name','nick','addr'], body.payload); break;
+      case 'savePlaces':   writeRows(ss, 'places', ['id','name','addr'], body.payload); break;
+      case 'saveDepLocs':  writeRows(ss, 'depLocs', ['id','name','addr'], body.payload); break;
+      case 'saveSchedule':
+      case 'updateSchedule': saveScheduleEntry(ss, body.payload); break;
+      case 'deleteSchedule': deleteScheduleEntry(ss, body.id); break;
+      case 'saveCounters': writeCounters(ss, body.payload); break;
+      case 'saveMemo':     writeMemo(ss, body.memo); break;
+    }
+    return makeResponse({ok: true});
   } catch(err) {
     return makeResponse({ok: false, error: err.message});
   }
@@ -95,7 +112,7 @@ function readScheduleHistory(ss) {
     .map(function(row) {
       return {
         id:        Number(row[0]),
-        dateVal:   String(row[1]),
+        dateVal:   row[1] instanceof Date ? Utilities.formatDate(row[1], Session.getScriptTimeZone(), 'yyyy-MM-dd') : String(row[1]).replace(/\//g,'-').slice(0,10),
         dateLabel: String(row[2]),
         runs:      JSON.parse(row[3] || '[]'),
         shunTxt:   String(row[4]),
@@ -167,6 +184,18 @@ function readCounters(ss) {
     if (row[0]) defaults[String(row[0])] = Number(row[1]);
   });
   return defaults;
+}
+
+function readMemo(ss) {
+  const sheet = getOrCreateSheet(ss, 'memo');
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 1) return '';
+  return String(sheet.getRange(1, 1).getValue());
+}
+
+function writeMemo(ss, text) {
+  const sheet = getOrCreateSheet(ss, 'memo');
+  sheet.getRange(1, 1).setValue(text || '');
 }
 
 function writeCounters(ss, counters) {

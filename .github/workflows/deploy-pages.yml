@@ -24,6 +24,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Notify Discord Start
+        run: |
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\":\"🔄 SILDEのデプロイ開始...\"}"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -38,3 +44,9 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Notify Discord Complete
+        run: |
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\":\"✅ SILDEが更新されました！\\n${{ steps.deployment.outputs.page_url }}\"}"
