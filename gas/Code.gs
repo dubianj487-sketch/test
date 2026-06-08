@@ -28,7 +28,13 @@ function doGet(e) {
       case 'deleteSchedule': deleteScheduleEntry(ss, body.id); break;
       case 'saveCounters': writeCounters(ss, body.payload); break;
       case 'saveMemo':     writeMemo(ss, body.memo); break;
-      case 'updateBattery': writeBattery(body); break;
+      case 'updateBattery':
+        writeBattery({
+          user:     e.parameter.user,
+          level:    e.parameter.level,
+          charging: e.parameter.charging
+        });
+        break;
     }
     return makeResponse({ok: true});
   } catch(err) {
