@@ -38,10 +38,10 @@ body.font-shun .otab,body.font-shun .obox.boy{font-family:'Noto Sans JP',sans-se
 .font-toggle:active{transform:scale(.96)}
 .font-toggle .ft-icon{font-size:14px}
 
-.hdr{background:#CE95B0;padding:0 14px 7px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
-.hdr-moon{font-size:24px;animation:mf 4s ease-in-out infinite}
+.hdr{background:#CE95B0;padding:0 14px 7px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
+.hdr-moon{font-size:24px;line-height:1;animation:mf 4s ease-in-out infinite}
 @keyframes mf{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(5deg)}}
-.hdr-t{font-size:20px;color:#fde8e8;font-weight:700}
+.hdr-t{font-size:20px;color:#fde8e8;font-weight:700;line-height:1}
 .hdr-s{font-size:12px;color:rgba(253,220,220,.7);margin-top:2px}
 
 .bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#fff;border-top:2px solid var(--lav);display:flex;box-shadow:0 -4px 16px rgba(80,60,140,.08)}
