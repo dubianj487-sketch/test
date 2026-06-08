@@ -33,12 +33,13 @@ function doGet(e) {
       case 'saveCounters': writeCounters(ss, body.payload); break;
       case 'saveMemo':     writeMemo(ss, body.memo); break;
       case 'updateBattery':
+        const chRaw = e.parameter.charging;
         writeBattery({
           user:     e.parameter.user,
           level:    e.parameter.level,
-          charging: e.parameter.charging
+          charging: chRaw
         });
-        break;
+        return makeResponse({ok: true, debug: {charging_raw: chRaw, level_raw: e.parameter.level}});
     }
     return makeResponse({ok: true});
   } catch(err) {
