@@ -3,15 +3,30 @@ const SPREADSHEET_ID = '15wgBIMQNXmvPi52LeaSfGFk4lPfe0edpa0GzVt_TFS8';
 
 function doGet(e) {
   try {
+    const action = (e.parameter && e.parameter.action) || 'all';
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const data = {
-      girls:       readRows(ss, 'girls',       ['id','name','nick','addr']),
-      places:      readRows(ss, 'places',      ['id','name','addr']),
-      depLocs:     readRows(ss, 'depLocs',     ['id','name','addr']),
-      schedHistory: readScheduleHistory(ss),
-      counters:    readCounters(ss)
-    };
-    return makeResponse({ok: true, data: data});
+
+    if (action === 'all') {
+      return makeResponse({ok: true, data: {
+        girls:       readRows(ss, 'girls',       ['id','name','nick','addr']),
+        places:      readRows(ss, 'places',      ['id','name','addr']),
+        depLocs:     readRows(ss, 'depLocs',     ['id','name','addr']),
+        schedHistory: readScheduleHistory(ss),
+        counters:    readCounters(ss)
+      }});
+    }
+
+    const body = JSON.parse(e.parameter.data || '{}');
+    switch(action) {
+      case 'saveGirls':    writeRows(ss, 'girls', ['id','name','nick','addr'], body.payload); break;
+      case 'savePlaces':   writeRows(ss, 'places', ['id','name','addr'], body.payload); break;
+      case 'saveDepLocs':  writeRows(ss, 'depLocs', ['id','name','addr'], body.payload); break;
+      case 'saveSchedule':
+      case 'updateSchedule': saveScheduleEntry(ss, body.payload); break;
+      case 'deleteSchedule': deleteScheduleEntry(ss, body.id); break;
+      case 'saveCounters': writeCounters(ss, body.payload); break;
+    }
+    return makeResponse({ok: true});
   } catch(err) {
     return makeResponse({ok: false, error: err.message});
   }
