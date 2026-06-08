@@ -444,6 +444,16 @@ function saveCounters() {
 
   overlay.style.display = 'none';
   initApp();
+
+  setInterval(async function(){
+    try {
+      const res = await gasGet();
+      if (!res.ok) return;
+      schedHistory = res.data.schedHistory || schedHistory;
+      histCnt = (res.data.counters || {}).histCnt || histCnt;
+      if (document.getElementById('pg-hist').classList.contains('active')) renderHistPage();
+    } catch(e) {}
+  }, 30000);
 })();
 
 function initApp() {
