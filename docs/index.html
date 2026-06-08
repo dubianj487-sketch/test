@@ -156,8 +156,12 @@ input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
 .month-acc.open .month-acc-body{display:block}
 #pg-hist{overflow:hidden !important;flex-direction:column;padding:0 0 72px}
 #pg-hist.active{display:flex !important}
-#todayFixed{margin:0 -14px;padding:12px 14px 20px;position:sticky;top:0;z-index:10;background:linear-gradient(to bottom,#E5C1D4 calc(100% - 20px),transparent 100%)}
-#histScroll{flex:1;overflow-y:scroll;overscroll-behavior:contain;min-height:0;padding:0 14px}
+.hist-dots{display:flex;justify-content:center;gap:7px;padding:8px 0 4px;flex-shrink:0}
+.hist-dot{width:7px;height:7px;border-radius:50%;background:rgba(180,100,140,.25);transition:background .2s;cursor:pointer}
+.hist-dot.active{background:#c4608a}
+#histSlider{display:flex;flex:1;min-height:0;overflow-x:scroll;scroll-snap-type:x mandatory;scrollbar-width:none}
+#histSlider::-webkit-scrollbar{display:none}
+#histPageToday,#histPageMonths{min-width:100%;scroll-snap-align:start;overflow-y:scroll;overscroll-behavior:contain;padding:14px 14px 0}
 .memo-box{background:var(--pkp);border-radius:14px;padding:14px;margin:0;border:1.5px solid rgba(220,130,170,.2);flex-shrink:0;border-bottom-left-radius:0;border-bottom-right-radius:0}
 .memo-hdr{font-size:13px;font-weight:700;color:var(--txs);margin-bottom:8px}
 .memo-inp{width:100%;min-height:90px;border:1.5px solid rgba(220,130,170,.3);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;resize:vertical;background:#fff;color:var(--tx);outline:none}
@@ -300,9 +304,13 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 </div>
 
 <div class="pg active" id="pg-hist">
-  <div id="histScroll">
-    <div id="todayFixed"></div>
-    <div id="histContent" style="min-height:60vh"></div>
+  <div class="hist-dots">
+    <span class="hist-dot active" id="dot-today" onclick="slideTo(0)"></span>
+    <span class="hist-dot" id="dot-months" onclick="slideTo(1)"></span>
+  </div>
+  <div id="histSlider">
+    <div id="histPageToday"></div>
+    <div id="histPageMonths"><div id="histContent" style="min-height:60vh"></div></div>
   </div>
   <div class="memo-box">
     <div class="memo-hdr">📝 共有メモ</div>
@@ -500,9 +508,19 @@ function setPgHeight(){
   const h=document.querySelector('.hdr').offsetHeight;
   document.querySelectorAll('.pg').forEach(function(el){el.style.height=(window.innerHeight-h)+'px';});
 }
+function slideTo(idx){
+  var s=document.getElementById('histSlider');
+  s.scrollTo({left:idx*s.offsetWidth,behavior:'smooth'});
+}
 function initApp() {
   setPgHeight();
   window.addEventListener('resize',setPgHeight);
+  var sl=document.getElementById('histSlider');
+  sl.addEventListener('scroll',function(){
+    var m=this.scrollLeft>this.offsetWidth*0.5;
+    document.getElementById('dot-today').classList.toggle('active',!m);
+    document.getElementById('dot-months').classList.toggle('active',m);
+  });
   const t = new Date();
   document.getElementById('dateInp').value = fmtDV(t);
   addGirlRow();
@@ -940,12 +958,26 @@ function copyText(txt){
 }
 
 // ========== 履歴ページ ==========
+function buildRunsHtml(e){
+  let h='';
+  e.runs.forEach((run,ri)=>{
+    h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl">🚗 ${run.departLabel}</div>`;
+    run.stops.forEach((s,si)=>{
+      const dot=s.type==='pick'?'dot-pick':'dot-drop';
+      const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">店着</span>';
+      const minB=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
+      h+=`<div class="edit-time-row"><div class="tl-dot ${dot}"></div><input class="edit-time-inp" type="time" value="${s.time}" onchange="updateHistStop(${e.id},${ri},${si},this.value)"><span class="edit-time-name">${s.name}</span>${badge}${minB}</div>`;
+    });
+    h+=`</div>`;
+  });
+  return h;
+}
 function renderHistPage(){
   const c=document.getElementById('histContent');
-  const tf=document.getElementById('todayFixed');
+  const tp=document.getElementById('histPageToday');
   if(!schedHistory.length){
-    tf.innerHTML='';
-    c.innerHTML=`<div class="empty-hist"><div class="ei">📭</div><p>まだ保存されたスケジュールはないよ</p><p style="margin-top:6px;font-size:11px">スケジュールを生成して「保存」ボタンを押してね！</p></div>`;
+    tp.innerHTML=`<div class="empty-hist"><div class="ei">📭</div><p>まだ保存されたスケジュールはないよ</p><p style="margin-top:6px;font-size:11px">スケジュールを生成して「保存」ボタンを押してね！</p></div>`;
+    c.innerHTML='';
     return;
   }
   const today=todayVal();
@@ -953,17 +985,19 @@ function renderHistPage(){
   const others=schedHistory.filter(x=>x.dateVal!==today);
   let todayHtml=`<div class="today-banner"><div class="today-banner-label">📅 今日のスケジュール</div>`;
   if(todayEntry){
-    todayHtml+=`<div class="today-banner-date">${fmtDLFull(todayEntry.dateVal)}</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn bdk sm" style="flex:1" onclick="openHistDetail('${todayEntry.id}')">👀 詳細を見る</button>
-        <button class="btn bgr sm" style="flex:1" onclick="quickCopyBoy('${todayEntry.id}')">📤 ボーイ用コピー</button>
-      </div>`;
+    todayHtml+=`<div class="today-banner-date">${fmtDLFull(todayEntry.dateVal)}</div>`;
+    todayHtml+=buildRunsHtml(todayEntry);
+    todayHtml+=`<div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn bdk sm" style="flex:1" onclick="copyHistText(${todayEntry.id},'shun')">🌙 しゅん用コピー</button>
+      <button class="btn bgr sm" style="flex:1" onclick="copyHistText(${todayEntry.id},'boy')">📤 ボーイ用コピー</button>
+    </div>
+    <button class="btn bd sm" style="margin-top:8px;width:100%" onclick="deleteHist(${todayEntry.id})">🗑️ 削除</button>`;
   } else {
     todayHtml+=`<div class="today-banner-date" style="opacity:.7">登録なし</div>
       <div class="today-banner-empty">スケジュールタブで生成・保存してね</div>`;
   }
   todayHtml+=`</div>`;
-  tf.innerHTML=todayHtml;
+  tp.innerHTML=todayHtml;
   let html='';
   const monthMap={};
   others.forEach(e=>{
@@ -1015,25 +1049,7 @@ function openHistDetail(id){
   const e=schedHistory.find(x=>x.id==id);
   if(!e) return;
   document.getElementById('moHistTitle').textContent=`📅 ${fmtDLFull(e.dateVal)}`;
-  let html='';
-  e.runs.forEach((run,ri)=>{
-    html+=`<div class="hist-detail-run">
-      <div class="hist-detail-run-lbl">🚗 ${run.departLabel}</div>`;
-    run.stops.forEach((s,si)=>{
-      const dot=s.type==='pick'?'dot-pick':'dot-drop';
-      const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">店着</span>';
-      const minBadge=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
-      html+=`<div class="edit-time-row">
-        <div class="tl-dot ${dot}"></div>
-        <input class="edit-time-inp" type="time" value="${s.time}"
-          onchange="updateHistStop(${e.id},${ri},${si},this.value)">
-        <span class="edit-time-name">${s.name}</span>
-        ${badge}
-        ${minBadge}
-      </div>`;
-    });
-    html+=`</div>`;
-  });
+  let html=buildRunsHtml(e);
   html+=`<div style="display:flex;gap:8px;margin-top:12px">
     <button class="btn bdk" style="flex:1;margin-bottom:0" onclick="copyHistText(${e.id},'shun')">🌙 しゅん用コピー</button>
     <button class="btn bgr" style="flex:1;margin-bottom:0" onclick="copyHistText(${e.id},'boy')">📤 ボーイ用コピー</button>
