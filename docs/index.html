@@ -152,8 +152,8 @@ input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
 .month-acc.open .month-acc-body{display:block}
 #pg-hist{overflow:hidden !important;flex-direction:column;padding:0 0 72px}
 #pg-hist.active{display:flex !important}
-#todayFixed{padding:12px 14px 0;flex-shrink:0;position:relative;z-index:10;background:#E5C1D4}
-#histScroll{flex:1;overflow-y:scroll;overscroll-behavior:contain;min-height:0;padding:8px 14px 0}
+#todayFixed{padding:12px 14px 8px;position:sticky;top:0;z-index:10;background:#E5C1D4}
+#histScroll{flex:1;overflow-y:scroll;overscroll-behavior:contain;min-height:0;padding:0 14px}
 .memo-box{background:var(--pkp);border-radius:14px;padding:14px;margin:0;border:1.5px solid rgba(220,130,170,.2);flex-shrink:0;border-bottom-left-radius:0;border-bottom-right-radius:0}
 .memo-hdr{font-size:13px;font-weight:700;color:var(--txs);margin-bottom:8px}
 .memo-inp{width:100%;min-height:90px;border:1.5px solid rgba(220,130,170,.3);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;resize:vertical;background:#fff;color:var(--tx);outline:none}
@@ -296,8 +296,8 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 </div>
 
 <div class="pg active" id="pg-hist">
-  <div id="todayFixed"></div>
   <div id="histScroll">
+    <div id="todayFixed"></div>
     <div id="histContent" style="min-height:60vh"></div>
   </div>
   <div class="memo-box">
@@ -499,8 +499,6 @@ function setPgHeight(){
 function initApp() {
   setPgHeight();
   window.addEventListener('resize',setPgHeight);
-  var hs=document.getElementById('histScroll');
-  hs.addEventListener('scroll',function(){if(this.scrollTop<0)this.scrollTop=0;});
   const t = new Date();
   document.getElementById('dateInp').value = fmtDV(t);
   addGirlRow();
