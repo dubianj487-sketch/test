@@ -10,6 +10,21 @@ function doGet(e) {
       return makeResponse({ok: true, data: {battery: readBattery()}});
     }
 
+    if (action === 'geocode') {
+      const addr = (e.parameter.addr || '').trim();
+      if (!addr) return makeResponse({ok: false, error: 'no addr'});
+      try {
+        const result = Maps.newGeocoder().setLanguage('ja').geocode(addr);
+        if (result.status === 'OK' && result.results.length > 0) {
+          const loc = result.results[0].geometry.location;
+          return makeResponse({ok: true, data: {lat: loc.lat, lng: loc.lng}});
+        }
+        return makeResponse({ok: false, error: 'not found'});
+      } catch(err) {
+        return makeResponse({ok: false, error: err.message});
+      }
+    }
+
     if (action === 'all') {
       return makeResponse({ok: true, data: {
         girls:       readRows(ss, 'girls',       ['id','name','nick','addr']),

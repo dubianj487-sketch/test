@@ -1488,15 +1488,15 @@ async function _geocode(addr) {
   var cached = localStorage.getItem(k);
   if (cached) { try { return JSON.parse(cached); } catch(e){} }
 
-  // 郵便番号（〒xxx-xxxx or xxx-xxxx先頭）を除去してから検索
+  // 郵便番号を除去
   var q = addr.replace(/〒?\d{3}-?\d{4}\s*/g, '').trim() || addr;
 
   try {
-    var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=jp&q=' + encodeURIComponent(q);
-    var res = await fetch(url, {headers:{'Accept-Language':'ja,en'}});
+    var url = GAS_URL + '?action=geocode&addr=' + encodeURIComponent(q) + '&_=' + Date.now();
+    var res = await fetch(url);
     var data = await res.json();
-    if (data && data.length > 0) {
-      var pt = {lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon)};
+    if (data.ok) {
+      var pt = {lat: data.data.lat, lng: data.data.lng};
       localStorage.setItem(k, JSON.stringify(pt));
       return pt;
     }
@@ -1575,8 +1575,6 @@ async function initMap() {
   for (var i = 0; i < queue.length; i++) {
     // キャッシュ済みなら待機不要、未キャッシュなら1秒間隔でNominatim制限に従う
     var q = queue[i];
-    var cached = localStorage.getItem(_geocacheKey(q.addr));
-    if (!cached && i > 0) await new Promise(function(r){ setTimeout(r, 1100); });
     var pt = await _geocode(q.addr);
     var st = document.getElementById('mapGeoStatus');
     if (st) st.textContent = '📡 ジオコーディング中 ' + (i+1) + '/' + queue.length;
