@@ -11,6 +11,8 @@
 <meta name="supported-color-schemes" content="light">
 <title>🌙 SILDE</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Opti:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{color-scheme:light only}
@@ -78,6 +80,14 @@ body.font-shun .hist-dot.active{background:#2a5a8a}
 
 .pg{display:none;padding:14px 14px 56px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0;-webkit-overflow-scrolling:touch;background:#E5C1D4}
 .pg.active{display:block}
+#pg-map{padding:0;overflow:hidden;display:none;flex-direction:column}
+#pg-map.active{display:flex}
+#map-container{flex:1;min-height:0;width:100%}
+#map-container .leaflet-container{background:#1a2a40}
+.map-legend{padding:10px 14px 6px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.map-legend-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.map-marker{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.8)}
+.leaflet-div-icon{background:none!important;border:none!important}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 .card{background:var(--card);border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
@@ -377,6 +387,16 @@ body.font-shun #pg-hist{background:transparent}
   </div>
 </div>
 
+<div class="pg" id="pg-map">
+  <div class="map-legend" id="mapLegend">
+    <span class="map-legend-item">🏠 場所</span>
+    <span class="map-legend-item">👧 女の子</span>
+    <span class="map-legend-item">🚩 出発地</span>
+    <span class="map-legend-item">📍 しゅん（仮）</span>
+  </div>
+  <div id="map-container"></div>
+</div>
+
 <div class="pg" id="pg-master">
   <div class="card">
     <div class="ctitle">🚩 出発地マスター</div>
@@ -402,7 +422,8 @@ body.font-shun #pg-hist{background:transparent}
 
 <div class="bnav">
   <button class="nb active" id="nb-hist" onclick="switchPg('hist')"><span class="ni">📅</span>履歴</button>
-<button class="nb" id="nb-master" onclick="switchPg('master')"><span class="ni">📋</span>名簿・場所</button>
+  <button class="nb" id="nb-map" onclick="switchPg('map')"><span class="ni">🗺️</span>マップ</button>
+  <button class="nb" id="nb-master" onclick="switchPg('master')"><span class="ni">📋</span>名簿・場所</button>
 </div>
 
 <div class="mo" id="moDepLoc">
@@ -680,6 +701,7 @@ function switchPg(p){
   document.getElementById('pg-'+p).classList.add('active');
   document.getElementById('nb-'+p).classList.add('active');
   if(p==='hist') renderHistPage();
+  if(p==='map') initMap();
 }
 
 function openSchedModal(){
@@ -1438,6 +1460,112 @@ function toggleFont(){
     document.getElementById('ftLabel').textContent = 'しゅん';
   }
 })();
+
+// ========== マップ ==========
+var _mapObj = null;
+var _mapInited = false;
+
+function _geocacheKey(addr){ return 'geo_' + addr; }
+
+async function _geocode(addr) {
+  var k = _geocacheKey(addr);
+  var cached = localStorage.getItem(k);
+  if (cached) { try { return JSON.parse(cached); } catch(e){} }
+  try {
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr);
+    var res = await fetch(url, {headers:{'Accept-Language':'ja'}});
+    var data = await res.json();
+    if (data && data.length > 0) {
+      var pt = {lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon)};
+      localStorage.setItem(k, JSON.stringify(pt));
+      return pt;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function _divIcon(emoji, bg) {
+  return L.divIcon({
+    className: 'leaflet-div-icon',
+    html: '<div class="map-marker" style="background:' + bg + '">' + emoji + '</div>',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -14]
+  });
+}
+
+async function initMap() {
+  var container = document.getElementById('map-container');
+  if (!container) return;
+
+  // Fix height: pg-map is flex, so container fills remaining space
+  var pgMap = document.getElementById('pg-map');
+  var legendH = document.getElementById('mapLegend').offsetHeight || 44;
+  var navH = document.querySelector('.bnav').offsetHeight || 56;
+  var topH = pgMap.offsetTop || 0;
+  var safeTop = parseInt(getComputedStyle(document.body).paddingTop) || 0;
+  container.style.height = (window.innerHeight - safeTop - document.querySelector('.hdr').offsetHeight - legendH - navH) + 'px';
+
+  if (_mapInited) {
+    _mapObj && _mapObj.invalidateSize();
+    return;
+  }
+  _mapInited = true;
+
+  _mapObj = L.map('map-container', {
+    center: [34.6937, 135.5023],
+    zoom: 13,
+    zoomControl: true
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(_mapObj);
+
+  var bounds = [];
+
+  // しゅん仮位置（家）— Geolocation or fallback Osaka center
+  var shunLatLng = [34.6937, 135.5023];
+  try {
+    await new Promise(function(resolve) {
+      if (!navigator.geolocation) { resolve(); return; }
+      navigator.geolocation.getCurrentPosition(function(pos){
+        shunLatLng = [pos.coords.latitude, pos.coords.longitude];
+        resolve();
+      }, function(){ resolve(); }, {timeout:3000});
+    });
+  } catch(e) {}
+
+  var shunM = L.marker(shunLatLng, {icon: _divIcon('📍','#2a5a8a')})
+    .addTo(_mapObj)
+    .bindPopup('<b>しゅん（仮）</b>');
+  bounds.push(shunLatLng);
+
+  // Rate-limit Nominatim: 1 req/sec
+  var queue = [];
+  places.forEach(function(p){ if(p.addr) queue.push({item:p, emoji:'🏠', bg:'#e88fac', label:p.name}); });
+  girls.forEach(function(g){ if(g.addr) queue.push({item:g, emoji:'👧', bg:'#c478a8', label:g.name+(g.nick?'（'+g.nick+'）':'')}); });
+  depLocs.forEach(function(d){ if(d.addr) queue.push({item:d, emoji:'🚩', bg:'#6a9e8a', label:d.name}); });
+
+  for (var i = 0; i < queue.length; i++) {
+    if (i > 0) await new Promise(function(r){ setTimeout(r, 1100); });
+    var q = queue[i];
+    var pt = await _geocode(q.item.addr);
+    if (pt) {
+      L.marker([pt.lat, pt.lng], {icon: _divIcon(q.emoji, q.bg)})
+        .addTo(_mapObj)
+        .bindPopup('<b>' + q.label + '</b><br><small>' + q.item.addr + '</small>');
+      bounds.push([pt.lat, pt.lng]);
+    }
+  }
+
+  if (bounds.length > 1) {
+    _mapObj.fitBounds(bounds, {padding:[30,30]});
+  } else {
+    _mapObj.setView(shunLatLng, 13);
+  }
+}
 </script>
 </body>
 </html>
