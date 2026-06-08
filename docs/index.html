@@ -1465,14 +1465,34 @@ function toggleFont(){
 var _mapObj = null;
 var _mapLayer = null;
 
-function _geocacheKey(addr){ return 'geo_' + addr; }
+function _geocacheKey(addr){ return 'geo2_' + addr; }
+
+function _parseLatLng(s) {
+  // "35.123,135.456" or "35.123 135.456" or "(35.123,135.456)"
+  var m = s.replace(/[()]/g,'').match(/(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)/);
+  if (m) {
+    var a = parseFloat(m[1]), b = parseFloat(m[2]);
+    // 日本の緯度(24-46)・経度(122-154)かチェック
+    if (a >= 24 && a <= 46 && b >= 122 && b <= 154) return {lat:a, lng:b};
+    if (b >= 24 && b <= 46 && a >= 122 && a <= 154) return {lat:b, lng:a};
+  }
+  return null;
+}
 
 async function _geocode(addr) {
+  // 緯度経度形式なら直接返す
+  var direct = _parseLatLng(addr);
+  if (direct) return direct;
+
   var k = _geocacheKey(addr);
   var cached = localStorage.getItem(k);
   if (cached) { try { return JSON.parse(cached); } catch(e){} }
+
+  // 郵便番号（〒xxx-xxxx or xxx-xxxx先頭）を除去してから検索
+  var q = addr.replace(/〒?\d{3}-?\d{4}\s*/g, '').trim() || addr;
+
   try {
-    var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=jp&q=' + encodeURIComponent(addr);
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=jp&q=' + encodeURIComponent(q);
     var res = await fetch(url, {headers:{'Accept-Language':'ja,en'}});
     var data = await res.json();
     if (data && data.length > 0) {
@@ -1541,7 +1561,16 @@ async function initMap() {
   depLocs.forEach(function(d){ var a=String(d.addr||'').trim(); if(a) queue.push({addr:a, emoji:'🚩', bg:'#6a9e8a', label:d.name}); });
 
   var legend = document.getElementById('mapLegend');
-  if (queue.length > 0) legend.innerHTML += '<span id="mapGeoStatus" style="margin-left:auto;color:var(--txs);font-size:11px">📡 ジオコーディング中 0/' + queue.length + '</span>';
+  var oldSt = document.getElementById('mapGeoStatus');
+  if (oldSt) oldSt.remove();
+  var needGeo = queue.filter(function(q){ return !_parseLatLng(q.addr) && !localStorage.getItem(_geocacheKey(q.addr)); });
+  if (needGeo.length > 0) {
+    var stEl = document.createElement('span');
+    stEl.id = 'mapGeoStatus';
+    stEl.style.cssText = 'margin-left:auto;color:var(--txs);font-size:11px';
+    stEl.textContent = '📡 住所変換中 0/' + queue.length;
+    legend.appendChild(stEl);
+  }
 
   for (var i = 0; i < queue.length; i++) {
     // キャッシュ済みなら待機不要、未キャッシュなら1秒間隔でNominatim制限に従う
