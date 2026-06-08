@@ -499,6 +499,8 @@ function setPgHeight(){
 function initApp() {
   setPgHeight();
   window.addEventListener('resize',setPgHeight);
+  var hs=document.getElementById('histScroll');
+  hs.addEventListener('scroll',function(){if(this.scrollTop<0)this.scrollTop=0;});
   const t = new Date();
   document.getElementById('dateInp').value = fmtDV(t);
   addGirlRow();
