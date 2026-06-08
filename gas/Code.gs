@@ -214,8 +214,11 @@ function readBattery() {
 function writeBattery(data) {
   const props = PropertiesService.getScriptProperties();
   const bat = JSON.parse(props.getProperty('battery') || '{}');
+  let lv = parseFloat(String(data.level || '0').replace(/[^\d.]/g, '')) || 0;
+  if (lv > 0 && lv <= 1) lv = Math.round(lv * 100); // 0.28 → 28
+  else lv = Math.round(lv);                           // 28% or 28 → 28
   bat[data.user] = {
-    level: Number(data.level) || 0,
+    level: lv,
     charging: data.charging === true || data.charging === 'true',
     at: new Date().toISOString()
   };
