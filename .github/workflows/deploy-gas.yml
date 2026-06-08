@@ -28,7 +28,7 @@ jobs:
 
       - name: Write clasp credentials
         run: |
-          CREDS="${{ secrets.CLASP_CREDENTIALS }}"
+          CREDS="${{ secrets.CLASPRC_JSON_BASE64 }}"
           if [ -z "$CREDS" ]; then
             echo "⚠️ CLASP_CREDENTIALS が未設定のため GAS デプロイをスキップします"
             echo "SKIP_GAS=true" >> $GITHUB_ENV
