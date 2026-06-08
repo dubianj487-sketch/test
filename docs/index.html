@@ -204,12 +204,6 @@ input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
 .memo-hdr{font-size:13px;font-weight:700;color:var(--txs);margin-bottom:8px}
 .memo-inp{width:100%;min-height:90px;border:none;border-radius:10px;padding:10px;font-size:14px;font-family:inherit;resize:vertical;background:#fff;color:var(--tx);outline:none}
 
-.line-notif{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-.line-notif-sender{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:3px;display:flex;align-items:center;gap:6px}
-.line-notif-user{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:var(--pul);color:var(--teal)}
-.line-notif-msg{font-size:13px;color:var(--txs);line-height:1.5}
-.line-notif-time{font-size:11px;color:#aaa8c0;margin-top:5px}
-.line-empty{text-align:center;padding:40px 14px;color:#aaa8c0;font-size:13px}
 .hist-item{background:var(--pkp);border-radius:13px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .15s}
 .hist-item:active{transform:scale(.98);background:var(--pkl)}
 .hist-item-hdr{display:flex;align-items:center;justify-content:space-between}
@@ -383,8 +377,6 @@ body.font-shun #pg-hist{background:transparent}
   </div>
 </div>
 
-<div class="pg" id="pg-line"><div id="lineNotifList"></div></div>
-
 <div class="pg" id="pg-master">
   <div class="card">
     <div class="ctitle">🚩 出発地マスター</div>
@@ -410,8 +402,7 @@ body.font-shun #pg-hist{background:transparent}
 
 <div class="bnav">
   <button class="nb active" id="nb-hist" onclick="switchPg('hist')"><span class="ni">📅</span>履歴</button>
-  <button class="nb" id="nb-line" onclick="switchPg('line')"><span class="ni">💬</span>LINE</button>
-  <button class="nb" id="nb-master" onclick="switchPg('master')"><span class="ni">📋</span>名簿・場所</button>
+<button class="nb" id="nb-master" onclick="switchPg('master')"><span class="ni">📋</span>名簿・場所</button>
 </div>
 
 <div class="mo" id="moDepLoc">
@@ -490,7 +481,6 @@ let builtRuns = [];
 let outShunTxt='', outBoyTxt='', outTab='shun';
 let currentBuiltDate='', currentBuiltDateLabel='';
 let batteryData={};
-let lineNotifs=[];
 
 // ========== GAS通信 ==========
 async function gasGet() {
@@ -545,8 +535,7 @@ function onMemoInput(){
       pCnt    = c.pCnt    || 20;
       histCnt = c.histCnt || 0;
       memoText = res.data.memo || '';
-      batteryData  = res.data.battery    || {};
-      lineNotifs   = res.data.lineNotifs || [];
+      batteryData = res.data.battery || {};
     }
   } catch(e) {
     console.error('GAS load failed:', e);
@@ -691,7 +680,6 @@ function switchPg(p){
   document.getElementById('pg-'+p).classList.add('active');
   document.getElementById('nb-'+p).classList.add('active');
   if(p==='hist') renderHistPage();
-  if(p==='line') renderLinePage();
 }
 
 function openSchedModal(){
@@ -1110,31 +1098,6 @@ function buildRunsHtml(e){
     h+=`</div>`;
   });
   return h;
-}
-function fmtAgo(at){
-  const s=Math.floor((Date.now()-new Date(at).getTime())/1000);
-  return s<60?'今さっき':s<3600?Math.floor(s/60)+'分前':s<86400?Math.floor(s/3600)+'時間前':Math.floor(s/86400)+'日前';
-}
-function renderLinePage(){
-  const el=document.getElementById('lineNotifList');
-  if(!el)return;
-  if(!lineNotifs.length){
-    el.innerHTML='<div class="line-empty">📭 LINEの通知はまだないよ</div>';
-    return;
-  }
-  el.innerHTML=lineNotifs.map(n=>{
-    const userLabel=n.user==='shun'?'しゅん':'ひーちゃん';
-    const userColor=n.user==='shun'?'background:#dce8f5;color:#2a5a8a':'background:var(--pul);color:var(--teal)';
-    const noPreview=!n.message||n.message.trim()==='';
-    return `<div class="line-notif">
-      <div class="line-notif-sender">
-        <span>${n.sender||'不明'}</span>
-        <span class="line-notif-user" style="${userColor}">${userLabel}</span>
-      </div>
-      <div class="line-notif-msg">${noPreview?'<span style="color:#ccc;font-style:italic">🔕 プレビューがオフです</span>':n.message}</div>
-      <div class="line-notif-time">${fmtAgo(n.at)}</div>
-    </div>`;
-  }).join('');
 }
 function renderBatteryCard(){
   const users=[{key:'hee',label:'ひーちゃん',icon:'🌸'},{key:'shun',label:'しゅん',icon:'🌙'}];
