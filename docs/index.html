@@ -1084,16 +1084,17 @@ function renderBatteryCard(){
     const d=batteryData[u.key];
     if(!d)return `<div class="battery-user"><div class="battery-name">${u.icon} ${u.label}</div><div class="battery-charge" style="font-size:11px;color:#ccc">データなし</div></div>`;
     const lv=Math.min(100,Math.max(0,Number(d.level)||0));
-    const color=lv>=50?'#4caf50':lv>=20?'#ff9800':'#ef4444';
+    const isCharging=d.charging===true||d.charging==='true';
+    const color=isCharging?'#30d158':lv>=50?'#4caf50':lv>=20?'#ff9800':'#ef4444';
     const ago=(function(){const s=Math.floor((Date.now()-new Date(d.at).getTime())/1000);return s<60?'今さっき':s<3600?Math.floor(s/60)+'分前':Math.floor(s/3600)+'時間前';})();
     return `<div class="battery-user">
       <div>
         <div class="battery-name">${u.icon} ${u.label}</div>
-        <div class="battery-charge">${d.charging?'⚡️ 充電中':'　'} ${ago}</div>
+        <div class="battery-charge">${isCharging?'⚡️ 充電中':ago}</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px">
         <div class="battery-wrap"><div class="battery-fill" style="width:${lv}%;background:${color}"></div></div>
-        <div class="battery-pct">${lv}<span style="font-size:11px">%</span></div>
+        <div class="battery-pct" style="color:${isCharging?'#30d158':'inherit'}">${lv}<span style="font-size:11px">%</span></div>
       </div>
     </div>`;
   });
