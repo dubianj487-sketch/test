@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
 <title>🌙 SILDE</title>
@@ -19,8 +19,8 @@ html{-webkit-color-scheme:light;color-scheme:light}
   --sh:0 4px 20px rgba(200,100,140,.12);
   --gold:#e88fac;--teal:#c4608a;
 }
-body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#E5C1D4 !important;background-color:#E5C1D4 !important;min-height:100vh;color:var(--tx) !important;padding-bottom:72px}
-html{background:#E5C1D4 !important;background-color:#E5C1D4 !important}
+body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#E5C1D4 !important;background-color:#E5C1D4 !important;min-height:100vh;color:var(--tx) !important;padding-bottom:72px;overscroll-behavior:none;touch-action:manipulation}
+html{background:#E5C1D4 !important;background-color:#E5C1D4 !important;overscroll-behavior:none}
 /* ===== フォント切り替え ===== */
 body.font-shun{--app-font:'Noto Sans JP'}
 body.font-shun .auto-dep-time,body.font-shun .shift-stepper-time,
@@ -150,6 +150,9 @@ input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
 .month-acc.open .month-acc-arr{transform:rotate(180deg)}
 .month-acc-body{display:none;padding:0 12px 12px}
 .month-acc.open .month-acc-body{display:block}
+.memo-box{background:var(--pkp);border-radius:14px;padding:14px;margin:16px 0 8px;border:1.5px solid rgba(220,130,170,.2)}
+.memo-hdr{font-size:13px;font-weight:700;color:var(--txs);margin-bottom:8px}
+.memo-inp{width:100%;min-height:90px;border:1.5px solid rgba(220,130,170,.3);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;resize:vertical;background:#fff;color:var(--tx);outline:none}
 
 .hist-item{background:var(--pkp);border-radius:13px;padding:12px 14px;margin-bottom:8px;border:1.5px solid rgba(220,130,170,.15);cursor:pointer;transition:all .15s}
 .hist-item:active{transform:scale(.98);background:var(--pkl)}
@@ -290,6 +293,10 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 
 <div class="pg active" id="pg-hist">
   <div id="histContent"></div>
+  <div class="memo-box">
+    <div class="memo-hdr">📝 共有メモ</div>
+    <textarea id="memoInp" class="memo-inp" oninput="onMemoInput()" placeholder="ここに共有メモを入力..."></textarea>
+  </div>
 </div>
 
 <div class="pg" id="pg-master">
@@ -381,6 +388,7 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxeJasg0xdLQSAw163Cs1KjBi1gNyvn5Ss6t3RfG6eU45bu0nyBGVJRz99wHVllW-DK/exec';
 
 // ========== 状態変数 ==========
+let memoText = '', memoTimer = null;
 let depLocs = [];
 let girls = [];
 let places = [];
@@ -414,6 +422,13 @@ function gasPost(data) {
 function saveCounters() {
   gasPost({action:'saveCounters', payload:{dCnt:dCnt,gCnt:gCnt,pCnt:pCnt,histCnt:histCnt}});
 }
+function onMemoInput(){
+  clearTimeout(memoTimer);
+  memoTimer = setTimeout(function(){
+    memoText = document.getElementById('memoInp').value;
+    gasPost({action:'saveMemo', memo: memoText});
+  }, 1500);
+}
 
 // ========== 起動処理（非同期） ==========
 (async function(){
@@ -440,6 +455,7 @@ function saveCounters() {
       gCnt    = c.gCnt    || 20;
       pCnt    = c.pCnt    || 20;
       histCnt = c.histCnt || 0;
+      memoText = res.data.memo || '';
     }
   } catch(e) {
     console.error('GAS load failed:', e);
@@ -448,6 +464,7 @@ function saveCounters() {
 
   overlay.style.display = 'none';
   initApp();
+  document.getElementById('memoInp').value = memoText;
 
   setInterval(async function(){
     try {
@@ -457,6 +474,12 @@ function saveCounters() {
       schedHistory.forEach(function(e){ rebuildHistTexts(e); });
       histCnt = (res.data.counters || {}).histCnt || histCnt;
       if (document.getElementById('pg-hist').classList.contains('active')) renderHistPage();
+      const newMemo = res.data.memo || '';
+      if (newMemo !== memoText) {
+        memoText = newMemo;
+        const inp = document.getElementById('memoInp');
+        if (document.activeElement !== inp) inp.value = newMemo;
+      }
     } catch(e) {}
   }, 10000);
 })();

@@ -12,7 +12,8 @@ function doGet(e) {
         places:      readRows(ss, 'places',      ['id','name','addr']),
         depLocs:     readRows(ss, 'depLocs',     ['id','name','addr']),
         schedHistory: readScheduleHistory(ss),
-        counters:    readCounters(ss)
+        counters:    readCounters(ss),
+        memo:        readMemo(ss)
       }});
     }
 
@@ -25,6 +26,7 @@ function doGet(e) {
       case 'updateSchedule': saveScheduleEntry(ss, body.payload); break;
       case 'deleteSchedule': deleteScheduleEntry(ss, body.id); break;
       case 'saveCounters': writeCounters(ss, body.payload); break;
+      case 'saveMemo':     writeMemo(ss, body.memo); break;
     }
     return makeResponse({ok: true});
   } catch(err) {
@@ -182,6 +184,18 @@ function readCounters(ss) {
     if (row[0]) defaults[String(row[0])] = Number(row[1]);
   });
   return defaults;
+}
+
+function readMemo(ss) {
+  const sheet = getOrCreateSheet(ss, 'memo');
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 1) return '';
+  return String(sheet.getRange(1, 1).getValue());
+}
+
+function writeMemo(ss, text) {
+  const sheet = getOrCreateSheet(ss, 'memo');
+  sheet.getRange(1, 1).setValue(text || '');
 }
 
 function writeCounters(ss, counters) {
