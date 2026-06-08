@@ -403,8 +403,11 @@ async function gasGet() {
 }
 
 function gasPost(data) {
-  if (!GAS_URL || GAS_URL === 'https://script.google.com/macros/s/AKfycbxeJasg0xdLQSAw163Cs1KjBi1gNyvn5Ss6t3RfG6eU45bu0nyBGVJRz99wHVllW-DK/exec') return;
-  fetch(GAS_URL, {method:'POST', mode:'no-cors', body:JSON.stringify(data)})
+  if (!GAS_URL || GAS_URL.startsWith('YOUR')) return;
+  const d = JSON.parse(JSON.stringify(data));
+  if (d.payload) { delete d.payload.shunTxt; delete d.payload.boyTxt; }
+  const action = d.action; delete d.action;
+  fetch(GAS_URL + '?action=' + action + '&data=' + encodeURIComponent(JSON.stringify(d)), {mode:'no-cors'})
     .catch(function(e) { console.warn('GAS save failed:', e); });
 }
 
@@ -416,7 +419,7 @@ function saveCounters() {
 (async function(){
   const overlay = document.getElementById('loadingOverlay');
 
-  if (!GAS_URL || GAS_URL === 'https://script.google.com/macros/s/AKfycbxeJasg0xdLQSAw163Cs1KjBi1gNyvn5Ss6t3RfG6eU45bu0nyBGVJRz99wHVllW-DK/exec') {
+  if (!GAS_URL || GAS_URL.startsWith('YOUR')) {
     overlay.querySelector('.loading-text').textContent = '⚠️ GAS URLが未設定です';
     overlay.querySelector('.loading-sub').textContent = 'docs/index.html の GAS_URL を設定してください';
     overlay.querySelector('.loading-spinner').style.display = 'none';
@@ -431,6 +434,7 @@ function saveCounters() {
       places       = res.data.places       || [];
       depLocs      = res.data.depLocs      || [];
       schedHistory = res.data.schedHistory || [];
+      schedHistory.forEach(function(e){ rebuildHistTexts(e); });
       const c      = res.data.counters     || {};
       dCnt    = c.dCnt    || 20;
       gCnt    = c.gCnt    || 20;
@@ -450,6 +454,7 @@ function saveCounters() {
       const res = await gasGet();
       if (!res.ok) return;
       schedHistory = res.data.schedHistory || schedHistory;
+      schedHistory.forEach(function(e){ rebuildHistTexts(e); });
       histCnt = (res.data.counters || {}).histCnt || histCnt;
       if (document.getElementById('pg-hist').classList.contains('active')) renderHistPage();
     } catch(e) {}

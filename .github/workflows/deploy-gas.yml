@@ -74,8 +74,7 @@ jobs:
           echo "✅ Web App URL: $WEB_APP_URL"
 
           # docs/index.html の GAS_URL を更新
-          sed -i "s|YOUR_GAS_URL_HERE|${WEB_APP_URL}|g" docs/index.html
-          sed -i "s|https://script\.google\.com/macros/s/[A-Za-z0-9_-]*/exec|${WEB_APP_URL}|g" docs/index.html
+          sed -i "s|const GAS_URL = '.*'|const GAS_URL = '${WEB_APP_URL}'|g" docs/index.html
 
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
