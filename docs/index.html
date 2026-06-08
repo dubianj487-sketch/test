@@ -213,7 +213,7 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 .loading-text{font-size:15px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
 .loading-sub{font-size:12px;opacity:.75;margin-top:6px;font-family:'Zen Maru Gothic',sans-serif}
 @media (min-width: 768px) {
-  .hdr{position:relative;top:auto}
+  .hdr{position:relative;top:auto;padding-top:7px}
   .pg{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
   #histPageToday,#histPageMonths{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
   .bnav{padding-left:max(0px,calc(50% - 300px));padding-right:max(0px,calc(50% - 300px))}
@@ -221,6 +221,7 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 }
 @media (display-mode: standalone) {
   body{padding-top:max(env(safe-area-inset-top),7px)}
+  .hdr{padding-top:7px}
   .bnav{padding-bottom:env(safe-area-inset-bottom)}
   .pg{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
   #pg-hist{padding:0 0 calc(52px + env(safe-area-inset-bottom))}
