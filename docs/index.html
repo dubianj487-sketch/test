@@ -26,14 +26,14 @@ html{-webkit-color-scheme:light;color-scheme:light}
 body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#CE95B0 !important;background-color:#CE95B0 !important;height:100dvh;overflow:hidden;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation;padding-top:env(safe-area-inset-top)}
 html{background:#CE95B0 !important;background-color:#CE95B0 !important;overscroll-behavior:none;height:100dvh}
 /* ===== フォント切り替え ===== */
-body.font-shun{--app-font:'Noto Sans JP'}
+body.font-shun{--app-font:-apple-system,BlinkMacSystemFont,'Helvetica Neue'}
 body.font-shun .auto-dep-time,body.font-shun .shift-stepper-time,
 body.font-shun .tl-time,body.font-shun .today-banner-date,
 body.font-shun .today-banner::before,body.font-shun .hist-item-date,
-body.font-shun .hist-detail-date{font-family:'Noto Sans JP',sans-serif!important}
+body.font-shun .hist-detail-date{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif!important}
 body.font-shun .nb,body.font-shun input,body.font-shun select,
 body.font-shun .btn,body.font-shun .bmap,body.font-shun .dep-tab,
-body.font-shun .otab,body.font-shun .obox.boy{font-family:'Noto Sans JP',sans-serif!important}
+body.font-shun .otab,body.font-shun .obox.boy{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif!important}
 /* ===== しゅんくんテーマ カラー ===== */
 body.font-shun{
   --pk:#5a8ab5;--pkl:#dce8f5;--pkp:#eef4fa;
@@ -93,7 +93,7 @@ input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
 .bp{background:#CE95B0;color:#fff;box-shadow:0 4px 14px rgba(180,100,140,.3)}
 .bg{background:var(--pul);color:var(--teal);border:2px solid var(--lav)}
 .bo{background:#fff;color:var(--pk);border:2px dashed var(--pk)}
-.bd{background:#fee2e2;color:#ef4444;border:2px solid #fca5a5}
+.bd{background:#fee2e2;color:#ef4444}
 .bgr{background:linear-gradient(135deg,#6a9e8a,#4a8070);color:#fff}
 .bdk{background:var(--night);color:#fde8e8}
 .bsave{background:linear-gradient(135deg,#e88fac,#c4608a);color:#fff;box-shadow:0 4px 14px rgba(200,100,140,.3)}
