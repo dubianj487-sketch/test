@@ -330,6 +330,8 @@ body.font-shun #pg-hist{background:transparent}
       <div id="dep-manual-area" style="display:none">
         <label>出発地名</label>
         <input type="text" id="depManualName" placeholder="○○カフェ、友達の家など" oninput="onDepChange()" style="margin-bottom:10px">
+        <label>出発地住所（任意・ルート計算に使用）</label>
+        <input type="text" id="depManualAddr" placeholder="大阪市北区梅田1-1-1など" style="margin-bottom:10px">
         <label>出発時刻（手動）</label>
         <input type="time" id="depManualTime" value="18:30" onchange="onDepChange()" style="margin-bottom:0">
       </div>
@@ -735,6 +737,15 @@ function getDepName(){
   const d=depLocs.find(x=>x.id==id);
   return d?d.name:'出発地';
 }
+function getDepAddr(){
+  if(depMode==='manual'){
+    const el=document.getElementById('depManualAddr');
+    return el?el.value.trim():'';
+  }
+  const id=document.getElementById('depLocSel').value;
+  const d=depLocs.find(x=>x.id==id);
+  return d?String(d.addr||'').trim():'';
+}
 
 function calcFirstRunDepartTime(){
   const groups=getGroups();
@@ -857,11 +868,15 @@ function renderGroupMinInputs(){
   header.textContent='🗺 区間ごとの移動時間';
   section.appendChild(header);
   const depName=getDepName();
+  const depAddr=getDepAddr();
+  const storeAddr=String((places[0]||{}).addr||'').trim();
+  const pendingCalcs=[];
   sortedTimes.forEach((shiftTime,gi)=>{
     const group=groups[shiftTime];
     const isFirst=gi===0;
     const startLabel=isFirst?depName:getStoreName();
-    const segs=buildSegments(group,isFirst,startLabel);
+    const startAddr=isFirst?depAddr:storeAddr;
+    const segs=buildSegments(group,isFirst,startLabel,startAddr);
     const refRow=group[0];
     const wrap=document.createElement('div');
     wrap.style.cssText='background:#fef0f5;border-radius:14px;padding:12px 14px;margin-bottom:10px;border:1.5px solid var(--lav)';
@@ -876,25 +891,35 @@ function renderGroupMinInputs(){
             oninput="onSegMin(${refRow.uid},'${seg.key}',this.value)">
           <span>分</span>
           <button class="bmap" id="bmapbtn_${refRow.uid}_${seg.key}"
-            onclick="mockMapCalc(${refRow.uid},'${seg.key}','${seg.from.replace(/'/g,'').replace(/"/g,'')}','${seg.to.replace(/'/g,'').replace(/"/g,'')}')">🗺 自動</button>
+            data-from-addr="${encodeURIComponent(seg.fromAddr)}"
+            data-to-addr="${encodeURIComponent(seg.toAddr)}"
+            data-from-name="${encodeURIComponent(seg.from)}"
+            data-to-name="${encodeURIComponent(seg.to)}"
+            onclick="realMapCalc(${refRow.uid},'${seg.key}',this)">🗺 自動</button>
         </div>
       `;
     });
     wrap.innerHTML=html;
     section.appendChild(wrap);
-    autoCalcEmptySegs(refRow.uid, segs, null, null);
+    pendingCalcs.push({uid:refRow.uid, segs});
   });
   c.appendChild(section);
+  pendingCalcs.forEach(function(p){ autoCalcEmptySegs(p.uid, p.segs); });
 }
 
-function buildSegments(group, isFirstRun, startLabel){
+function buildSegments(group, isFirstRun, startLabel, startAddr){
   const segs=[];
   const store=getStoreName();
-  segs.push({key:'start_to_0', from:startLabel, to:getGirlName(group[0])});
+  const storeAddr=String((places[0]||{}).addr||'').trim();
+  const ga=function(row){const g=girls.find(x=>x.id==row.girlId);return g?String(g.addr||'').trim():'';};
+  segs.push({key:'start_to_0', from:startLabel, to:getGirlName(group[0]),
+    fromAddr:startAddr||'', toAddr:ga(group[0])});
   for(let i=0;i<group.length-1;i++){
-    segs.push({key:`${i}_to_${i+1}`, from:getGirlName(group[i]), to:getGirlName(group[i+1])});
+    segs.push({key:`${i}_to_${i+1}`, from:getGirlName(group[i]), to:getGirlName(group[i+1]),
+      fromAddr:ga(group[i]), toAddr:ga(group[i+1])});
   }
-  segs.push({key:`${group.length-1}_to_store`, from:getGirlName(group[group.length-1]), to:store});
+  segs.push({key:`${group.length-1}_to_store`, from:getGirlName(group[group.length-1]), to:store,
+    fromAddr:ga(group[group.length-1]), toAddr:storeAddr});
   return segs;
 }
 
@@ -904,26 +929,47 @@ function onSegMin(refUid, key, val){
   updateAutoDepDisplay();
 }
 
-function mockMapCalc(refUid, key, from, to, silent){
-  const btnId=`bmapbtn_${refUid}_${key}`;
-  const btn=document.getElementById(btnId);
+async function realMapCalc(refUid, key, btn, silent){
+  if(!btn) btn=document.getElementById(`bmapbtn_${refUid}_${key}`);
   if(btn){btn.classList.add('calculating');btn.textContent='⏳';}
-  setTimeout(()=>{
-    const rawMin=5+Math.floor(Math.random()*41);
-    const min=ceil5(rawMin);
-    onSegMin(refUid, key, String(min));
-    const inp=document.getElementById(`seginp_${refUid}_${key}`);
-    if(inp) inp.value=min;
+  const fromAddr=btn?decodeURIComponent(btn.dataset.fromAddr||''):'';
+  const toAddr=btn?decodeURIComponent(btn.dataset.toAddr||''):'';
+  const fromName=btn?decodeURIComponent(btn.dataset.fromName||''):'?';
+  const toName=btn?decodeURIComponent(btn.dataset.toName||''):'?';
+  try{
+    if(!fromAddr||!toAddr){
+      if(!silent)showToast(`⚠️ 住所未登録\n${fromName}→${toName}`);
+      return;
+    }
+    const [fp,tp]=await Promise.all([_geocode(fromAddr),_geocode(toAddr)]);
+    if(!fp||!tp){
+      if(!silent)showToast(`⚠️ 座標取得失敗\n${fromName}→${toName}`);
+      return;
+    }
+    const res=await fetch(`https://router.project-osrm.org/route/v1/driving/${fp.lng},${fp.lat};${tp.lng},${tp.lat}?overview=false`);
+    const data=await res.json();
+    if(data.code==='Ok'&&data.routes.length){
+      const min=ceil5(Math.ceil(data.routes[0].duration/60));
+      onSegMin(refUid,key,String(min));
+      const inp=document.getElementById(`seginp_${refUid}_${key}`);
+      if(inp)inp.value=min;
+      if(!silent)showToast(`🗺 ${fromName}→${toName}: ${min}分`);
+    }else{
+      if(!silent)showToast(`⚠️ ルート取得失敗\n${fromName}→${toName}`);
+    }
+  }catch(e){
+    if(!silent)showToast(`⚠️ 計算エラー\n${fromName}→${toName}`);
+  }finally{
     if(btn){btn.classList.remove('calculating');btn.textContent='🗺 自動';}
-    if(!silent) showToast(`🗺 ${from}→${to}: ${min}分`);
-  }, 700+Math.random()*600);
+  }
 }
 
-function autoCalcEmptySegs(refUid, segs, from, to){
-  segs.forEach(seg=>{
+function autoCalcEmptySegs(refUid, segs){
+  segs.forEach(function(seg){
     const r=girlRows.find(x=>x.uid==refUid);
-    if(r && !r.mins[seg.key]){
-      mockMapCalc(refUid, seg.key, seg.from, seg.to, true);
+    if(r&&!r.mins[seg.key]){
+      const btn=document.getElementById(`bmapbtn_${refUid}_${seg.key}`);
+      if(btn) realMapCalc(refUid,seg.key,btn,true);
     }
   });
 }
