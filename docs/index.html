@@ -213,7 +213,11 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
 .loading-text{font-size:15px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
 .loading-sub{font-size:12px;opacity:.75;margin-top:6px;font-family:'Zen Maru Gothic',sans-serif}
 @media (min-width: 768px) {
+  html{background:#b87aa8 !important}
+  body{max-width:680px;margin:0 auto;box-shadow:0 0 60px rgba(100,40,80,.25)}
   .hdr{position:relative;top:auto}
+  .bnav{width:680px;left:50%;transform:translateX(-50%);right:auto}
+  .fab{right:calc(50vw - 326px)}
 }
 @media (display-mode: standalone) {
   body{padding-top:max(env(safe-area-inset-top),7px)}
