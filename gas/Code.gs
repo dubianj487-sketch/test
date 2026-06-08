@@ -223,7 +223,7 @@ function writeBattery(data) {
   else lv = Math.round(lv);                           // 28% or 28 → 28
   bat[data.user] = {
     level: lv,
-    charging: data.charging === true || data.charging === 'true',
+    charging: ['true','1','yes','はい'].includes(String(data.charging||'').toLowerCase()) || data.charging === true,
     at: new Date().toISOString()
   };
   props.setProperty('battery', JSON.stringify(bat));
