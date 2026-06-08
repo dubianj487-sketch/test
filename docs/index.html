@@ -188,7 +188,7 @@ input:disabled{background:#f8f8f8;color:#9ca3af;border-color:#e5e7eb}
 #histSlider{display:flex;flex:1;min-height:0;overflow-x:scroll;scroll-snap-type:x mandatory;scrollbar-width:none}
 #histSlider::-webkit-scrollbar{display:none}
 #histPageToday,#histPageMonths{min-width:100%;scroll-snap-align:start;overflow-y:scroll;overscroll-behavior:contain;padding:14px 14px 160px}
-.memo-box{background:var(--pkp);border-radius:14px 14px 0 0;padding:0 14px 14px;border:1.5px solid rgba(220,130,170,.2);border-bottom:none;position:absolute;bottom:0;left:0;right:0;z-index:20;transition:transform 0.4s cubic-bezier(0.32,0.72,0,1)}
+.memo-box{background:var(--pkp);border-radius:14px 14px 0 0;padding:0 14px 14px;border:1.5px solid rgba(220,130,170,.2);border-bottom:none;position:fixed;bottom:56px;left:0;right:0;z-index:201;transition:transform 0.4s cubic-bezier(0.32,0.72,0,1)}
 .memo-handle{display:flex;justify-content:center;padding:8px 0 4px;cursor:pointer;touch-action:none}
 .memo-handle-bar{width:40px;height:4px;border-radius:2px;background:rgba(180,100,140,.3)}
 .memo-hdr{font-size:13px;font-weight:700;color:var(--txs);margin-bottom:8px}
@@ -243,12 +243,13 @@ hr.dv{border:none;border-top:2px dashed var(--lav);margin:12px 0}
   .pg{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
   #histPageToday,#histPageMonths{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
   .bnav{padding-left:max(0px,calc(50% - 300px));padding-right:max(0px,calc(50% - 300px))}
-  .memo-box{position:fixed;bottom:56px;left:max(0px,calc(50% - 300px));right:max(0px,calc(50% - 300px))}
+  .memo-box{left:max(0px,calc(50% - 300px));right:max(0px,calc(50% - 300px))}
 }
 @media (display-mode: standalone) {
   body{padding-top:max(env(safe-area-inset-top),7px)}
   .hdr{padding-top:7px}
   .bnav{padding-bottom:env(safe-area-inset-bottom)}
+  .memo-box{bottom:calc(56px + env(safe-area-inset-bottom))}
   .pg{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
   #pg-hist{padding:0 0 calc(52px + env(safe-area-inset-bottom))}
 }
