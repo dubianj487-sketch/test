@@ -44,7 +44,8 @@ body.font-shun{
   --gold:#5a8ab5;--teal:#2a5a8a;
   background:#1e3050 !important;background-color:#1e3050 !important
 }
-body.font-shun .pg{background:#ebebeb}
+body.font-shun .pg{background:#c8c8c8}
+body.font-shun .loading-overlay{background:rgba(30,48,80,.92)}
 body.font-shun .hdr{background:#1e3050;box-shadow:0 2px 18px rgba(10,20,50,.3)}
 body.font-shun .hdr-t{color:#e8f0f8}
 body.font-shun .hdr-s{color:rgba(180,210,240,.7)}
@@ -599,7 +600,7 @@ function initApp() {
     else if(_memoIsOpen)openMemo(true);
     else closeMemoSheet(true);
   },{passive:true});
-  handle.addEventListener('click',function(){if(!_memoIsOpen)openMemo(true);});
+  handle.addEventListener('click',function(){_memoIsOpen?closeMemoSheet(true):openMemo(true);});
   const t = new Date();
   document.getElementById('dateInp').value = fmtDV(t);
   addGirlRow();
