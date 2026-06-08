@@ -6,6 +6,10 @@ function doGet(e) {
     const action = (e.parameter && e.parameter.action) || 'all';
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
+    if (action === 'battery') {
+      return makeResponse({ok: true, data: {battery: readBattery()}});
+    }
+
     if (action === 'all') {
       return makeResponse({ok: true, data: {
         girls:       readRows(ss, 'girls',       ['id','name','nick','addr']),
