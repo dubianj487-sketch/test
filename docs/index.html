@@ -19,7 +19,7 @@ html{-webkit-color-scheme:light;color-scheme:light}
   --sh:0 4px 20px rgba(200,100,140,.12);
   --gold:#e88fac;--teal:#c4608a;
 }
-body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#E5C1D4 !important;background-color:#E5C1D4 !important;height:100dvh;overflow:hidden;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation}
+body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#E5C1D4 !important;background-color:#E5C1D4 !important;height:100dvh;overflow:hidden;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation}
 html{background:#E5C1D4 !important;background-color:#E5C1D4 !important;overscroll-behavior:none;height:100dvh}
 /* ===== フォント切り替え ===== */
 body.font-shun{--app-font:'Noto Sans JP'}
@@ -45,7 +45,7 @@ body.font-shun .otab,body.font-shun .obox.boy{font-family:'Noto Sans JP',sans-se
 .nb .ni{font-size:20px}
 .nb.active{color:var(--teal);border-top-color:var(--teal);font-weight:700}
 
-.pg{display:none;padding:14px 14px 80px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain}
+.pg{display:none;padding:14px 14px 80px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0}
 .pg.active{display:block}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
