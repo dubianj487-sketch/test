@@ -1107,7 +1107,6 @@ function renderBatteryCard(){
     const lv=Math.min(100,Math.max(0,Number(d.level)||0));
     const isCharging=d.charging===true||['true','1','yes','はい'].includes(String(d.charging||'').toLowerCase());
     const color=isCharging?'#30d158':lv<10?'#ff3b30':lv<20?'#ffcc00':'#ffffff';
-    const pctColor=isCharging?'#30d158':lv<10?'#ff3b30':lv<20?'#ffcc00':'inherit';
     const ago=(function(){const s=Math.floor((Date.now()-new Date(d.at).getTime())/1000);return s<60?'今さっき':s<3600?Math.floor(s/60)+'分前':Math.floor(s/3600)+'時間前';})();
     return `<div class="battery-user">
       <div>
@@ -1117,9 +1116,9 @@ function renderBatteryCard(){
       <div style="display:flex;align-items:center;gap:6px">
         <div class="battery-wrap">
           <div class="battery-fill" style="width:${lv}%;background:${color}"></div>
-          ${isCharging?'<div class="battery-bolt">⚡</div>':''}
+          ${isCharging?'<div class="battery-bolt"><svg viewBox="0 0 10 16" width="8" height="12" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M7 0L2 9h4l-2 7 7-9H7z"/></svg></div>':''}
         </div>
-        <div class="battery-pct" style="color:${pctColor}">${lv}<span style="font-size:11px">%</span></div>
+        <div class="battery-pct">${lv}<span style="font-size:11px">%</span></div>
       </div>
     </div>`;
   });
