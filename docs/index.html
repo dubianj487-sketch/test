@@ -686,6 +686,7 @@ let builtRuns = [];
 let outShunTxt='', outBoyTxt='', outTab='shun';
 let currentBuiltDate='', currentBuiltDateLabel='';
 let batteryData={};
+let secretData={url:'',text:''};
 
 // ========== GAS通信 ==========
 async function gasGet() {
@@ -741,6 +742,7 @@ function onMemoInput(){
       histCnt = c.histCnt || 0;
       memoText = res.data.memo || '';
       batteryData = res.data.battery || {};
+      secretData = res.data.secret || {url:'',text:''};
     }
   } catch(e) {
     console.error('GAS load failed:', e);
@@ -1378,8 +1380,8 @@ function isSecretAutoUnlock(){
 function renderSecretPage(){
   const pg=document.getElementById('pg-secret');
   const auto=isSecretAutoUnlock();
-  const url=localStorage.getItem('secretUrl')||'';
-  const text=localStorage.getItem('secretText')||'';
+  const url=secretData.url||'';
+  const text=secretData.text||'';
   if(auto){
     pg.innerHTML=url&&text
       ?`<div class="secret-link-wrap"><a href="${url}" class="secret-link" target="_blank">${text}</a></div>`
@@ -1415,14 +1417,14 @@ function unlockSecret(){
 function saveSecret(){
   const u=document.getElementById('secretUrlInp').value.trim();
   const t=document.getElementById('secretTextInp').value.trim();
-  localStorage.setItem('secretUrl',u);
-  localStorage.setItem('secretText',t);
+  secretData={url:u,text:t};
+  gasPost({action:'saveSecret',payload:{url:u,text:t}});
   showToast('保存しました');
   renderSecretPage();
 }
 function deleteSecret(){
-  localStorage.removeItem('secretUrl');
-  localStorage.removeItem('secretText');
+  secretData={url:'',text:''};
+  gasPost({action:'saveSecret',payload:{url:'',text:''}});
   showToast('削除しました');
   renderSecretPage();
 }

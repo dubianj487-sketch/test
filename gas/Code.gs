@@ -33,7 +33,8 @@ function doGet(e) {
         schedHistory: readScheduleHistory(ss),
         counters:    readCounters(ss),
         memo:        readMemo(ss),
-        battery:     readBattery()
+        battery:     readBattery(),
+        secret:      readSecret(ss)
       }});
     }
 
@@ -41,12 +42,14 @@ function doGet(e) {
     switch(action) {
       case 'saveGirls':    writeRows(ss, 'girls', ['id','name','nick','addr'], body.payload); break;
       case 'savePlaces':   writeRows(ss, 'places', ['id','name','addr'], body.payload); break;
+      case 'saveSecret':   writeSecret(ss, body.payload); break;
       case 'saveDepLocs':  writeRows(ss, 'depLocs', ['id','name','addr'], body.payload); break;
       case 'saveSchedule':
       case 'updateSchedule': saveScheduleEntry(ss, body.payload); break;
       case 'deleteSchedule': deleteScheduleEntry(ss, body.id); break;
       case 'saveCounters': writeCounters(ss, body.payload); break;
       case 'saveMemo':     writeMemo(ss, body.memo); break;
+      case 'saveSecret':   writeSecret(ss, body.payload); break;
       case 'updateBattery':
         writeBattery({
           user:     e.parameter.user,
@@ -252,4 +255,15 @@ function writeCounters(ss, counters) {
   if (rows.length > 0) {
     sheet.getRange(2, 1, rows.length, 2).setValues(rows);
   }
+}
+
+function readSecret(ss) {
+  const sheet = getOrCreateSheet(ss, 'secret');
+  const val = sheet.getRange(1, 1).getValue();
+  try { return JSON.parse(val || '{}'); } catch(e) { return {}; }
+}
+
+function writeSecret(ss, data) {
+  const sheet = getOrCreateSheet(ss, 'secret');
+  sheet.getRange(1, 1).setValue(JSON.stringify({url: data.url||'', text: data.text||''}));
 }
