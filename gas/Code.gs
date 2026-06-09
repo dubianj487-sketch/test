@@ -267,3 +267,4 @@ function writeSecret(ss, data) {
   const sheet = getOrCreateSheet(ss, 'secret');
   sheet.getRange(1, 1).setValue(JSON.stringify({url: data.url||'', text: data.text||''}));
 }
+
