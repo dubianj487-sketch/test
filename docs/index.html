@@ -36,6 +36,14 @@ body.font-shun .hist-detail-date{font-family:-apple-system,BlinkMacSystemFont,'H
 body.font-shun .nb,body.font-shun input,body.font-shun select,
 body.font-shun .btn,body.font-shun .bmap,body.font-shun .dep-tab,
 body.font-shun .otab,body.font-shun .obox.boy{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif!important}
+body.font-shun.font-maru{--app-font:'Zen Maru Gothic'}
+body.font-shun.font-maru .auto-dep-time,body.font-shun.font-maru .shift-stepper-time,
+body.font-shun.font-maru .tl-time,body.font-shun.font-maru .today-banner-date,
+body.font-shun.font-maru .today-banner::before,body.font-shun.font-maru .hist-item-date,
+body.font-shun.font-maru .hist-detail-date,
+body.font-shun.font-maru .nb,body.font-shun.font-maru input,body.font-shun.font-maru select,
+body.font-shun.font-maru .btn,body.font-shun.font-maru .bmap,body.font-shun.font-maru .dep-tab,
+body.font-shun.font-maru .otab,body.font-shun.font-maru .obox.boy{font-family:'Zen Maru Gothic',sans-serif!important}
 /* ===== しゅんくんテーマ カラー (ライトモード) ===== */
 body.font-shun{
   --pk:#5a8ab5;--pkl:#dce8f5;--pkp:#eef4fa;
@@ -1679,6 +1687,7 @@ const _darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
 function _applyAll(){
   const b = document.body;
   b.classList.toggle('font-shun', _theme==='shun');
+  b.classList.toggle('font-maru', _font==='maru');
   b.classList.toggle('font-system', _font==='system');
   const dark = _theme==='shun' && (_color==='dark' || (_color==='auto' && _darkMQ.matches));
   b.classList.toggle('dark-active', dark);
