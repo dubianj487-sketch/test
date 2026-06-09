@@ -36,111 +36,142 @@ body.font-shun .hist-detail-date{font-family:-apple-system,BlinkMacSystemFont,'H
 body.font-shun .nb,body.font-shun input,body.font-shun select,
 body.font-shun .btn,body.font-shun .bmap,body.font-shun .dep-tab,
 body.font-shun .otab,body.font-shun .obox.boy{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif!important}
-/* ===== しゅんくんテーマ カラー ===== */
+/* ===== しゅんくんテーマ カラー (ライトモード) ===== */
 body.font-shun{
-  --pk:#5a8ab5;--pkl:rgba(90,138,181,.18);--pkp:rgba(90,138,181,.08);
-  --pu:#3a6090;--pul:rgba(90,138,181,.15);--lav:rgba(90,138,181,.25);
-  --gr:#4a7a9a;--tx:#e8f0f8;--txs:rgba(180,210,240,.65);
-  --night:#1e3050;--card:#242424;
-  --sh:0 4px 20px rgba(0,0,0,.3);
-  --gold:#5a8ab5;--teal:#6aaad8;
-  background:#111111 !important;background-color:#111111 !important
+  --pk:#5a8ab5;--pkl:#dce8f5;--pkp:#eef4fa;
+  --pu:#3a6090;--pul:#ccdcee;--lav:#b0c8e0;
+  --gr:#4a7a9a;--tx:#1a2540;--txs:#4a5a7a;
+  --night:#1e3050;--card:rgba(255,255,255,.97);
+  --sh:0 4px 20px rgba(30,60,120,.12);
+  --gold:#5a8ab5;--teal:#2a5a8a;
+  background:#d8eef8 !important;background-color:#d8eef8 !important
 }
-html:has(body.font-shun){background:#111111 !important}
-body.font-shun .pg{background:#1a1a1a}
+html:has(body.font-shun){background:#d8eef8 !important}
+body.font-shun .pg{background:#c0d8ec}
 body.font-shun .loading-overlay{background:rgba(30,48,80,.92)}
-body.font-shun .hdr{background:#1e3050;box-shadow:0 2px 18px rgba(10,20,50,.3)}
+body.font-shun .hdr{background:#5a8ab5;box-shadow:0 2px 18px rgba(30,60,120,.2)}
 body.font-shun .hdr-t{color:#e8f0f8}
-body.font-shun .hdr-s{color:rgba(180,210,240,.7)}
+body.font-shun .hdr-s{color:rgba(220,240,255,.75)}
 body.font-shun .bp{background:#2a5a8a;box-shadow:0 4px 14px rgba(30,60,120,.3)}
 body.font-shun .bgr{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
 body.font-shun .bmap{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
 body.font-shun .bdk{background:#1e3050}
 body.font-shun .bsave{background:linear-gradient(135deg,#5a8ab5,#2a5a8a);box-shadow:0 4px 14px rgba(30,60,120,.3)}
-body.font-shun .today-card{background:#242424;box-shadow:0 2px 10px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
-body.font-shun .today-card-hdr{border-bottom-color:#333}
-body.font-shun .today-card-date{color:#e8f0f8}
-body.font-shun .today-action-bar{border-top-color:#333}
-body.font-shun .today-action-sep{background:#333}
-body.font-shun .today-action-btn:active{background:#2e2e2e}
-body.font-shun .hist-detail-run{border-bottom-color:#333}
-body.font-shun .edit-time-row{border-bottom-color:#2e2e2e}
-body.font-shun .edit-time-inp{color:#e8f0f8}
-body.font-shun .edit-time-name{color:#c8d8e8}
+body.font-shun .today-banner{background:linear-gradient(135deg,#2a5a8a,#5a8ab5)}
 body.font-shun .obox.shun{background:linear-gradient(135deg,#1e3050,#2a5a8a)}
-body.font-shun .card{background:#242424;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
-body.font-shun .ctitle{border-bottom-color:#333;color:rgba(180,210,240,.7)}
-body.font-shun .mcard{background:#242424;border-bottom-color:#333}
-body.font-shun .mcard.girl,body.font-shun .mcard.place,body.font-shun .mcard.dep{background:#242424}
-body.font-shun .mc-name{color:#e8f0f8}
-body.font-shun input,body.font-shun select{background:#1e1e1e;border-color:rgba(90,138,181,.3);color:#e8f0f8}
-body.font-shun input:focus,body.font-shun select:focus{background:#252525;border-color:#5a8ab5}
-body.font-shun .gi-card{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
-body.font-shun .shift-stepper{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
-body.font-shun .run-block{background:#242424;border-color:rgba(255,255,255,.04)}
-body.font-shun .hist-item{background:#242424}
-body.font-shun .hist-item:active{background:#2e2e2e}
-body.font-shun .tl-item,body.font-shun .edit-time-row{border-bottom-color:#333}
-body.font-shun .month-acc{background:#242424}
-body.font-shun .month-acc-body{border-top-color:#333}
-body.font-shun .mbox{background:#1a1a1a}
-body.font-shun .mtitle{border-bottom-color:#333;color:#e8f0f8}
-body.font-shun .obox.boy{background:#1e1e1e;color:#e8f0f8}
-body.font-shun .memo-box{background:#242424}
-body.font-shun .memo-inp{color:#e8f0f8}
-body.font-shun .auto-dep-box{background:linear-gradient(135deg,#1e2a3a,#1a2a4a)}
-body.font-shun .dep-tab{background:#1e1e1e;color:#8a9ab8}
 body.font-shun .nb.active{color:#2a5a8a;border-top-color:#2a5a8a}
-body.font-shun .dep-tab.sel{border-color:#5a8ab5;background:rgba(90,138,181,.22);color:#e8f0f8}
+body.font-shun .dep-tab.sel{border-color:#5a8ab5;background:#dce8f5;color:#1e3050}
 body.font-shun .otab.active{background:#1e3050;border-color:#1e3050}
 body.font-shun .hist-dot.active{background:#2a5a8a}
-.font-toggle{margin-left:auto;align-self:center;background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.4);border-radius:20px;padding:5px 11px;cursor:pointer;font-size:12px;color:#fde8e8;font-weight:700;display:flex;align-items:center;gap:5px;transition:all .2s;white-space:nowrap}
-.font-toggle:active{transform:scale(.96)}
-.font-toggle .ft-icon{font-size:14px}
+/* ===== しゅんくんテーマ ダークモード ===== */
+body.font-shun.dark-active{
+  --pkl:rgba(90,138,181,.18);--pkp:rgba(90,138,181,.08);
+  --pul:rgba(90,138,181,.15);--lav:rgba(90,138,181,.25);
+  --tx:#e8f0f8;--txs:rgba(180,210,240,.65);--card:#242424;
+  --sh:0 4px 20px rgba(0,0,0,.3);--teal:#6aaad8;
+  background:#111111 !important;background-color:#111111 !important
+}
+html:has(body.font-shun.dark-active){background:#111111 !important}
+body.font-shun.dark-active .pg{background:#1a1a1a}
+body.font-shun.dark-active .hdr{background:#1e3050;box-shadow:0 2px 18px rgba(10,20,50,.3)}
+body.font-shun.dark-active .bnav{background:#111111;box-shadow:0 -2px 16px rgba(0,0,0,.5)}
+body.font-shun.dark-active .today-card{background:#242424;box-shadow:0 2px 10px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
+body.font-shun.dark-active .today-card-hdr{border-bottom-color:#333}
+body.font-shun.dark-active .today-card-date{color:#e8f0f8}
+body.font-shun.dark-active .today-action-bar{border-top-color:#333}
+body.font-shun.dark-active .today-action-sep{background:#333}
+body.font-shun.dark-active .today-action-btn:active{background:#2e2e2e}
+body.font-shun.dark-active .hist-detail-run{border-bottom-color:#333}
+body.font-shun.dark-active .edit-time-row{border-bottom-color:#2e2e2e}
+body.font-shun.dark-active .edit-time-inp{color:#e8f0f8}
+body.font-shun.dark-active .edit-time-name{color:#c8d8e8}
+body.font-shun.dark-active .card{background:#242424;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
+body.font-shun.dark-active .ctitle{border-bottom-color:#333;color:rgba(180,210,240,.7)}
+body.font-shun.dark-active .mcard{background:#242424;border-bottom-color:#333}
+body.font-shun.dark-active .mcard.girl,body.font-shun.dark-active .mcard.place,body.font-shun.dark-active .mcard.dep{background:#242424}
+body.font-shun.dark-active .mc-name{color:#e8f0f8}
+body.font-shun.dark-active input,body.font-shun.dark-active select{background:#1e1e1e;border-color:rgba(90,138,181,.3);color:#e8f0f8}
+body.font-shun.dark-active input:focus,body.font-shun.dark-active select:focus{background:#252525;border-color:#5a8ab5}
+body.font-shun.dark-active .gi-card{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
+body.font-shun.dark-active .shift-stepper{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
+body.font-shun.dark-active .run-block{background:#242424;border-color:rgba(255,255,255,.04)}
+body.font-shun.dark-active .hist-item{background:#242424}
+body.font-shun.dark-active .hist-item:active{background:#2e2e2e}
+body.font-shun.dark-active .tl-item,body.font-shun.dark-active .edit-time-row{border-bottom-color:#333}
+body.font-shun.dark-active .month-acc{background:#242424}
+body.font-shun.dark-active .month-acc-body{border-top-color:#333}
+body.font-shun.dark-active .mbox{background:#1a1a1a}
+body.font-shun.dark-active .mtitle{border-bottom-color:#333;color:#e8f0f8;background:#1a1a1a!important}
+body.font-shun.dark-active .obox.boy{background:#1e1e1e;color:#e8f0f8}
+body.font-shun.dark-active .memo-box{background:#242424}
+body.font-shun.dark-active .memo-inp{color:#e8f0f8}
+body.font-shun.dark-active .auto-dep-box{background:linear-gradient(135deg,#1e2a3a,#1a2a4a)}
+body.font-shun.dark-active .dep-tab{background:#1e1e1e;color:#8a9ab8}
+body.font-shun.dark-active .dep-tab.sel{border-color:#5a8ab5;background:rgba(90,138,181,.22);color:#e8f0f8}
+body.font-shun.dark-active .nb.active{color:#6aaad8;border-top-color:#6aaad8}
+body.font-shun.dark-active .otab.active{background:#1e3050;border-color:#1e3050}
+body.font-shun.dark-active .hist-dot.active{background:#2a5a8a}
 /* ===== ダークモード補完 ===== */
-body.font-shun label{color:rgba(180,210,240,.6)}
-body.font-shun .mc-sub{color:rgba(180,210,240,.45)}
-body.font-shun .mclose{color:rgba(180,210,240,.5)}
-body.font-shun .btn.bg{background:#1d2738;color:#7ab8e8}
-body.font-shun .btn.bg:active{background:#253044}
-body.font-shun .btn.bo{background:#1a1a1a;border-color:rgba(90,138,181,.35)}
-body.font-shun .btn.bd{background:#2a1818;border-color:rgba(239,68,68,.35);color:#f87171}
-body.font-shun .otab{background:#1e1e1e;color:rgba(160,200,235,.55);border-color:rgba(90,138,181,.2)}
-body.font-shun .badge-drop{background:rgba(74,168,200,.15);color:#7ac8d8}
-body.font-shun .battery-card{border:1px solid rgba(255,255,255,.05)}
-body.font-shun .battery-wrap{border-color:rgba(255,255,255,.3)}
-body.font-shun .battery-wrap::after{background:rgba(255,255,255,.3)}
-body.font-shun .battery-name{color:rgba(180,210,240,.7)}
-body.font-shun .battery-pct{color:#e8f0f8}
-body.font-shun .battery-charge{color:rgba(180,210,240,.5)}
-body.font-shun .map-legend{background:#1a1a1a;color:#c8d8e8;box-shadow:0 1px 4px rgba(0,0,0,.4)}
-body.font-shun .hist-item-sub{color:rgba(180,210,240,.45)}
-body.font-shun .hist-item-arr{color:rgba(180,210,240,.3)}
-body.font-shun .today-card-empty p{color:rgba(180,210,240,.45)}
-body.font-shun .today-card-empty small{color:rgba(180,210,240,.3)}
-body.font-shun .today-action-del .today-action-lbl{color:#f87171}
-body.font-shun .shift-stepper-time{color:#e8f0f8}
-body.font-shun .shift-stepper-btn{color:#5a8ab5}
-body.font-shun .shift-stepper-hint{color:rgba(180,210,240,.4)}
-body.font-shun .auto-dep-label{color:rgba(180,210,240,.7)}
-body.font-shun .auto-dep-note{color:rgba(180,210,240,.4)}
-body.font-shun .auto-dep-time{color:#e8f0f8}
-body.font-shun .mtitle{background:#1a1a1a!important;color:#e8f0f8}
-body.font-shun .memo-hdr{color:rgba(180,210,240,.65)}
-body.font-shun hr.dv{border-top-color:#2a2a2a}
-body.font-shun .month-acc-title{color:#e8f0f8}
-body.font-shun .month-acc-arr{color:rgba(180,210,240,.45)}
-body.font-shun .rm-btn{color:rgba(180,210,240,.35)}
-body.font-shun .min-row span{color:rgba(180,210,240,.4)}
-body.font-shun .empty-hist{color:rgba(180,210,240,.4)}
-body.font-shun .empty-note{color:rgba(180,210,240,.4)}
-body.font-shun input:disabled{background:#141414;color:rgba(180,210,240,.3);border-color:rgba(90,138,181,.15)}
-body.font-shun .hist-dot{background:rgba(90,138,181,.2)}
-body.font-shun .memo-handle-bar{background:rgba(180,210,240,.2)}
-body.font-shun .tl-name{color:#e8f0f8}
-body.font-shun .hist-item-date{color:#e8f0f8}
-body.font-shun .hist-detail-date{color:#e8f0f8}
-body.font-shun .save-success-bar{background:linear-gradient(135deg,#1e3a5a,#2a5a8a)}
+body.font-shun.dark-active label{color:rgba(180,210,240,.6)}
+body.font-shun.dark-active .mc-sub{color:rgba(180,210,240,.45)}
+body.font-shun.dark-active .mclose{color:rgba(180,210,240,.5)}
+body.font-shun.dark-active .btn.bg{background:#1d2738;color:#7ab8e8}
+body.font-shun.dark-active .btn.bg:active{background:#253044}
+body.font-shun.dark-active .btn.bo{background:#1a1a1a;border-color:rgba(90,138,181,.35)}
+body.font-shun.dark-active .btn.bd{background:#2a1818;border-color:rgba(239,68,68,.35);color:#f87171}
+body.font-shun.dark-active .otab{background:#1e1e1e;color:rgba(160,200,235,.55);border-color:rgba(90,138,181,.2)}
+body.font-shun.dark-active .badge-drop{background:rgba(74,168,200,.15);color:#7ac8d8}
+body.font-shun.dark-active .battery-card{border:1px solid rgba(255,255,255,.05)}
+body.font-shun.dark-active .battery-wrap{border-color:rgba(255,255,255,.3)}
+body.font-shun.dark-active .battery-wrap::after{background:rgba(255,255,255,.3)}
+body.font-shun.dark-active .battery-name{color:rgba(180,210,240,.7)}
+body.font-shun.dark-active .battery-pct{color:#e8f0f8}
+body.font-shun.dark-active .battery-charge{color:rgba(180,210,240,.5)}
+body.font-shun.dark-active .map-legend{background:#1a1a1a;color:#c8d8e8;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+body.font-shun.dark-active .hist-item-sub{color:rgba(180,210,240,.45)}
+body.font-shun.dark-active .hist-item-arr{color:rgba(180,210,240,.3)}
+body.font-shun.dark-active .today-card-empty p{color:rgba(180,210,240,.45)}
+body.font-shun.dark-active .today-card-empty small{color:rgba(180,210,240,.3)}
+body.font-shun.dark-active .today-action-del .today-action-lbl{color:#f87171}
+body.font-shun.dark-active .shift-stepper-time{color:#e8f0f8}
+body.font-shun.dark-active .shift-stepper-btn{color:#5a8ab5}
+body.font-shun.dark-active .shift-stepper-hint{color:rgba(180,210,240,.4)}
+body.font-shun.dark-active .auto-dep-label{color:rgba(180,210,240,.7)}
+body.font-shun.dark-active .auto-dep-note{color:rgba(180,210,240,.4)}
+body.font-shun.dark-active .auto-dep-time{color:#e8f0f8}
+body.font-shun.dark-active .memo-hdr{color:rgba(180,210,240,.65)}
+body.font-shun.dark-active hr.dv{border-top-color:#2a2a2a}
+body.font-shun.dark-active .month-acc-title{color:#e8f0f8}
+body.font-shun.dark-active .month-acc-arr{color:rgba(180,210,240,.45)}
+body.font-shun.dark-active .rm-btn{color:rgba(180,210,240,.35)}
+body.font-shun.dark-active .min-row span{color:rgba(180,210,240,.4)}
+body.font-shun.dark-active .empty-hist{color:rgba(180,210,240,.4)}
+body.font-shun.dark-active .empty-note{color:rgba(180,210,240,.4)}
+body.font-shun.dark-active input:disabled{background:#141414;color:rgba(180,210,240,.3);border-color:rgba(90,138,181,.15)}
+body.font-shun.dark-active .hist-dot{background:rgba(90,138,181,.2)}
+body.font-shun.dark-active .memo-handle-bar{background:rgba(180,210,240,.2)}
+body.font-shun.dark-active .tl-name{color:#e8f0f8}
+body.font-shun.dark-active .hist-item-date{color:#e8f0f8}
+body.font-shun.dark-active .hist-detail-date{color:#e8f0f8}
+body.font-shun.dark-active .save-success-bar{background:linear-gradient(135deg,#1e3a5a,#2a5a8a)}
+/* ===== フォント ===== */
+body.font-system{--app-font:system-ui,-apple-system,sans-serif}
+body.font-system *{font-family:system-ui,-apple-system,sans-serif !important}
+/* ===== 設定ボタン ===== */
+.settings-btn{margin-left:auto;align-self:center;background:rgba(255,255,255,.22);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;color:#fde8e8}
+.settings-btn:active{background:rgba(255,255,255,.35);transform:scale(.9)}
+/* ===== 設定パネル ===== */
+.sett-section{margin-bottom:22px}
+.sett-label{font-size:12px;font-weight:700;color:var(--txs);letter-spacing:.3px;margin-bottom:10px;opacity:.7}
+.sett-note{font-size:11px;font-weight:400;opacity:.6}
+.sett-row{display:flex;gap:8px}
+.sett-pill{flex:1;padding:12px 6px;border:none;border-radius:12px;background:var(--pkp);color:var(--txs);font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.sett-pill:active{opacity:.8}
+.sett-pill.sel{background:var(--pk);color:#fff}
+.sett-section.disabled{opacity:.35;pointer-events:none}
+body.font-shun .sett-pill.sel{background:var(--teal);color:#fff}
+body.font-shun.dark-active .sett-pill{background:rgba(255,255,255,.08);color:rgba(180,210,240,.7)}
+body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
 
 .hdr{background:#CE95B0;padding:0 14px 7px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
 .hdr-moon{font-size:24px;line-height:1;animation:mf 4s ease-in-out infinite}
@@ -381,10 +412,7 @@ body.font-shun #pg-hist{background:transparent}
     <div class="hdr-t">SILDE</div>
     <div class="hdr-s">出勤時間から逆算・全自動スケジュール</div>
   </div>
-  <button class="font-toggle" id="fontToggleBtn" onclick="toggleFont()" title="フォント切り替え">
-    <span class="ft-icon" id="ftIcon">🌸</span>
-    <span id="ftLabel">ひーちゃん</span>
-  </button>
+  <button class="settings-btn" id="settingsBtn" onclick="openSettings()" aria-label="設定">⚙️</button>
 </div>
 
 <!-- SCHEDULE MODAL (bottom sheet) -->
@@ -564,6 +592,38 @@ body.font-shun #pg-hist{background:transparent}
     <div id="moOverwriteMsg" style="font-size:13px;color:var(--tx);margin-bottom:16px;line-height:1.7"></div>
     <button class="btn bp" onclick="doSave()">✅ 上書きして保存</button>
     <button class="btn bg" onclick="closeMo('moOverwrite')">キャンセル</button>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="mo" id="moSettings">
+  <div class="mbox">
+    <div class="mtitle">
+      <span>⚙️ 設定</span>
+      <button class="mclose" onclick="closeMo('moSettings')">✕</button>
+    </div>
+    <div class="sett-section">
+      <div class="sett-label">テーマ</div>
+      <div class="sett-row">
+        <button class="sett-pill" id="sp-hee" onclick="setAppTheme('hee')">🌸 かわいい</button>
+        <button class="sett-pill" id="sp-shun" onclick="setAppTheme('shun')">⚡ かっこいい</button>
+      </div>
+    </div>
+    <div class="sett-section" id="st-color">
+      <div class="sett-label">カラーモード <span class="sett-note">かっこいいのみ</span></div>
+      <div class="sett-row">
+        <button class="sett-pill" id="sp-light" onclick="setColorMode('light')">☀️ ライト</button>
+        <button class="sett-pill" id="sp-dark" onclick="setColorMode('dark')">🌙 ダーク</button>
+        <button class="sett-pill" id="sp-auto" onclick="setColorMode('auto')">📱 自動</button>
+      </div>
+    </div>
+    <div class="sett-section">
+      <div class="sett-label">フォント</div>
+      <div class="sett-row">
+        <button class="sett-pill" id="sp-maru" onclick="setAppFont('maru')">あ まるゴシック</button>
+        <button class="sett-pill" id="sp-sys" onclick="setAppFont('system')">A システム</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1610,21 +1670,43 @@ function showToast(msg){
   draw();
 })();
 
-// ========== フォント切り替え（UI設定のみlocalStorage） ==========
-function toggleFont(){
-  const body = document.body;
-  const isShun = body.classList.toggle('font-shun');
-  document.getElementById('ftIcon').textContent  = isShun ? '📋' : '🌸';
-  document.getElementById('ftLabel').textContent = isShun ? 'しゅん' : 'ひーちゃん';
-  localStorage.setItem('fontMode', isShun ? 'shun' : 'hee');
+// ========== 設定 ==========
+let _theme = localStorage.getItem('appTheme') || (localStorage.getItem('fontMode')==='shun'?'shun':'hee');
+let _color = localStorage.getItem('colorMode') || 'auto';
+let _font  = localStorage.getItem('appFont')  || 'maru';
+const _darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
+
+function _applyAll(){
+  const b = document.body;
+  b.classList.toggle('font-shun', _theme==='shun');
+  b.classList.toggle('font-system', _font==='system');
+  const dark = _theme==='shun' && (_color==='dark' || (_color==='auto' && _darkMQ.matches));
+  b.classList.toggle('dark-active', dark);
 }
-(function(){
-  if(localStorage.getItem('fontMode') === 'shun'){
-    document.body.classList.add('font-shun');
-    document.getElementById('ftIcon').textContent  = '📋';
-    document.getElementById('ftLabel').textContent = 'しゅん';
-  }
-})();
+_darkMQ.addEventListener('change', _applyAll);
+
+function openSettings(){
+  document.getElementById('sp-hee').classList.toggle('sel',_theme==='hee');
+  document.getElementById('sp-shun').classList.toggle('sel',_theme==='shun');
+  document.getElementById('sp-light').classList.toggle('sel',_color==='light');
+  document.getElementById('sp-dark').classList.toggle('sel',_color==='dark');
+  document.getElementById('sp-auto').classList.toggle('sel',_color==='auto');
+  document.getElementById('sp-maru').classList.toggle('sel',_font!=='system');
+  document.getElementById('sp-sys').classList.toggle('sel',_font==='system');
+  document.getElementById('st-color').classList.toggle('disabled',_theme==='hee');
+  document.getElementById('moSettings').classList.add('open');
+}
+function setAppTheme(t){
+  _theme=t; localStorage.setItem('appTheme',t); localStorage.setItem('fontMode',t==='shun'?'shun':'hee');
+  _applyAll(); openSettings();
+}
+function setColorMode(c){
+  _color=c; localStorage.setItem('colorMode',c); _applyAll(); openSettings();
+}
+function setAppFont(f){
+  _font=(f==='sys'?'system':f); localStorage.setItem('appFont',_font); _applyAll(); openSettings();
+}
+(function(){ _applyAll(); })();
 
 // ========== マップ ==========
 var _mapObj = null;
