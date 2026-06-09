@@ -360,6 +360,12 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .edit-time-inp:focus{color:var(--pk)}
 .edit-time-name{font-size:14px;flex:1;color:var(--tx);font-weight:500}
 .edit-time-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0}
+.edit-time-row.past{opacity:.28}
+.tl-now{display:flex;align-items:center;gap:8px;padding:4px 0 8px}
+.tl-now-dot{width:11px;height:11px;border-radius:50%;background:var(--pk);flex-shrink:0;animation:now-pulse 1.8s ease-in-out infinite}
+@keyframes now-pulse{0%,100%{opacity:1;transform:scale(1)}60%{opacity:.45;transform:scale(.85)}}
+.tl-now-lbl{font-size:11px;font-weight:700;color:var(--pk);letter-spacing:.3px}
+.today-done{text-align:center;padding:8px 0 4px;font-size:11px;font-weight:700;color:var(--txs);opacity:.4;letter-spacing:.5px}
 
 .empty-hist{text-align:center;padding:40px 14px;color:#ccc}
 .empty-hist .ei{font-size:44px;margin-bottom:8px}
@@ -775,6 +781,7 @@ function closeMemoSheet(animate){
 function initApp() {
   setPgHeight();
   window.addEventListener('resize',setPgHeight);
+  (function schedNowTimer(){function tick(){if(document.getElementById('pg-hist').classList.contains('active'))renderHistPage();setTimeout(tick,60000-Date.now()%60000);}setTimeout(tick,60000-Date.now()%60000);})();
   var sl=document.getElementById('histSlider');
   sl.addEventListener('scroll',function(){
     var m=this.scrollLeft>this.offsetWidth*0.5;
@@ -1310,16 +1317,23 @@ function copyText(txt){
 }
 
 // ========== 履歴ページ ==========
-function buildRunsHtml(e){
+function nowHHMM(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function buildRunsHtml(e,showNow){
+  const now=showNow?nowHHMM():null;
   let h='';
   e.runs.forEach((run,ri)=>{
     h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl">🚗 ${run.departLabel}</div>`;
+    const allPast=now?run.stops.every(s=>s.time<=now):false;
+    let nowInserted=false;
     run.stops.forEach((s,si)=>{
+      const isPast=now?s.time<=now:false;
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
       const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">店着</span>';
       const minB=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
-      h+=`<div class="edit-time-row"><div class="tl-dot ${dot}"></div><input class="edit-time-inp" type="time" value="${s.time}" onchange="updateHistStop(${e.id},${ri},${si},this.value)"><span class="edit-time-name">${s.name}</span>${badge}${minB}</div>`;
+      if(now&&!isPast&&!nowInserted){h+=`<div class="tl-now"><div class="tl-now-dot"></div><span class="tl-now-lbl">いまここ</span></div>`;nowInserted=true;}
+      h+=`<div class="edit-time-row${isPast?' past':''}"><div class="tl-dot ${dot}"></div><input class="edit-time-inp" type="time" value="${s.time}" onchange="updateHistStop(${e.id},${ri},${si},this.value)"><span class="edit-time-name">${s.name}</span>${badge}${minB}</div>`;
     });
+    if(allPast)h+=`<div class="today-done">✓ 完了</div>`;
     h+=`</div>`;
   });
   return h;
@@ -1367,7 +1381,7 @@ function renderHistPage(){
       <span class="today-card-label">TODAY</span>
       <span class="today-card-date">${fmtDLFull(todayEntry.dateVal)}</span>
     </div>
-    ${buildRunsHtml(todayEntry)}
+    ${buildRunsHtml(todayEntry,true)}
     <div class="today-action-bar">
       <div class="today-action-btn" onclick="shareHist(${todayEntry.id})">
         <span class="today-action-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>
