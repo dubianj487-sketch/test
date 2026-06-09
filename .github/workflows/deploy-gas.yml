@@ -23,16 +23,31 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 2
+
+      - name: Check if GAS files changed
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD -- gas/ 2>/dev/null || echo "")
+          if [ -n "$CHANGED" ]; then
+            echo "GAS_CHANGED=true" >> $GITHUB_ENV
+            echo "gas/ ファイルが変更されました: $CHANGED"
+          else
+            echo "GAS_CHANGED=false" >> $GITHUB_ENV
+            echo "gas/ に変更なし。GASデプロイをスキップします。"
+          fi
 
       - name: Setup Node.js
+        if: env.GAS_CHANGED == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install clasp
+        if: env.GAS_CHANGED == 'true'
         run: npm install -g @google/clasp
 
       - name: Write clasp credentials
+        if: env.GAS_CHANGED == 'true'
         run: |
           CREDS="${{ secrets.CLASPRC_JSON_BASE64 }}"
           if [ -z "$CREDS" ]; then
@@ -44,7 +59,7 @@ jobs:
           fi
 
       - name: Push to Google Apps Script
-        if: env.SKIP_GAS == 'false'
+        if: env.GAS_CHANGED == 'true' && env.SKIP_GAS == 'false'
         run: clasp push --force
 
       - name: Delete old GAS versions to stay under 200 limit
@@ -71,7 +86,7 @@ jobs:
           fi
 
       - name: Deploy Web App and update URL in HTML
-        if: env.SKIP_GAS == 'false'
+        if: env.GAS_CHANGED == 'true' && env.SKIP_GAS == 'false'
         run: |
           # 既存デプロイを確認
           DEPLOY_LIST=$(clasp deployments 2>&1)
@@ -83,7 +98,8 @@ jobs:
 
           if [ -n "$EXISTING_ID" ]; then
             echo "既存デプロイを更新: $EXISTING_ID"
-            clasp deploy --deploymentId "$EXISTING_ID" --description "production" 2>&1
+            DEPLOY_OUT=$(clasp deploy --deploymentId "$EXISTING_ID" --description "production" 2>&1)
+            echo "$DEPLOY_OUT"
             DEPLOY_ID="$EXISTING_ID"
           else
             echo "新規デプロイを作成"
