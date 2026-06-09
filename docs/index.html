@@ -362,7 +362,7 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .edit-time-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0}
 .edit-time-row.past{opacity:.28}
 .tl-now{display:flex;align-items:center;gap:8px;padding:4px 0 8px}
-.tl-now-dot{width:11px;height:11px;border-radius:50%;background:var(--pk);flex-shrink:0;animation:now-pulse 1.8s ease-in-out infinite}
+.tl-now-dot{width:14px;height:14px;flex-shrink:0;color:var(--pk);display:flex;align-items:center;justify-content:center;animation:now-pulse 1.8s ease-in-out infinite}
 @keyframes now-pulse{0%,100%{opacity:1;transform:scale(1)}60%{opacity:.45;transform:scale(.85)}}
 .tl-now-lbl{font-size:11px;font-weight:700;color:var(--pk);letter-spacing:.3px}
 .today-done{text-align:center;padding:8px 0 4px;font-size:11px;font-weight:700;color:var(--txs);opacity:.4;letter-spacing:.5px}
@@ -1330,7 +1330,7 @@ function buildRunsHtml(e,showNow){
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
       const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">店着</span>';
       const minB=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
-      if(now&&!isPast&&!nowInserted){h+=`<div class="tl-now"><div class="tl-now-dot"></div><span class="tl-now-lbl">いまここ</span></div>`;nowInserted=true;}
+      if(now&&!isPast&&!nowInserted){h+=`<div class="tl-now"><div class="tl-now-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div><span class="tl-now-lbl">いまここ</span></div>`;nowInserted=true;}
       h+=`<div class="edit-time-row${isPast?' past':''}"><div class="tl-dot ${dot}"></div><input class="edit-time-inp" type="time" value="${s.time}" onchange="updateHistStop(${e.id},${ri},${si},this.value)"><span class="edit-time-name">${s.name}</span>${badge}${minB}</div>`;
     });
     if(allPast)h+=`<div class="today-done">✓ 完了</div>`;
