@@ -38,13 +38,13 @@ body.font-shun .btn,body.font-shun .bmap,body.font-shun .dep-tab,
 body.font-shun .otab,body.font-shun .obox.boy{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif!important}
 /* ===== しゅんくんテーマ カラー ===== */
 body.font-shun{
-  --pk:#5a8ab5;--pkl:#dce8f5;--pkp:#eef4fa;
-  --pu:#3a6090;--pul:#ccdcee;--lav:#b0c8e0;
-  --gr:#4a7a9a;--tx:#1a2540;--txs:#4a5a7a;
-  --night:#1e3050;--card:rgba(255,255,255,.97);
-  --sh:0 4px 20px rgba(30,60,120,.12);
-  --gold:#5a8ab5;--teal:#2a5a8a;
-  background:#1e3050 !important;background-color:#1e3050 !important
+  --pk:#5a8ab5;--pkl:rgba(90,138,181,.18);--pkp:rgba(90,138,181,.08);
+  --pu:#3a6090;--pul:rgba(90,138,181,.15);--lav:rgba(90,138,181,.25);
+  --gr:#4a7a9a;--tx:#e8f0f8;--txs:rgba(180,210,240,.65);
+  --night:#1e3050;--card:#242424;
+  --sh:0 4px 20px rgba(0,0,0,.3);
+  --gold:#5a8ab5;--teal:#6aaad8;
+  background:#111111 !important;background-color:#111111 !important
 }
 html:has(body.font-shun){background:#111111 !important}
 body.font-shun .pg{background:#1a1a1a}
@@ -71,16 +71,16 @@ body.font-shun .obox.shun{background:linear-gradient(135deg,#1e3050,#2a5a8a)}
 body.font-shun .card{background:#242424;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
 body.font-shun .ctitle{border-bottom-color:#333;color:rgba(180,210,240,.7)}
 body.font-shun .mcard{background:#242424;border-bottom-color:#333}
-body.font-shun .mcard.girl,.body.font-shun .mcard.place,.body.font-shun .mcard.dep{background:#242424}
+body.font-shun .mcard.girl,body.font-shun .mcard.place,body.font-shun .mcard.dep{background:#242424}
 body.font-shun .mc-name{color:#e8f0f8}
 body.font-shun input,body.font-shun select{background:#1e1e1e;border-color:rgba(90,138,181,.3);color:#e8f0f8}
 body.font-shun input:focus,body.font-shun select:focus{background:#252525;border-color:#5a8ab5}
 body.font-shun .gi-card{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
 body.font-shun .shift-stepper{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
-body.font-shun .run-block,.body.font-shun .hist-item,.body.font-shun .hist-detail-run{background:#242424;border-color:rgba(255,255,255,.04)}
+body.font-shun .run-block{background:#242424;border-color:rgba(255,255,255,.04)}
 body.font-shun .hist-item{background:#242424}
 body.font-shun .hist-item:active{background:#2e2e2e}
-body.font-shun .tl-item,.body.font-shun .edit-time-row{border-bottom-color:#333}
+body.font-shun .tl-item,body.font-shun .edit-time-row{border-bottom-color:#333}
 body.font-shun .month-acc{background:#242424}
 body.font-shun .month-acc-body{border-top-color:#333}
 body.font-shun .mbox{background:#1a1a1a}
@@ -91,12 +91,56 @@ body.font-shun .memo-inp{color:#e8f0f8}
 body.font-shun .auto-dep-box{background:linear-gradient(135deg,#1e2a3a,#1a2a4a)}
 body.font-shun .dep-tab{background:#1e1e1e;color:#8a9ab8}
 body.font-shun .nb.active{color:#2a5a8a;border-top-color:#2a5a8a}
-body.font-shun .dep-tab.sel{border-color:#5a8ab5;background:#dce8f5;color:#1e3050}
+body.font-shun .dep-tab.sel{border-color:#5a8ab5;background:rgba(90,138,181,.22);color:#e8f0f8}
 body.font-shun .otab.active{background:#1e3050;border-color:#1e3050}
 body.font-shun .hist-dot.active{background:#2a5a8a}
 .font-toggle{margin-left:auto;align-self:center;background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.4);border-radius:20px;padding:5px 11px;cursor:pointer;font-size:12px;color:#fde8e8;font-weight:700;display:flex;align-items:center;gap:5px;transition:all .2s;white-space:nowrap}
 .font-toggle:active{transform:scale(.96)}
 .font-toggle .ft-icon{font-size:14px}
+/* ===== ダークモード補完 ===== */
+body.font-shun label{color:rgba(180,210,240,.6)}
+body.font-shun .mc-sub{color:rgba(180,210,240,.45)}
+body.font-shun .mclose{color:rgba(180,210,240,.5)}
+body.font-shun .btn.bg{background:#1d2738;color:#7ab8e8}
+body.font-shun .btn.bg:active{background:#253044}
+body.font-shun .btn.bo{background:#1a1a1a;border-color:rgba(90,138,181,.35)}
+body.font-shun .btn.bd{background:#2a1818;border-color:rgba(239,68,68,.35);color:#f87171}
+body.font-shun .otab{background:#1e1e1e;color:rgba(160,200,235,.55);border-color:rgba(90,138,181,.2)}
+body.font-shun .badge-drop{background:rgba(74,168,200,.15);color:#7ac8d8}
+body.font-shun .battery-card{border:1px solid rgba(255,255,255,.05)}
+body.font-shun .battery-wrap{border-color:rgba(255,255,255,.3)}
+body.font-shun .battery-wrap::after{background:rgba(255,255,255,.3)}
+body.font-shun .battery-name{color:rgba(180,210,240,.7)}
+body.font-shun .battery-pct{color:#e8f0f8}
+body.font-shun .battery-charge{color:rgba(180,210,240,.5)}
+body.font-shun .map-legend{background:#1a1a1a;color:#c8d8e8;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+body.font-shun .hist-item-sub{color:rgba(180,210,240,.45)}
+body.font-shun .hist-item-arr{color:rgba(180,210,240,.3)}
+body.font-shun .today-card-empty p{color:rgba(180,210,240,.45)}
+body.font-shun .today-card-empty small{color:rgba(180,210,240,.3)}
+body.font-shun .today-action-del .today-action-lbl{color:#f87171}
+body.font-shun .shift-stepper-time{color:#e8f0f8}
+body.font-shun .shift-stepper-btn{color:#5a8ab5}
+body.font-shun .shift-stepper-hint{color:rgba(180,210,240,.4)}
+body.font-shun .auto-dep-label{color:rgba(180,210,240,.7)}
+body.font-shun .auto-dep-note{color:rgba(180,210,240,.4)}
+body.font-shun .auto-dep-time{color:#e8f0f8}
+body.font-shun .mtitle{background:#1a1a1a!important;color:#e8f0f8}
+body.font-shun .memo-hdr{color:rgba(180,210,240,.65)}
+body.font-shun hr.dv{border-top-color:#2a2a2a}
+body.font-shun .month-acc-title{color:#e8f0f8}
+body.font-shun .month-acc-arr{color:rgba(180,210,240,.45)}
+body.font-shun .rm-btn{color:rgba(180,210,240,.35)}
+body.font-shun .min-row span{color:rgba(180,210,240,.4)}
+body.font-shun .empty-hist{color:rgba(180,210,240,.4)}
+body.font-shun .empty-note{color:rgba(180,210,240,.4)}
+body.font-shun input:disabled{background:#141414;color:rgba(180,210,240,.3);border-color:rgba(90,138,181,.15)}
+body.font-shun .hist-dot{background:rgba(90,138,181,.2)}
+body.font-shun .memo-handle-bar{background:rgba(180,210,240,.2)}
+body.font-shun .tl-name{color:#e8f0f8}
+body.font-shun .hist-item-date{color:#e8f0f8}
+body.font-shun .hist-detail-date{color:#e8f0f8}
+body.font-shun .save-success-bar{background:linear-gradient(135deg,#1e3a5a,#2a5a8a)}
 
 .hdr{background:#CE95B0;padding:0 14px 7px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
 .hdr-moon{font-size:24px;line-height:1;animation:mf 4s ease-in-out infinite}
