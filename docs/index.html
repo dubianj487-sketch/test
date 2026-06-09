@@ -366,6 +366,10 @@ input:disabled{background:#f0f0f0;color:#bbb}
 @keyframes now-pulse{0%,100%{opacity:1;transform:scale(1)}60%{opacity:.45;transform:scale(.85)}}
 .tl-now-lbl{font-size:11px;font-weight:700;color:var(--pk);letter-spacing:.3px}
 .today-done{text-align:center;padding:8px 0 4px;font-size:11px;font-weight:700;color:var(--txs);opacity:.4;letter-spacing:.5px}
+.debug-time-row{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.04);border-radius:10px;padding:8px 12px;margin-top:8px}
+.debug-time-lbl{font-size:11px;color:var(--txs);font-weight:600;flex:1}
+.debug-time-inp{font-size:13px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);border:none;background:transparent;outline:none;width:60px;padding:0;-webkit-appearance:none;cursor:pointer}
+.debug-time-clr{font-size:11px;color:var(--txs);border:none;background:none;cursor:pointer;padding:2px 6px;opacity:.6}
 
 .empty-hist{text-align:center;padding:40px 14px;color:#ccc}
 .empty-hist .ei{font-size:44px;margin-bottom:8px}
@@ -781,7 +785,7 @@ function closeMemoSheet(animate){
 function initApp() {
   setPgHeight();
   window.addEventListener('resize',setPgHeight);
-  (function schedNowTimer(){function tick(){if(document.getElementById('pg-hist').classList.contains('active'))renderHistPage();setTimeout(tick,60000-Date.now()%60000);}setTimeout(tick,60000-Date.now()%60000);})();
+  (function schedNowTimer(){function tick(){if(!_debugTime&&document.getElementById('pg-hist').classList.contains('active'))renderHistPage();setTimeout(tick,60000-Date.now()%60000);}setTimeout(tick,60000-Date.now()%60000);})();
   var sl=document.getElementById('histSlider');
   sl.addEventListener('scroll',function(){
     var m=this.scrollLeft>this.offsetWidth*0.5;
@@ -1317,7 +1321,9 @@ function copyText(txt){
 }
 
 // ========== 履歴ページ ==========
-function nowHHMM(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+let _debugTime=null;
+function nowHHMM(){if(_debugTime)return _debugTime;const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function setDebugTime(v){_debugTime=v||null;renderHistPage();}
 function buildRunsHtml(e,showNow){
   const now=showNow?nowHHMM():null;
   let h='';
@@ -1401,6 +1407,12 @@ function renderHistPage(){
   }
   todayHtml+=`</div>`;
   todayHtml+=renderBatteryCard();
+  const debugVal=_debugTime||'';
+  todayHtml+=`<div class="debug-time-row">
+    <span class="debug-time-lbl">🕐 テスト時刻</span>
+    <input class="debug-time-inp" type="time" value="${debugVal}" oninput="setDebugTime(this.value)" placeholder="--:--">
+    <button class="debug-time-clr" onclick="setDebugTime('');document.querySelector('.debug-time-inp').value=''">リセット</button>
+  </div>`;
   tp.innerHTML=todayHtml;
   let html='';
   const monthMap={};
