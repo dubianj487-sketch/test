@@ -82,7 +82,7 @@ jobs:
             echo "新規デプロイを作成"
             DEPLOY_OUT=$(clasp deploy --description "production" 2>&1)
             echo "$DEPLOY_OUT"
-            DEPLOY_ID=$(echo "$DEPLOY_OUT" | grep -oP '(?<=- )[A-Za-z0-9_-]{30,}' | head -1)
+            DEPLOY_ID=$(echo "$DEPLOY_OUT" | grep -oP '[A-Za-z0-9_-]{50,}' | head -1)
           fi
 
           echo "=== デプロイID: $DEPLOY_ID ==="
