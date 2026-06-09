@@ -1378,7 +1378,6 @@ function isSecretAutoUnlock(){
 function renderSecretPage(){
   const pg=document.getElementById('pg-secret');
   const auto=isSecretAutoUnlock();
-  const pw=localStorage.getItem('secretPw')||'';
   const url=localStorage.getItem('secretUrl')||'';
   const text=localStorage.getItem('secretText')||'';
   if(auto){
@@ -1394,22 +1393,15 @@ function renderSecretPage(){
       <button class="btn bp sm" style="flex:1" onclick="saveSecret()">保存</button>
       ${url?`<button class="btn bd sm" onclick="deleteSecret()">削除</button>`:''}
     </div>
-    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--lav)">
-      <label>パスワード変更</label>
-      <input type="password" id="secretNewPwInp" placeholder="新しいパスワード" style="width:100%;box-sizing:border-box">
-      <button class="btn bo sm" style="margin-top:8px;width:100%" onclick="changeSecretPw()">変更</button>
-    </div>
   </div>`;
   if(_secretUnlocked){
     pg.innerHTML=`<div class="secret-wrap">${adminHtml}</div>`;
   } else {
-    const promptLbl=pw?'パスワードを入力':'パスワードを設定してください';
-    const btnLbl=pw?'解除':'設定';
     pg.innerHTML=`<div class="secret-wrap">${adminHtml}
       <div class="secret-overlay">
-        <span class="secret-pw-lbl">🔐 ${promptLbl}</span>
+        <span class="secret-pw-lbl">🔐 パスワードを入力</span>
         <input class="secret-pw-inp" type="password" id="secretPwInp" placeholder="••••••" onkeydown="if(event.key==='Enter')unlockSecret()">
-        <button class="secret-unlock-btn" onclick="unlockSecret()">${btnLbl}</button>
+        <button class="secret-unlock-btn" onclick="unlockSecret()">解除</button>
       </div>
     </div>`;
   }
@@ -1417,10 +1409,7 @@ function renderSecretPage(){
 function unlockSecret(){
   const inp=document.getElementById('secretPwInp');
   if(!inp)return;
-  const val=inp.value;
-  const stored=localStorage.getItem('secretPw')||'';
-  if(!stored){localStorage.setItem('secretPw',val);_secretUnlocked=true;renderSecretPage();return;}
-  if(val===stored){_secretUnlocked=true;renderSecretPage();}
+  if(inp.value==='2101103'){_secretUnlocked=true;renderSecretPage();}
   else{inp.value='';inp.placeholder='違います…もう一度';inp.style.borderColor='#e74c3c';}
 }
 function saveSecret(){
@@ -1435,13 +1424,6 @@ function deleteSecret(){
   localStorage.removeItem('secretUrl');
   localStorage.removeItem('secretText');
   showToast('削除しました');
-  renderSecretPage();
-}
-function changeSecretPw(){
-  const v=document.getElementById('secretNewPwInp').value;
-  if(!v){showToast('パスワードを入力してください');return;}
-  localStorage.setItem('secretPw',v);
-  showToast('パスワードを変更しました');
   renderSecretPage();
 }
 
