@@ -226,22 +226,22 @@ function writeMemo(ss, text) {
 }
 
 function readBattery() {
-  const props = PropertiesService.getScriptProperties();
-  return JSON.parse(props.getProperty('battery') || '{}');
+  const sheet = getOrCreateSheet(SpreadsheetApp.openById(SPREADSHEET_ID), 'battery');
+  try { return JSON.parse(sheet.getRange(1, 1).getValue() || '{}'); } catch(e) { return {}; }
 }
 
 function writeBattery(data) {
-  const props = PropertiesService.getScriptProperties();
-  const bat = JSON.parse(props.getProperty('battery') || '{}');
+  const sheet = getOrCreateSheet(SpreadsheetApp.openById(SPREADSHEET_ID), 'battery');
+  const bat = JSON.parse(sheet.getRange(1, 1).getValue() || '{}');
   let lv = parseFloat(String(data.level || '0').replace(/[^\d.]/g, '')) || 0;
-  if (lv > 0 && lv <= 1) lv = Math.round(lv * 100); // 0.28 → 28
-  else lv = Math.round(lv);                           // 28% or 28 → 28
+  if (lv > 0 && lv <= 1) lv = Math.round(lv * 100);
+  else lv = Math.round(lv);
   bat[data.user] = {
     level: lv,
     charging: ['true','1','yes','はい'].includes(String(data.charging||'').replace(/[\[\]]/g,'').trim().toLowerCase()) || data.charging === true,
     at: new Date().toISOString()
   };
-  props.setProperty('battery', JSON.stringify(bat));
+  sheet.getRange(1, 1).setValue(JSON.stringify(bat));
 }
 
 function writeCounters(ss, counters) {

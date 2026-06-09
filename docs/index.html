@@ -389,11 +389,11 @@ body.font-shun #pg-hist{background:transparent}
 @media (display-mode: standalone) {
   body{padding-top:max(env(safe-area-inset-top),7px)}
   .hdr{padding-top:7px}
-  .bnav{padding-bottom:env(safe-area-inset-bottom)}
-  .memo-box{bottom:calc(56px + env(safe-area-inset-bottom))}
-  .pg{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
-  #pg-hist{padding:0 0 calc(52px + env(safe-area-inset-bottom))}
 }
+.ios-pwa .bnav{padding-bottom:env(safe-area-inset-bottom)}
+.ios-pwa .memo-box{bottom:calc(56px + env(safe-area-inset-bottom))}
+.ios-pwa .pg{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+.ios-pwa #pg-hist{padding:0 0 calc(52px + env(safe-area-inset-bottom))}
 </style>
 </head>
 <body>
@@ -632,7 +632,8 @@ body.font-shun #pg-hist{background:transparent}
 <script>
 // ========== GAS設定 ==========
 // GASをデプロイした後、ここにURLを貼り付けてください
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxeJasg0xdLQSAw163Cs1KjBi1gNyvn5Ss6t3RfG6eU45bu0nyBGVJRz99wHVllW-DK/exec';
+if(window.navigator.standalone){document.documentElement.classList.add('ios-pwa');}
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbymJJag2hZIXnudvejecWckv2YTzexAMPE7dSgcf-OQuj1Jk_BpygOXL489KBwD11W-sA/exec';
 
 // ========== 状態変数 ==========
 let memoText = '', memoTimer = null;
