@@ -7,16 +7,16 @@
 <meta name="theme-color" content="#CE95B0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="color-scheme" content="light">
-<meta name="supported-color-schemes" content="light">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>🌙 SILDE</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Opti:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{color-scheme:light only}
-html{-webkit-color-scheme:light;color-scheme:light}
+:root{color-scheme:light dark}
+html{-webkit-color-scheme:light dark;color-scheme:light dark}
 :root{
   --pk:#e88fac;--pkl:#fde8ef;--pkp:#fef3f7;
   --pu:#c478a8;--pul:#f7e4f2;--lav:#f0cfe0;
@@ -36,7 +36,7 @@ body.font-shun .hist-detail-date{font-family:-apple-system,BlinkMacSystemFont,'H
 body.font-shun .nb,body.font-shun input,body.font-shun select,
 body.font-shun .btn,body.font-shun .bmap,body.font-shun .dep-tab,
 body.font-shun .otab,body.font-shun .obox.boy{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif!important}
-/* ===== しゅんくんテーマ カラー ===== */
+/* ===== しゅんくんテーマ カラー (ライトモード) ===== */
 body.font-shun{
   --pk:#5a8ab5;--pkl:#dce8f5;--pkp:#eef4fa;
   --pu:#3a6090;--pul:#ccdcee;--lav:#b0c8e0;
@@ -44,10 +44,10 @@ body.font-shun{
   --night:#1e3050;--card:rgba(255,255,255,.97);
   --sh:0 4px 20px rgba(30,60,120,.12);
   --gold:#5a8ab5;--teal:#2a5a8a;
-  background:#1e3050 !important;background-color:#1e3050 !important
+  background:#d8eef8 !important;background-color:#d8eef8 !important
 }
-html:has(body.font-shun){background:#111111 !important}
-body.font-shun .pg{background:#1a1a1a}
+html:has(body.font-shun){background:#d8eef8 !important}
+body.font-shun .pg{background:#d8eef8}
 body.font-shun .loading-overlay{background:rgba(30,48,80,.92)}
 body.font-shun .hdr{background:#1e3050;box-shadow:0 2px 18px rgba(10,20,50,.3)}
 body.font-shun .hdr-t{color:#e8f0f8}
@@ -57,43 +57,86 @@ body.font-shun .bgr{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
 body.font-shun .bmap{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
 body.font-shun .bdk{background:#1e3050}
 body.font-shun .bsave{background:linear-gradient(135deg,#5a8ab5,#2a5a8a);box-shadow:0 4px 14px rgba(30,60,120,.3)}
-body.font-shun .today-card{background:#242424;box-shadow:0 2px 10px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
-body.font-shun .today-card-hdr{border-bottom-color:#333}
-body.font-shun .today-card-date{color:#e8f0f8}
-body.font-shun .today-action-bar{border-top-color:#333}
-body.font-shun .today-action-sep{background:#333}
-body.font-shun .today-action-btn:active{background:#2e2e2e}
-body.font-shun .hist-detail-run{border-bottom-color:#333}
-body.font-shun .edit-time-row{border-bottom-color:#2e2e2e}
-body.font-shun .edit-time-inp{color:#e8f0f8}
-body.font-shun .edit-time-name{color:#c8d8e8}
 body.font-shun .obox.shun{background:linear-gradient(135deg,#1e3050,#2a5a8a)}
-body.font-shun .card{background:#242424;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
-body.font-shun .ctitle{border-bottom-color:#333;color:rgba(180,210,240,.7)}
-body.font-shun .mcard{background:#242424;border-bottom-color:#333}
-body.font-shun .mcard.girl,.body.font-shun .mcard.place,.body.font-shun .mcard.dep{background:#242424}
-body.font-shun .mc-name{color:#e8f0f8}
-body.font-shun input,body.font-shun select{background:#1e1e1e;border-color:rgba(90,138,181,.3);color:#e8f0f8}
-body.font-shun input:focus,body.font-shun select:focus{background:#252525;border-color:#5a8ab5}
-body.font-shun .gi-card{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
-body.font-shun .shift-stepper{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
-body.font-shun .run-block,.body.font-shun .hist-item,.body.font-shun .hist-detail-run{background:#242424;border-color:rgba(255,255,255,.04)}
-body.font-shun .hist-item{background:#242424}
-body.font-shun .hist-item:active{background:#2e2e2e}
-body.font-shun .tl-item,.body.font-shun .edit-time-row{border-bottom-color:#333}
-body.font-shun .month-acc{background:#242424}
-body.font-shun .month-acc-body{border-top-color:#333}
-body.font-shun .mbox{background:#1a1a1a}
-body.font-shun .mtitle{border-bottom-color:#333;color:#e8f0f8}
-body.font-shun .obox.boy{background:#1e1e1e;color:#e8f0f8}
-body.font-shun .memo-box{background:#242424}
-body.font-shun .memo-inp{color:#e8f0f8}
-body.font-shun .auto-dep-box{background:linear-gradient(135deg,#1e2a3a,#1a2a4a)}
-body.font-shun .dep-tab{background:#1e1e1e;color:#8a9ab8}
 body.font-shun .nb.active{color:#2a5a8a;border-top-color:#2a5a8a}
-body.font-shun .dep-tab.sel{border-color:#5a8ab5;background:#dce8f5;color:#1e3050}
 body.font-shun .otab.active{background:#1e3050;border-color:#1e3050}
 body.font-shun .hist-dot.active{background:#2a5a8a}
+/* ===== しゅんくんテーマ ダークモード (iPhone ダークモード時のみ) ===== */
+@media (prefers-color-scheme: dark) {
+  body.font-shun{
+    --tx:#e8f0f8;--txs:rgba(180,210,240,.65);
+    --card:#242424;
+    --pkl:rgba(90,138,181,.18);--pkp:rgba(90,138,181,.1);
+    --pul:rgba(90,138,181,.15);--lav:rgba(90,138,181,.25);
+    --teal:#6aaad8;--sh:0 4px 20px rgba(0,0,0,.3);
+    background:#111111 !important;background-color:#111111 !important
+  }
+  html:has(body.font-shun){background:#111111 !important}
+  body.font-shun #starfield{display:block}
+  body.font-shun .pg{background:transparent;position:relative;z-index:1}
+  body.font-shun #pg-hist{background:transparent}
+  body.font-shun .loading-overlay{background:rgba(17,17,17,.95)}
+  body.font-shun .hdr{background:#111111}
+  body.font-shun .today-card{background:#242424;box-shadow:0 2px 10px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
+  body.font-shun .today-card-hdr{border-bottom-color:#333}
+  body.font-shun .today-card-date{color:#e8f0f8}
+  body.font-shun .today-action-bar{border-top-color:#333}
+  body.font-shun .today-action-sep{background:#333}
+  body.font-shun .today-action-btn:active{background:#2e2e2e}
+  body.font-shun .hist-detail-run{border-bottom-color:#333}
+  body.font-shun .edit-time-row{border-bottom-color:#2e2e2e}
+  body.font-shun .edit-time-inp{color:#e8f0f8}
+  body.font-shun .edit-time-name{color:#c8d8e8}
+  body.font-shun .card{background:#242424;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
+  body.font-shun .ctitle{border-bottom-color:#333;color:rgba(180,210,240,.7)}
+  body.font-shun .mcard{background:#242424;border-bottom-color:#333}
+  body.font-shun .mcard.girl,body.font-shun .mcard.place,body.font-shun .mcard.dep{background:#242424}
+  body.font-shun .mc-name{color:#e8f0f8}
+  body.font-shun .mc-sub{color:rgba(180,210,240,.45)}
+  body.font-shun label{color:rgba(180,210,240,.6)}
+  body.font-shun input,body.font-shun select{background:#1e1e1e;border-color:rgba(90,138,181,.3);color:#e8f0f8}
+  body.font-shun input:focus,body.font-shun select:focus{background:#252525;border-color:#5a8ab5}
+  body.font-shun input:disabled{background:#141414;color:rgba(180,210,240,.3);border-color:rgba(90,138,181,.15)}
+  body.font-shun .gi-card{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
+  body.font-shun .gi-badge{background:rgba(90,138,181,.2);color:#7ab8e8}
+  body.font-shun .rm-btn{color:rgba(180,210,240,.35)}
+  body.font-shun .shift-stepper{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
+  body.font-shun .shift-stepper-hint{color:rgba(180,210,240,.4)}
+  body.font-shun .run-block{background:#242424;border-color:rgba(255,255,255,.04)}
+  body.font-shun .run-label{background:rgba(90,138,181,.18);color:#7ab8e8}
+  body.font-shun .hist-item{background:#242424}
+  body.font-shun .hist-item:active{background:#2e2e2e}
+  body.font-shun .hist-item-sub{color:rgba(180,210,240,.45)}
+  body.font-shun .hist-item-badge{background:rgba(90,138,181,.18);color:#7ab8e8}
+  body.font-shun .hist-detail-run{background:#242424}
+  body.font-shun .hist-detail-run-lbl{background:rgba(90,138,181,.18);color:#7ab8e8}
+  body.font-shun .tl-item{border-bottom-color:#2a2a2a}
+  body.font-shun .badge-pick{background:rgba(90,138,181,.2);color:#7ab8e8}
+  body.font-shun .badge-drop{background:rgba(74,168,200,.15);color:#7ac8d8}
+  body.font-shun .tl-min{background:rgba(90,138,181,.15)}
+  body.font-shun .otab{background:#1e1e1e;color:rgba(160,200,235,.55);border-color:rgba(90,138,181,.2)}
+  body.font-shun .otab.active{color:#e8f0f8}
+  body.font-shun .obox.boy{background:#1e1e1e;color:#e8f0f8}
+  body.font-shun .month-acc{background:#242424}
+  body.font-shun .month-acc-body{border-top-color:#333}
+  body.font-shun .mbox{background:#1a1a1a}
+  body.font-shun .mtitle{border-bottom-color:#333;color:#e8f0f8}
+  body.font-shun .mclose{color:rgba(180,210,240,.5)}
+  body.font-shun .memo-box{background:#1e2030}
+  body.font-shun .memo-inp{color:#e8f0f8}
+  body.font-shun .memo-hdr{color:rgba(180,210,240,.65)}
+  body.font-shun .auto-dep-box{background:linear-gradient(135deg,#1e2a3a,#1a2a4a)}
+  body.font-shun .dep-tab{background:#1e1e1e;color:rgba(160,200,235,.6);border-color:rgba(90,138,181,.2)}
+  body.font-shun .dep-tab.sel{background:rgba(90,138,181,.22);color:#e8f0f8}
+  body.font-shun .bg{background:#1d2738;color:#7ab8e8;border-color:rgba(90,138,181,.3)}
+  body.font-shun .bo{background:#1a1a1a;border-color:rgba(90,138,181,.35)}
+  body.font-shun .bd{background:#2a1818;border-color:rgba(239,68,68,.35);color:#f87171}
+  body.font-shun hr.dv{border-top-color:#2a2a2a;border-top-style:solid}
+  body.font-shun .save-success-bar{background:linear-gradient(135deg,#1e3a5a,#2a5a8a)}
+  body.font-shun .empty-hist,body.font-shun .empty-note{color:rgba(180,210,240,.4)}
+  body.font-shun .min-row span,body.font-shun .auto-dep-note{color:rgba(180,210,240,.4)}
+  body.font-shun .hist-dot{background:rgba(90,138,181,.2)}
+}
 .font-toggle{margin-left:auto;align-self:center;background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.4);border-radius:20px;padding:5px 11px;cursor:pointer;font-size:12px;color:#fde8e8;font-weight:700;display:flex;align-items:center;gap:5px;transition:all .2s;white-space:nowrap}
 .font-toggle:active{transform:scale(.96)}
 .font-toggle .ft-icon{font-size:14px}
@@ -301,9 +344,6 @@ hr.dv{border:none;border-top:1px solid #f0eaf0;margin:10px 0}
 .loading-text{font-size:15px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
 .loading-sub{font-size:12px;opacity:.75;margin-top:6px;font-family:'Zen Maru Gothic',sans-serif}
 #starfield{display:none;position:fixed;inset:0;pointer-events:none;z-index:0}
-body.font-shun #starfield{display:block}
-body.font-shun .pg{background:transparent;position:relative;z-index:1}
-body.font-shun #pg-hist{background:transparent}
 @media (min-width: 768px) {
   .hdr{position:relative;top:auto;padding-top:7px}
   .pg{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
