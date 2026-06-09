@@ -47,6 +47,29 @@ jobs:
         if: env.SKIP_GAS == 'false'
         run: clasp push --force
 
+      - name: Delete old GAS versions to stay under 200 limit
+        if: env.SKIP_GAS == 'false'
+        run: |
+          SCRIPT_ID="1mONDYVSKP6W7xTIj_ojGflnF6Ii5fDPmuXkxAaTAk2mVix-5l13ws3wF"
+          ACCESS_TOKEN=$(python3 -c "import json; d=json.load(open('$HOME/.clasprc.json')); print(d.get('token',{}).get('access_token',''))")
+          VERSIONS=$(curl -s "https://script.googleapis.com/v1/projects/${SCRIPT_ID}/versions?pageSize=200" \
+            -H "Authorization: Bearer $ACCESS_TOKEN")
+          COUNT=$(echo "$VERSIONS" | python3 -c "import sys,json; print(len(json.load(sys.stdin).get('versions',[])))")
+          echo "現在のバージョン数: $COUNT"
+          if [ "$COUNT" -ge 195 ]; then
+            echo "古いバージョンを削除します..."
+            echo "$VERSIONS" | python3 -c "
+          import sys,json
+          vs=sorted(json.load(sys.stdin).get('versions',[]),key=lambda x:x.get('versionNumber',0))
+          for v in vs[:60]:
+              print(v['versionNumber'])
+          " | while read VN; do
+              curl -s -X DELETE "https://script.googleapis.com/v1/projects/${SCRIPT_ID}/versions/${VN}" \
+                -H "Authorization: Bearer $ACCESS_TOKEN" > /dev/null
+              echo "削除: version $VN"
+            done
+          fi
+
       - name: Deploy Web App and update URL in HTML
         if: env.SKIP_GAS == 'false'
         run: |
