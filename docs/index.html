@@ -57,7 +57,16 @@ body.font-shun .bgr{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
 body.font-shun .bmap{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
 body.font-shun .bdk{background:#1e3050}
 body.font-shun .bsave{background:linear-gradient(135deg,#5a8ab5,#2a5a8a);box-shadow:0 4px 14px rgba(30,60,120,.3)}
-body.font-shun .today-banner{background:linear-gradient(135deg,#2a5a8a,#5a8ab5)}
+body.font-shun .today-card{background:#242424;box-shadow:0 2px 10px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
+body.font-shun .today-card-hdr{border-bottom-color:#333}
+body.font-shun .today-card-date{color:#e8f0f8}
+body.font-shun .today-action-bar{border-top-color:#333}
+body.font-shun .today-action-sep{background:#333}
+body.font-shun .today-action-btn:active{background:#2e2e2e}
+body.font-shun .hist-detail-run{border-bottom-color:#333}
+body.font-shun .edit-time-row{border-bottom-color:#2e2e2e}
+body.font-shun .edit-time-inp{color:#e8f0f8}
+body.font-shun .edit-time-name{color:#c8d8e8}
 body.font-shun .obox.shun{background:linear-gradient(135deg,#1e3050,#2a5a8a)}
 body.font-shun .card{background:#242424;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
 body.font-shun .ctitle{border-bottom-color:#333;color:rgba(180,210,240,.7)}
@@ -198,11 +207,22 @@ input:disabled{background:#f5f5f5;color:#bbb;border-color:#ebebeb}
 .mtitle{font-size:15px;font-weight:700;color:var(--tx);padding:16px 0;border-bottom:1px solid #ece4ea;display:flex;align-items:center;justify-content:space-between;background:transparent;margin-bottom:14px}
 .mclose{background:none;border:none;font-size:22px;color:#bbb;cursor:pointer}
 
-.today-banner{background:linear-gradient(135deg,#c4608a,#e88fac);border-radius:16px;padding:16px;margin-bottom:0;color:#fff;position:relative;overflow:hidden}
-.today-banner::before{content:'TODAY';position:absolute;right:-8px;top:-8px;font-size:60px;font-weight:700;opacity:.1;font-family:'Kaisei Opti',serif;line-height:1;color:#fff}
-.today-banner-label{font-size:11px;font-weight:700;opacity:.75;margin-bottom:4px}
-.today-banner-date{font-size:20px;font-weight:700;font-family:'Kaisei Opti',serif;margin-bottom:10px}
-.today-banner-empty{font-size:13px;opacity:.65}
+/* ===== 今日のスケジュールカード ===== */
+.today-card{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:12px;box-shadow:0 2px 10px rgba(180,100,140,.08),0 0 0 1px rgba(200,150,175,.08)}
+.today-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid #f5f0f3}
+.today-card-label{font-size:10px;font-weight:700;color:var(--txs);letter-spacing:1.5px;opacity:.5}
+.today-card-date{font-size:19px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx)}
+.today-card-empty{padding:28px 16px 24px;text-align:center}
+.today-card-empty p{font-size:14px;color:#bbb}
+.today-card-empty small{font-size:11px;color:#ddd}
+.today-action-bar{display:flex;border-top:1px solid #f5f0f3}
+.today-action-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:13px 4px;cursor:pointer;user-select:none;transition:background .12s;-webkit-tap-highlight-color:transparent}
+.today-action-btn:active{background:#f8f4f6}
+.today-action-ico{font-size:20px;line-height:1}
+.today-action-lbl{font-size:10px;font-weight:700;color:var(--txs);letter-spacing:.3px}
+.today-action-sep{width:1px;background:#f5f0f3;align-self:stretch}
+.today-action-del .today-action-ico{font-size:17px;opacity:.5}
+.today-action-del .today-action-lbl{color:#e05a5a;opacity:.8}
 .battery-card{background:var(--card);border-radius:16px;padding:13px 16px;margin-top:10px;box-shadow:var(--sh);display:flex;justify-content:space-between;align-items:center;gap:8px}
 .battery-user{display:flex;align-items:center;gap:10px;flex:1}
 .battery-name{font-size:12px;font-weight:700;color:var(--txs);margin-bottom:2px}
@@ -244,15 +264,16 @@ input:disabled{background:#f5f5f5;color:#bbb;border-color:#ebebeb}
 .hist-item-arr{font-size:14px;color:#ccc}
 
 .hist-detail-date{font-size:18px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);margin-bottom:14px}
-.hist-detail-run{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid rgba(200,150,175,.1)}
-.hist-detail-run-lbl{font-size:11px;font-weight:700;color:var(--teal);background:var(--pul);padding:2px 9px;border-radius:20px;display:inline-block;margin-bottom:10px}
-.edit-time-row{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #f5f0f3}
+.hist-detail-run{padding:12px 16px 2px;border-bottom:1px solid #f5f0f3}
+.hist-detail-run:last-of-type{border-bottom:none}
+.hist-detail-run-lbl{font-size:10px;font-weight:700;color:var(--txs);letter-spacing:.8px;margin-bottom:8px;opacity:.5}
+.edit-time-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f8f4f6}
 .edit-time-row:last-child{border-bottom:none}
 .edit-time-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.edit-time-inp{font-size:15px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);border:none;border-bottom:2px solid var(--lav);background:transparent;outline:none;width:54px;padding:0 2px}
-.edit-time-inp:focus{border-bottom-color:var(--pk)}
-.edit-time-name{font-size:13px;flex:1;color:var(--tx)}
-.edit-time-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;flex-shrink:0}
+.edit-time-inp{font-size:17px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);border:none;background:transparent;outline:none;width:54px;padding:0;-webkit-appearance:none;cursor:pointer}
+.edit-time-inp:focus{color:var(--pk)}
+.edit-time-name{font-size:14px;flex:1;color:var(--tx);font-weight:500}
+.edit-time-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0}
 
 .empty-hist{text-align:center;padding:40px 14px;color:#ccc}
 .empty-hist .ei{font-size:44px;margin-bottom:8px}
@@ -1224,18 +1245,40 @@ function renderHistPage(){
   const today=todayVal();
   const todayEntry=schedHistory.find(x=>x.dateVal===today);
   const others=schedHistory.filter(x=>x.dateVal!==today);
-  let todayHtml=`<div class="today-banner"><div class="today-banner-label">📅 今日のスケジュール</div>`;
+  let todayHtml=`<div class="today-card">`;
   if(todayEntry){
-    todayHtml+=`<div class="today-banner-date">${fmtDLFull(todayEntry.dateVal)}</div>`;
-    todayHtml+=buildRunsHtml(todayEntry);
-    todayHtml+=`<div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn bdk sm" style="flex:1" onclick="copyHistText(${todayEntry.id},'shun')">🌙 しゅん用コピー</button>
-      <button class="btn bgr sm" style="flex:1" onclick="copyHistText(${todayEntry.id},'boy')">📤 ボーイ用コピー</button>
+    todayHtml+=`
+    <div class="today-card-hdr">
+      <span class="today-card-label">TODAY</span>
+      <span class="today-card-date">${fmtDLFull(todayEntry.dateVal)}</span>
     </div>
-    <button class="btn bd sm" style="margin-top:8px;width:100%" onclick="deleteHist(${todayEntry.id})">🗑️ 削除</button>`;
+    ${buildRunsHtml(todayEntry)}
+    <div class="today-action-bar">
+      <div class="today-action-btn" onclick="copyHistText(${todayEntry.id},'shun')">
+        <span class="today-action-ico">🌙</span>
+        <span class="today-action-lbl">しゅん用</span>
+      </div>
+      <div class="today-action-sep"></div>
+      <div class="today-action-btn" onclick="copyHistText(${todayEntry.id},'boy')">
+        <span class="today-action-ico">📤</span>
+        <span class="today-action-lbl">ボーイ用</span>
+      </div>
+      <div class="today-action-sep"></div>
+      <div class="today-action-btn today-action-del" onclick="deleteHist(${todayEntry.id})">
+        <span class="today-action-ico">🗑</span>
+        <span class="today-action-lbl">削除</span>
+      </div>
+    </div>`;
   } else {
-    todayHtml+=`<div class="today-banner-date" style="opacity:.7">登録なし</div>
-      <div class="today-banner-empty">スケジュールタブで生成・保存してね</div>`;
+    todayHtml+=`
+    <div class="today-card-hdr">
+      <span class="today-card-label">TODAY</span>
+      <span class="today-card-date">${fmtDL(today)}</span>
+    </div>
+    <div class="today-card-empty">
+      <p>スケジュールなし</p>
+      <small>スケジュールを生成して保存してね</small>
+    </div>`;
   }
   todayHtml+=`</div>`;
   todayHtml+=renderBatteryCard();
@@ -1292,11 +1335,22 @@ function openHistDetail(id){
   if(!e) return;
   document.getElementById('moHistTitle').textContent=`📅 ${fmtDLFull(e.dateVal)}`;
   let html=buildRunsHtml(e);
-  html+=`<div style="display:flex;gap:8px;margin-top:12px">
-    <button class="btn bdk" style="flex:1;margin-bottom:0" onclick="copyHistText(${e.id},'shun')">🌙 しゅん用コピー</button>
-    <button class="btn bgr" style="flex:1;margin-bottom:0" onclick="copyHistText(${e.id},'boy')">📤 ボーイ用コピー</button>
+  html+=`<div class="today-action-bar" style="margin:14px -16px 0;border-radius:0 0 14px 14px;overflow:hidden">
+    <div class="today-action-btn" onclick="copyHistText(${e.id},'shun')">
+      <span class="today-action-ico">🌙</span>
+      <span class="today-action-lbl">しゅん用</span>
+    </div>
+    <div class="today-action-sep"></div>
+    <div class="today-action-btn" onclick="copyHistText(${e.id},'boy')">
+      <span class="today-action-ico">📤</span>
+      <span class="today-action-lbl">ボーイ用</span>
+    </div>
+    <div class="today-action-sep"></div>
+    <div class="today-action-btn today-action-del" onclick="deleteHist(${e.id})">
+      <span class="today-action-ico">🗑</span>
+      <span class="today-action-lbl">削除</span>
+    </div>
   </div>`;
-  html+=`<button class="btn bd" style="margin-top:8px" onclick="deleteHist(${e.id})">🗑️ このスケジュールを削除</button>`;
   document.getElementById('moHistBody').innerHTML=html;
   document.getElementById('moHistDetail').classList.add('open');
 }
