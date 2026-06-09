@@ -302,7 +302,7 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .today-action-bar{display:flex;border-top:1px solid #f5f0f3}
 .today-action-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:13px 4px;cursor:pointer;user-select:none;transition:background .12s;-webkit-tap-highlight-color:transparent}
 .today-action-btn:active{background:#f8f4f6}
-.today-action-ico{font-size:20px;line-height:1}
+.today-action-ico{font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;color:var(--txs)}
 .today-action-lbl{font-size:10px;font-weight:700;color:var(--txs);letter-spacing:.3px}
 .today-action-sep{width:1px;background:#f5f0f3;align-self:stretch}
 .today-action-del .today-action-ico{font-size:17px;opacity:.5}
@@ -1366,19 +1366,9 @@ function renderHistPage(){
     </div>
     ${buildRunsHtml(todayEntry)}
     <div class="today-action-bar">
-      <div class="today-action-btn" onclick="copyHistText(${todayEntry.id},'shun')">
-        <span class="today-action-ico">🌙</span>
-        <span class="today-action-lbl">しゅん用</span>
-      </div>
-      <div class="today-action-sep"></div>
-      <div class="today-action-btn" onclick="copyHistText(${todayEntry.id},'boy')">
-        <span class="today-action-ico">📤</span>
-        <span class="today-action-lbl">ボーイ用</span>
-      </div>
-      <div class="today-action-sep"></div>
-      <div class="today-action-btn today-action-del" onclick="deleteHist(${todayEntry.id})">
-        <span class="today-action-ico">🗑</span>
-        <span class="today-action-lbl">削除</span>
+      <div class="today-action-btn" onclick="shareHist(${todayEntry.id})">
+        <span class="today-action-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>
+        <span class="today-action-lbl">共有</span>
       </div>
     </div>`;
   } else {
@@ -1448,19 +1438,9 @@ function openHistDetail(id){
   document.getElementById('moHistTitle').textContent=`📅 ${fmtDLFull(e.dateVal)}`;
   let html=buildRunsHtml(e);
   html+=`<div class="today-action-bar" style="margin:14px -16px 0;border-radius:0 0 14px 14px;overflow:hidden">
-    <div class="today-action-btn" onclick="copyHistText(${e.id},'shun')">
-      <span class="today-action-ico">🌙</span>
-      <span class="today-action-lbl">しゅん用</span>
-    </div>
-    <div class="today-action-sep"></div>
-    <div class="today-action-btn" onclick="copyHistText(${e.id},'boy')">
-      <span class="today-action-ico">📤</span>
-      <span class="today-action-lbl">ボーイ用</span>
-    </div>
-    <div class="today-action-sep"></div>
-    <div class="today-action-btn today-action-del" onclick="deleteHist(${e.id})">
-      <span class="today-action-ico">🗑</span>
-      <span class="today-action-lbl">削除</span>
+    <div class="today-action-btn" onclick="shareHist(${e.id})">
+      <span class="today-action-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>
+      <span class="today-action-lbl">共有</span>
     </div>
   </div>`;
   document.getElementById('moHistBody').innerHTML=html;
@@ -1492,6 +1472,19 @@ function rebuildHistTexts(e){
   e.boyTxt=boy.join('\n');
 }
 
+async function shareHist(id){
+  const e=schedHistory.find(x=>x.id==id);
+  if(!e) return;
+  const txt=e.boyTxt||e.shunTxt||'';
+  if(navigator.share){
+    try{ await navigator.share({text:txt}); }
+    catch(err){ if(err.name!=='AbortError') showToast('共有できませんでした'); }
+  } else {
+    if(navigator.clipboard) await navigator.clipboard.writeText(txt);
+    else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
+    showToast('コピーしました！');
+  }
+}
 function copyHistText(id, who){
   const e=schedHistory.find(x=>x.id==id);
   if(!e) return;
