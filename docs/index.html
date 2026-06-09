@@ -1410,7 +1410,7 @@ function renderHistPage(){
   const debugVal=_debugTime||'';
   todayHtml+=`<div class="debug-time-row">
     <span class="debug-time-lbl">🕐 テスト時刻</span>
-    <input class="debug-time-inp" type="time" value="${debugVal}" oninput="setDebugTime(this.value)" placeholder="--:--">
+    <input class="debug-time-inp" type="time" value="${debugVal}" onchange="setDebugTime(this.value)" placeholder="--:--">
     <button class="debug-time-clr" onclick="setDebugTime('');document.querySelector('.debug-time-inp').value=''">リセット</button>
   </div>`;
   tp.innerHTML=todayHtml;
