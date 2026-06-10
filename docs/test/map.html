@@ -20,7 +20,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
   display:none;
 }
 
-/* Mode B: 通常フロー、マイナスmarginでセーフエリア裏まで物理的に配置 */
+/* Mode B: 通常フロー、マイナスmarginでセーフエリア裸まで物理的に配置 */
 #wrap-b{
   margin-top:calc(-1 * env(safe-area-inset-top));
   height:calc(100dvh + env(safe-area-inset-top));
@@ -28,7 +28,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 }
 #map-b{width:100%;height:100%}
 
-/* Mode C: background-image のdivをセーフエリア裏に配置して滲み出るか検証 */
+/* Mode C: background-image のdivをセーフエリア裸に配置して滲み出るか検証 */
 #wrap-c{
   margin-top:calc(-1 * env(safe-area-inset-top));
   height:calc(100dvh + env(safe-area-inset-top));
@@ -129,8 +129,6 @@ function initB(){
 var mapC=null;
 function initC(){
   if(mapC) return;
-  var wc=document.getElementById('wrap-c');
-  wc.style.display='flex';
   mapC=L.map('map-c',{center:center,zoom:zoom,zoomControl:true});
   L.tileLayer(tileUrl,tileOpt).addTo(mapC);
   mapC.on('move',function(){updateCenter(mapC)});
@@ -158,8 +156,10 @@ function setMode(m){
     initB();
     setTimeout(function(){mapB&&mapB.invalidateSize({animate:false})},100);
   } else {
+    document.getElementById('wrap-c').style.display='flex';
     document.getElementById('hv-mode').textContent='C / bg-image strip';
     initC();
+    setTimeout(function(){mapC&&mapC.invalidateSize({animate:false})},100);
   }
 }
 
