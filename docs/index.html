@@ -2096,7 +2096,14 @@ async function initMap() {
     container.style.height = (window.innerHeight - safeTop - hdrH - legendH - navH) + 'px';
   } else {
     container.style.setProperty('height', screen.height + 'px', 'important');
-    setTimeout(function(){ _mapObj && _mapObj.invalidateSize(); }, 200);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        if(_mapObj){
+          _mapObj.invalidateSize({animate:false});
+          _mapObj.setView(_mapObj.getCenter(), _mapObj.getZoom(), {reset:true, animate:false});
+        }
+      });
+    });
   }
 
   if (!_mapObj) {
