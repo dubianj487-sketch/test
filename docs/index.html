@@ -139,7 +139,8 @@ body.dark-active #map-container .leaflet-tile-pane{filter:brightness(1.6) contra
 body.map-active{padding-top:0!important;overflow:visible!important}
 body.map-active .hdr{display:none!important}
 body.map-active #pg-map{position:fixed!important;top:0;left:0;right:0;bottom:0;z-index:50;height:100dvh!important;padding:0!important;overflow:visible!important}
-body.map-active #map-container{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:auto!important;z-index:51}
+#map-container{display:none}
+body.map-active #map-container{display:block;position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:auto!important;z-index:49}
 body.map-active #pg-map .map-legend{position:absolute;top:0;left:0;right:0;z-index:10;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;background:transparent;box-shadow:none;border-bottom:none}
 body.map-active .bnav{background:rgba(250,246,250,0.65)!important;-webkit-backdrop-filter:blur(26px) saturate(1.9)!important;backdrop-filter:blur(26px) saturate(1.9)!important;border-top:1.5px solid rgba(255,255,255,0.5)!important;box-shadow:none!important}
 body.map-active.font-shun.dark-active .bnav{background:rgba(8,14,30,0.65)!important;border-top-color:rgba(90,140,200,0.18)!important}
@@ -570,8 +571,9 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     <span class="map-legend-item" id="locStatusShun" style="opacity:.4">🌙 しゅん</span>
     <span class="map-legend-item" id="locStatusHee" style="opacity:.4">🌸 ひーちゃん</span>
   </div>
-  <div id="map-container"></div>
 </div>
+
+<div id="map-container"></div>
 
 <div class="pg" id="pg-master">
   <div class="card">
