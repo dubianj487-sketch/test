@@ -1818,7 +1818,7 @@ function openSettings(){
 }
 function setAppTheme(t){
   _theme=t; localStorage.setItem('appTheme',t); localStorage.setItem('fontMode',t==='shun'?'shun':'hee');
-  _applyAll(); openSettings();
+  _applyAll(); openSettings(); updateMapTile();
 }
 function setColorMode(c){
   _color=c; localStorage.setItem('colorMode',c); _applyAll(); openSettings();
@@ -1831,6 +1831,23 @@ function setAppFont(f){
 // ========== マップ ==========
 var _mapObj = null;
 var _mapLayer = null;
+var _mapTile = null;
+
+function _cartoCDN(style){
+  return L.tileLayer('https://{s}.basemaps.cartocdn.com/'+style+'/{z}/{x}/{y}{r}.png', {
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains:'abcd', maxZoom:19
+  });
+}
+function _currentTileStyle(){
+  return document.body.classList.contains('font-shun') ? 'dark_all' : 'light_all';
+}
+function updateMapTile(){
+  if(!_mapObj) return;
+  var style = _currentTileStyle();
+  if(_mapTile) _mapObj.removeLayer(_mapTile);
+  _mapTile = _cartoCDN(style).addTo(_mapObj);
+}
 
 function _geocacheKey(addr){ return 'geo2_' + addr; }
 
@@ -1893,9 +1910,7 @@ async function initMap() {
 
   if (!_mapObj) {
     _mapObj = L.map('map-container', {center:[34.6937,135.5023], zoom:13, zoomControl:true});
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:'© OpenStreetMap contributors', maxZoom:19
-    }).addTo(_mapObj);
+    _mapTile = _cartoCDN(_currentTileStyle()).addTo(_mapObj);
     _mapLayer = L.layerGroup().addTo(_mapObj);
     setTimeout(function(){ _mapObj && _mapObj.invalidateSize(); }, 200);
   } else {
