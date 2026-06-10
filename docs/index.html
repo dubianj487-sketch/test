@@ -136,6 +136,14 @@ body.font-shun.dark-active .battery-pct{color:#e8f0f8}
 body.font-shun.dark-active .battery-charge{color:rgba(180,210,240,.5)}
 body.font-shun.dark-active .map-legend{background:#1a1a1a;color:#c8d8e8;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 body.dark-active #map-container .leaflet-tile-pane{filter:brightness(1.6) contrast(1.1)}
+body.map-active{padding-top:0!important}
+body.map-active .hdr{display:none!important}
+body.map-active #pg-map{position:fixed!important;top:0;left:0;right:0;bottom:0;z-index:50;height:100dvh!important;padding:0!important}
+body.map-active #map-container{position:absolute!important;top:0;left:0;right:0;bottom:0;height:auto!important}
+body.map-active #pg-map .map-legend{position:absolute;top:0;left:0;right:0;z-index:10;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;background:rgba(250,246,250,0.65);-webkit-backdrop-filter:blur(26px) saturate(1.9);backdrop-filter:blur(26px) saturate(1.9);border-bottom:1.5px solid rgba(255,255,255,0.5);box-shadow:none}
+body.map-active.font-shun.dark-active #pg-map .map-legend{background:rgba(8,14,30,0.65);border-bottom-color:rgba(90,140,200,0.18)}
+body.map-active .bnav{background:rgba(250,246,250,0.65)!important;-webkit-backdrop-filter:blur(26px) saturate(1.9)!important;backdrop-filter:blur(26px) saturate(1.9)!important;border-top:1.5px solid rgba(255,255,255,0.5)!important;box-shadow:none!important}
+body.map-active.font-shun.dark-active .bnav{background:rgba(8,14,30,0.65)!important;border-top-color:rgba(90,140,200,0.18)!important}
 body.font-shun.dark-active .hist-item-sub{color:rgba(180,210,240,.45)}
 body.font-shun.dark-active .hist-item-arr{color:rgba(180,210,240,.3)}
 body.font-shun.dark-active .today-card-empty p{color:rgba(180,210,240,.45)}
@@ -922,6 +930,7 @@ function switchPg(p){
   document.querySelectorAll('.nb').forEach(e=>e.classList.remove('active'));
   document.getElementById('pg-'+p).classList.add('active');
   document.getElementById('nb-'+p).classList.add('active');
+  document.body.classList.toggle('map-active', p==='map');
   if(p==='hist') renderHistPage();
   if(p==='map') initMap();
   if(p==='secret') renderSecretPage();
@@ -2077,11 +2086,16 @@ async function initMap() {
   var container = document.getElementById('map-container');
   if (!container) return;
 
-  var hdrH = (document.querySelector('.hdr') || {}).offsetHeight || 44;
-  var navH = (document.querySelector('.bnav') || {}).offsetHeight || 56;
-  var legendH = (document.getElementById('mapLegend') || {}).offsetHeight || 44;
-  var safeTop = parseInt(getComputedStyle(document.body).paddingTop) || 0;
-  container.style.height = (window.innerHeight - safeTop - hdrH - legendH - navH) + 'px';
+  if(!document.body.classList.contains('map-active')){
+    var hdrH = (document.querySelector('.hdr') || {}).offsetHeight || 44;
+    var navH = (document.querySelector('.bnav') || {}).offsetHeight || 56;
+    var legendH = (document.getElementById('mapLegend') || {}).offsetHeight || 44;
+    var safeTop = parseInt(getComputedStyle(document.body).paddingTop) || 0;
+    container.style.height = (window.innerHeight - safeTop - hdrH - legendH - navH) + 'px';
+  } else {
+    container.style.height = '';
+    setTimeout(function(){ _mapObj && _mapObj.invalidateSize(); }, 100);
+  }
 
   if (!_mapObj) {
     _mapObj = L.map('map-container', {center:[34.6937,135.5023], zoom:13, zoomControl:true});
