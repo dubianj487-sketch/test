@@ -1833,9 +1833,7 @@ function setAppFont(f){
 
 // ========== リアルタイム位置共有 ==========
 var _locLayer = null;
-var _locWatchId = null;
 var _locPollTimer = null;
-var _locLastSent = 0;
 
 function _myUser(){ return localStorage.getItem('fontMode')==='shun' ? 'shun' : 'hee'; }
 
@@ -1869,20 +1867,7 @@ function _fetchLocations(){
 }
 
 function startLocationTracking(){
-  if(!navigator.geolocation) return;
-  var myUser=_myUser();
-  navigator.geolocation.watchPosition(function(pos){
-    var lat=pos.coords.latitude, lng=pos.coords.longitude;
-    locationData[myUser]={lat:lat,lng:lng,at:new Date().toISOString()};
-    var now=Date.now();
-    if(now-_locLastSent>15000){
-      _locLastSent=now;
-      fetch(GAS_URL+'?action=saveLocation&user='+myUser+'&lat='+lat+'&lng='+lng+'&_='+now).catch(function(){});
-    }
-    updateLocMarkers();
-  }, null, {enableHighAccuracy:true, maximumAge:10000, timeout:30000});
-
-  // 相手の位置を15秒おきにポーリング
+  // 位置送信はOverlandが担当。アプリはGASをポーリングするだけ
   _locPollTimer=setInterval(_fetchLocations, 15000);
   _fetchLocations();
 }
