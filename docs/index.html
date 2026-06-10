@@ -25,7 +25,7 @@ html{-webkit-color-scheme:light dark;color-scheme:light dark}
   --sh:0 4px 20px rgba(200,100,140,.12);
   --gold:#e88fac;--teal:#c4608a;
 }
-body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#CE95B0 !important;background-color:#CE95B0 !important;height:100dvh;overflow:hidden;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation}
+body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#CE95B0 !important;background-color:#CE95B0 !important;height:100dvh;overflow:hidden;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation;padding-top:env(safe-area-inset-top)}
 html{background:#CE95B0 !important;background-color:#CE95B0 !important;overscroll-behavior:none;height:100dvh}
 /* ===== フォント切り替え ===== */
 body.font-shun{--app-font:-apple-system,BlinkMacSystemFont,'Helvetica Neue'}
@@ -57,9 +57,6 @@ body.font-shun{
 html:has(body.font-shun){background:#d8eef8 !important}
 body.font-shun .pg{background:#c0d8ec}
 body.font-shun .loading-overlay{background:rgba(30,48,80,.92)}
-body.font-shun .hdr{background:#5a8ab5;box-shadow:0 2px 18px rgba(30,60,120,.2)}
-body.font-shun .hdr-t{color:#e8f0f8}
-body.font-shun .hdr-s{color:rgba(220,240,255,.75)}
 body.font-shun .bp{background:#2a5a8a;box-shadow:0 4px 14px rgba(30,60,120,.3)}
 body.font-shun .bgr{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
 body.font-shun .bmap{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
@@ -80,7 +77,6 @@ body.font-shun.dark-active{
 }
 html:has(body.font-shun.dark-active){background:#111111 !important}
 body.font-shun.dark-active .pg{background:#1a1a1a}
-body.font-shun.dark-active .hdr{background:#1e3050;box-shadow:0 2px 18px rgba(10,20,50,.3)}
 body.font-shun.dark-active .bnav{background:#111111;box-shadow:0 -2px 16px rgba(0,0,0,.5)}
 body.font-shun.dark-active .today-card{background:#242424;box-shadow:0 2px 10px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
 body.font-shun.dark-active .today-card-hdr{border-bottom-color:#333}
@@ -136,8 +132,7 @@ body.font-shun.dark-active .battery-pct{color:#e8f0f8}
 body.font-shun.dark-active .battery-charge{color:rgba(180,210,240,.5)}
 body.font-shun.dark-active .map-legend{background:#1a1a1a;color:#c8d8e8;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 body.dark-active #map-container .leaflet-tile-pane{filter:brightness(1.6) contrast(1.1)}
-body.map-active{overflow:visible!important}
-body.map-active .hdr{display:none!important}
+body.map-active{overflow:visible!important;padding-top:0!important}
 body.map-active #pg-map{position:fixed!important;top:0;left:0;right:0;bottom:0;z-index:52!important;height:100dvh!important;padding:0!important;overflow:visible!important;background:transparent!important}
 #map-container{display:none}
 body.map-active #map-container{display:block;position:fixed!important;top:calc(-1 * env(safe-area-inset-top))!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:calc(100dvh + env(safe-area-inset-top))!important;z-index:49}
@@ -174,9 +169,6 @@ body.font-shun.dark-active .save-success-bar{background:linear-gradient(135deg,#
 /* ===== フォント ===== */
 body.font-system{--app-font:system-ui,-apple-system,sans-serif}
 body.font-system *{font-family:system-ui,-apple-system,sans-serif !important}
-/* ===== 設定ボタン ===== */
-.settings-btn{margin-left:auto;align-self:center;background:rgba(255,255,255,.22);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;color:#fde8e8}
-.settings-btn:active{background:rgba(255,255,255,.35);transform:scale(.9)}
 /* ===== 設定パネル ===== */
 .sett-section{margin-bottom:22px}
 .sett-label{font-size:12px;font-weight:700;color:var(--txs);letter-spacing:.3px;margin-bottom:10px;opacity:.7}
@@ -192,12 +184,6 @@ body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
 .overland-url-row{display:flex;align-items:center;gap:8px;background:var(--pkp);border-radius:10px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;active:opacity:.8}
 .overland-url-row:active{opacity:.7}
 .overland-url-text{flex:1;font-size:10px;color:var(--txs);word-break:break-all;opacity:.7}
-
-.hdr{background:#CE95B0;padding:env(safe-area-inset-top) 14px 7px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
-.hdr-moon{font-size:24px;line-height:1;animation:mf 4s ease-in-out infinite}
-@keyframes mf{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(5deg)}}
-.hdr-t{font-size:20px;color:#fde8e8;font-weight:700;line-height:1}
-.hdr-s{font-size:12px;color:rgba(253,220,220,.7);margin-top:2px}
 
 .bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#fff;display:flex;box-shadow:0 -4px 20px rgba(80,60,140,.15)}
 .nb{flex:1;padding:6px 4px 4px;border:none;background:none;cursor:pointer;font-family:'Zen Maru Gothic',sans-serif;font-size:12px;color:#aaa8c0;display:flex;flex-direction:column;align-items:center;gap:2px;border-top:3px solid transparent;transition:all .2s}
@@ -431,7 +417,6 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 .secret-link-wrap{padding:24px 0;text-align:center}
 .secret-link{font-size:18px;font-weight:700;color:var(--pk);text-decoration:none;word-break:break-all;padding:16px;display:inline-block;background:var(--pkp);border-radius:14px;width:100%;box-sizing:border-box}
 @media (min-width: 768px) {
-  .hdr{position:relative;top:auto;padding-top:7px}
   .pg{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
   #histPageToday,#histPageMonths{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
   .bnav{padding-left:max(0px,calc(50% - 300px));padding-right:max(0px,calc(50% - 300px))}
@@ -444,8 +429,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 #pg-hist{padding:0 0 calc(52px + env(safe-area-inset-bottom))}
 #pg-secret{padding:14px 14px calc(52px + env(safe-area-inset-bottom))}
 @media (display-mode: standalone) {
-  /* PWA: ステータスバー余白の最低値を保証 */
-  .hdr{padding-top:max(env(safe-area-inset-top),7px)}
+  body{padding-top:max(env(safe-area-inset-top),7px)}
 }
 </style>
 </head>
@@ -457,15 +441,6 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   <div class="loading-spinner"></div>
   <div class="loading-text">🌙 読み込み中...</div>
   <div class="loading-sub">スプレッドシートからデータを取得しています</div>
-</div>
-
-<div class="hdr">
-  <div class="hdr-moon">🌙</div>
-  <div>
-    <div class="hdr-t">SILDE</div>
-    <div class="hdr-s">出勤時間から逆算・全自動スケジュール</div>
-  </div>
-  <button class="settings-btn" id="settingsBtn" onclick="openSettings()" aria-label="設定"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
 </div>
 
 <!-- SCHEDULE MODAL (bottom sheet) -->
@@ -599,6 +574,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   <button class="nb" id="nb-map" onclick="switchPg('map')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span>マップ</button>
   <button class="nb" id="nb-master" onclick="switchPg('master')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>行き先</button>
   <button class="nb" id="nb-secret" onclick="switchPg('secret')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>シークレット</button>
+  <button class="nb" id="nb-settings" onclick="openSettings()"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>設定</button>
 </div>
 
 <div class="mo" id="moDepLoc">
@@ -819,11 +795,8 @@ function onMemoInput(){
 
 function setPgHeight(){
   if(document.body.classList.contains('map-active')) return;
-  const hdr=document.querySelector('.hdr');
-  if(!hdr) return;
-  const hdrBottom=hdr.getBoundingClientRect().bottom;
   document.querySelectorAll('.pg:not(#pg-map)').forEach(function(el){
-    el.style.height=(window.innerHeight-hdrBottom)+'px';
+    el.style.height='';
   });
 }
 function slideTo(idx){
@@ -2090,7 +2063,7 @@ async function initMap() {
   if (!container) return;
 
   if(!document.body.classList.contains('map-active')){
-    var hdrH = (document.querySelector('.hdr') || {}).offsetHeight || 44;
+    var hdrH = 0;
     var navH = (document.querySelector('.bnav') || {}).offsetHeight || 56;
     var legendH = (document.getElementById('mapLegend') || {}).offsetHeight || 44;
     var safeTop = parseInt(getComputedStyle(document.body).paddingTop) || 0;
