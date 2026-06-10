@@ -135,6 +135,7 @@ body.font-shun.dark-active .battery-name{color:rgba(180,210,240,.7)}
 body.font-shun.dark-active .battery-pct{color:#e8f0f8}
 body.font-shun.dark-active .battery-charge{color:rgba(180,210,240,.5)}
 body.font-shun.dark-active .map-legend{background:#1a1a1a;color:#c8d8e8;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+body.dark-active #map-container .leaflet-tile-pane{filter:brightness(1.6) contrast(1.1)}
 body.font-shun.dark-active .hist-item-sub{color:rgba(180,210,240,.45)}
 body.font-shun.dark-active .hist-item-arr{color:rgba(180,210,240,.3)}
 body.font-shun.dark-active .today-card-empty p{color:rgba(180,210,240,.45)}
@@ -2010,7 +2011,7 @@ function _cartoCDN(style){
   });
 }
 function _jaTile(dark){
-  var style = dark ? 'rastertiles/dark_matter' : 'rastertiles/voyager';
+  var style = dark ? 'dark_all' : 'rastertiles/voyager';
   return L.tileLayer('https://{s}.basemaps.cartocdn.com/'+style+'/{z}/{x}/{y}{r}.png', {
     attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
     subdomains:'abcd', maxZoom:19
