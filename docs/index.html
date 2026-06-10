@@ -1921,9 +1921,7 @@ function _predictPos(key){
   var dt=b.t-a.t;
   if(dt<=0) return {lat:b.lat, lng:b.lng};
   var dlat=b.lat-a.lat, dlng=b.lng-a.lng;
-  // ほぼ静止（~10m以下）は動かさない
-  if(Math.abs(dlat)<0.0001&&Math.abs(dlng)<0.0001) return {lat:b.lat, lng:b.lng};
-  var r=Math.min((Date.now()-b.t)/dt, 2);
+  var r=Math.min((Date.now()-b.t)/dt, 1.5);
   return {lat:b.lat+dlat*r, lng:b.lng+dlng*r};
 }
 
@@ -1989,7 +1987,7 @@ function _fetchLocations(){
 
 function startLocationTracking(){
   _startPredLoop();
-  _locPollTimer=setInterval(_fetchLocations, 5000);
+  _locPollTimer=setInterval(_fetchLocations, 2000);
   _fetchLocations();
 }
 
