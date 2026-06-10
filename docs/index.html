@@ -553,7 +553,8 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     <span class="map-legend-item">🏠 場所</span>
     <span class="map-legend-item">👧 女の子</span>
     <span class="map-legend-item">🚩 出発地</span>
-    <span class="map-legend-item">📍 しゅん（仮）</span>
+    <span class="map-legend-item" id="locStatusShun" style="opacity:.4">🌙 しゅん</span>
+    <span class="map-legend-item" id="locStatusHee" style="opacity:.4">🌸 ひーちゃん</span>
   </div>
   <div id="map-container"></div>
 </div>
@@ -1856,7 +1857,31 @@ function _liveIcon(icon, bg){
   });
 }
 
+function _fmtAgo(isoStr){
+  if(!isoStr) return '–';
+  var diff=Math.floor((Date.now()-new Date(isoStr).getTime())/1000);
+  if(diff<60) return diff+'秒前';
+  if(diff<3600) return Math.floor(diff/60)+'分前';
+  return Math.floor(diff/3600)+'時間前';
+}
+
+function updateLocStatus(){
+  _LOC_USERS.forEach(function(u){
+    var el=document.getElementById('locStatus'+u.key.charAt(0).toUpperCase()+u.key.slice(1));
+    if(!el) return;
+    var d=locationData[u.key];
+    if(d&&d.lat&&d.lng){
+      el.style.opacity='1';
+      el.title=_fmtAgo(d.at);
+    } else {
+      el.style.opacity='.4';
+      el.title='データなし';
+    }
+  });
+}
+
 function updateLocMarkers(){
+  updateLocStatus();
   if(!_mapObj||!_locLayer) return;
   _LOC_USERS.forEach(function(u){
     var d=locationData[u.key];
@@ -1865,7 +1890,8 @@ function updateLocMarkers(){
       _locMarkers[u.key].setLatLng([d.lat,d.lng]);
     } else {
       _locMarkers[u.key]=L.marker([d.lat,d.lng],{icon:_liveIcon(u.icon,u.bg),zIndexOffset:2000})
-        .addTo(_locLayer).bindPopup('<b>'+u.label+'</b>');
+        .addTo(_locLayer);
+      (function(uk){ _locMarkers[uk].on('click',function(){ _locMarkers[uk].bindPopup('<b>'+_LOC_USERS.find(function(x){return x.key===uk}).label+'</b><br><small>'+_fmtAgo(locationData[uk]&&locationData[uk].at)+'</small>').openPopup(); }); })(u.key);
     }
   });
 }
@@ -1874,7 +1900,11 @@ function _fetchLocations(){
   fetch(GAS_URL+'?action=location&_='+Date.now())
     .then(function(r){return r.json();})
     .then(function(data){
-      if(data.ok){ locationData=Object.assign({},locationData,data.data); updateLocMarkers(); }
+      if(data.ok){
+        var newLoc = data.data || {};
+        Object.keys(newLoc).forEach(function(k){ if(newLoc[k]&&newLoc[k].lat) locationData[k]=newLoc[k]; });
+        updateLocMarkers();
+      }
     }).catch(function(){});
 }
 
