@@ -179,6 +179,9 @@ body.font-system *{font-family:system-ui,-apple-system,sans-serif !important}
 body.font-shun .sett-pill.sel{background:var(--teal);color:#fff}
 body.font-shun.dark-active .sett-pill{background:rgba(255,255,255,.08);color:rgba(180,210,240,.7)}
 body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
+.overland-url-row{display:flex;align-items:center;gap:8px;background:var(--pkp);border-radius:10px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;active:opacity:.8}
+.overland-url-row:active{opacity:.7}
+.overland-url-text{flex:1;font-size:10px;color:var(--txs);word-break:break-all;opacity:.7}
 
 .hdr{background:#CE95B0;padding:0 14px 7px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 2px 18px rgba(180,100,140,.3);position:sticky;top:0;z-index:200}
 .hdr-moon{font-size:24px;line-height:1;animation:mf 4s ease-in-out infinite}
@@ -671,6 +674,20 @@ body.font-shun.dark-active #pg-hist{background:transparent}
       <div class="sett-row">
         <button class="sett-pill" id="sp-maru" onclick="setAppFont('maru')">あ まるゴシック</button>
         <button class="sett-pill" id="sp-sys" onclick="setAppFont('system')">A システム</button>
+      </div>
+    </div>
+    <div class="sett-section">
+      <div class="sett-label">Overland URL（位置共有）</div>
+      <div style="font-size:11px;color:var(--txs);margin-bottom:6px">OverlandアプリのServer URLにコピーして設定してください</div>
+      <div class="overland-url-row" onclick="copyOverlandUrl('shun')" title="タップでコピー">
+        <span style="font-size:13px">🌙 しゅん</span>
+        <span class="overland-url-text" id="ovUrlShun"></span>
+        <span style="font-size:11px;color:var(--txs)">コピー</span>
+      </div>
+      <div class="overland-url-row" onclick="copyOverlandUrl('hee')" title="タップでコピー" style="margin-top:6px">
+        <span style="font-size:13px">🌸 ひーちゃん</span>
+        <span class="overland-url-text" id="ovUrlHee"></span>
+        <span style="font-size:11px;color:var(--txs)">コピー</span>
       </div>
     </div>
   </div>
@@ -1822,7 +1839,24 @@ function openSettings(){
   document.getElementById('sp-maru').classList.toggle('sel',_font!=='system');
   document.getElementById('sp-sys').classList.toggle('sel',_font==='system');
   document.getElementById('st-color').classList.toggle('disabled',_theme==='hee');
+  var base = GAS_URL.split('?')[0];
+  var elS = document.getElementById('ovUrlShun');
+  var elH = document.getElementById('ovUrlHee');
+  if(elS) elS.textContent = base+'?user=shun';
+  if(elH) elH.textContent = base+'?user=hee';
   document.getElementById('moSettings').classList.add('open');
+}
+function copyOverlandUrl(user){
+  var url = GAS_URL.split('?')[0]+'?user='+user;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(function(){ showToast('コピーしました'); }).catch(function(){ _fallbackCopy(url); });
+  } else { _fallbackCopy(url); }
+}
+function _fallbackCopy(text){
+  var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand('copy'); showToast('コピーしました'); } catch(e){ showToast('コピー失敗'); }
+  document.body.removeChild(ta);
 }
 function setAppTheme(t){
   _theme=t; localStorage.setItem('appTheme',t); localStorage.setItem('fontMode',t==='shun'?'shun':'hee');
