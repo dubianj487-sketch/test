@@ -695,6 +695,7 @@ let builtRuns = [];
 let outShunTxt='', outBoyTxt='', outTab='shun';
 let currentBuiltDate='', currentBuiltDateLabel='';
 let batteryData={};
+let locationData={};
 let secretData={url:'',text:''};
 
 // ========== GAS通信 ==========
@@ -751,6 +752,7 @@ function onMemoInput(){
       histCnt = c.histCnt || 0;
       memoText = res.data.memo || '';
       batteryData = res.data.battery || {};
+      locationData = res.data.location || {};
       secretData = res.data.secret || {url:'',text:''};
     }
   } catch(e) {
@@ -760,6 +762,7 @@ function onMemoInput(){
 
   overlay.style.display = 'none';
   initApp();
+  startLocationTracking();
   renderHistPage();
   document.getElementById('memoInp').value = memoText;
   var seenMemo = localStorage.getItem('memoSeen') || '';
@@ -1828,6 +1831,62 @@ function setAppFont(f){
 }
 (function(){ _applyAll(); })();
 
+// ========== リアルタイム位置共有 ==========
+var _locLayer = null;
+var _locWatchId = null;
+var _locPollTimer = null;
+var _locLastSent = 0;
+
+function _myUser(){ return localStorage.getItem('fontMode')==='shun' ? 'shun' : 'hee'; }
+
+function _locTimeAgo(iso){
+  var s=Math.floor((Date.now()-new Date(iso).getTime())/1000);
+  if(s<60) return '今さっき';
+  if(s<3600) return Math.floor(s/60)+'分前';
+  return Math.floor(s/3600)+'時間前';
+}
+
+function updateLocMarkers(){
+  if(!_mapObj||!_locLayer) return;
+  _locLayer.clearLayers();
+  var users=[{key:'shun',label:'しゅん',icon:'🌙',bg:'#1e3050'},{key:'hee',label:'ひーちゃん',icon:'🌸',bg:'#c478a8'}];
+  users.forEach(function(u){
+    var d=locationData[u.key];
+    if(!d||!d.lat||!d.lng) return;
+    var ago=_locTimeAgo(d.at);
+    L.marker([d.lat,d.lng],{icon:_divIcon(u.icon,u.bg),zIndexOffset:2000})
+      .addTo(_locLayer)
+      .bindPopup('<b>'+u.label+'</b><br><small>'+ago+'</small>');
+  });
+}
+
+function _fetchLocations(){
+  fetch(GAS_URL+'?action=location&_='+Date.now())
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(data.ok){ locationData=Object.assign({},locationData,data.data); updateLocMarkers(); }
+    }).catch(function(){});
+}
+
+function startLocationTracking(){
+  if(!navigator.geolocation) return;
+  var myUser=_myUser();
+  navigator.geolocation.watchPosition(function(pos){
+    var lat=pos.coords.latitude, lng=pos.coords.longitude;
+    locationData[myUser]={lat:lat,lng:lng,at:new Date().toISOString()};
+    var now=Date.now();
+    if(now-_locLastSent>15000){
+      _locLastSent=now;
+      fetch(GAS_URL+'?action=saveLocation&user='+myUser+'&lat='+lat+'&lng='+lng+'&_='+now).catch(function(){});
+    }
+    updateLocMarkers();
+  }, null, {enableHighAccuracy:true, maximumAge:10000, timeout:30000});
+
+  // 相手の位置を15秒おきにポーリング
+  _locPollTimer=setInterval(_fetchLocations, 15000);
+  _fetchLocations();
+}
+
 // ========== マップ ==========
 var _mapObj = null;
 var _mapLayer = null;
@@ -1912,6 +1971,7 @@ async function initMap() {
     _mapObj = L.map('map-container', {center:[34.6937,135.5023], zoom:13, zoomControl:true});
     _mapTile = _cartoCDN(_currentTileStyle()).addTo(_mapObj);
     _mapLayer = L.layerGroup().addTo(_mapObj);
+    _locLayer = L.layerGroup().addTo(_mapObj);
     setTimeout(function(){ _mapObj && _mapObj.invalidateSize(); }, 200);
   } else {
     _mapObj.invalidateSize();
@@ -1920,21 +1980,11 @@ async function initMap() {
 
   var bounds = [];
 
-  // しゅん仮位置 — Geolocation or fallback Osaka center
-  var shunLatLng = [34.6937, 135.5023];
-  try {
-    await new Promise(function(resolve) {
-      if (!navigator.geolocation) { resolve(); return; }
-      navigator.geolocation.getCurrentPosition(function(pos){
-        shunLatLng = [pos.coords.latitude, pos.coords.longitude];
-        resolve();
-      }, function(){ resolve(); }, {timeout:3000});
-    });
-  } catch(e) {}
-
-  L.marker(shunLatLng, {icon: _divIcon('📍','#2a5a8a')})
-    .addTo(_mapLayer).bindPopup('<b>しゅん（仮）</b>');
-  bounds.push(shunLatLng);
+  // リアルタイム位置マーカー（別レイヤー）
+  updateLocMarkers();
+  var myLoc = locationData[_myUser()];
+  var centerLatLng = myLoc ? [myLoc.lat, myLoc.lng] : [34.6937, 135.5023];
+  bounds.push(centerLatLng);
 
   // キューに全住所を積む
   var queue = [];

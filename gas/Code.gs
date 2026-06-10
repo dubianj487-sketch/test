@@ -10,6 +10,10 @@ function doGet(e) {
       return makeResponse({ok: true, data: {battery: readBattery()}});
     }
 
+    if (action === 'location') {
+      return makeResponse({ok: true, data: readLocation(ss)});
+    }
+
     if (action === 'geocode') {
       const addr = (e.parameter.addr || '').trim();
       if (!addr) return makeResponse({ok: false, error: 'no addr'});
@@ -34,6 +38,7 @@ function doGet(e) {
         counters:    readCounters(ss),
         memo:        readMemo(ss),
         battery:     readBattery(),
+        location:    readLocation(ss),
         secret:      readSecret(ss)
       }});
     }
@@ -55,6 +60,13 @@ function doGet(e) {
           user:     e.parameter.user,
           level:    e.parameter.level,
           charging: e.parameter.charging
+        });
+        break;
+      case 'saveLocation':
+        writeLocation(ss, {
+          user: e.parameter.user,
+          lat:  e.parameter.lat,
+          lng:  e.parameter.lng
         });
         break;
     }
@@ -255,6 +267,22 @@ function writeCounters(ss, counters) {
   if (rows.length > 0) {
     sheet.getRange(2, 1, rows.length, 2).setValues(rows);
   }
+}
+
+function readLocation(ss) {
+  const sheet = getOrCreateSheet(ss, 'location');
+  try { return JSON.parse(sheet.getRange(1, 1).getValue() || '{}'); } catch(e) { return {}; }
+}
+
+function writeLocation(ss, data) {
+  const sheet = getOrCreateSheet(ss, 'location');
+  const loc = JSON.parse(sheet.getRange(1, 1).getValue() || '{}');
+  loc[data.user] = {
+    lat: parseFloat(data.lat),
+    lng: parseFloat(data.lng),
+    at: new Date().toISOString()
+  };
+  sheet.getRange(1, 1).setValue(JSON.stringify(loc));
 }
 
 function readSecret(ss) {
