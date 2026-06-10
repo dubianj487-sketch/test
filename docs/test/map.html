@@ -45,15 +45,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 }
 #map-c{flex:1;min-height:0;width:100%}
 
-/* Mode D: OSM/白/OSM/白/OSM の5分割 */
+/* Mode D: scroll.htmlスタイル — body がスクロール、セクション縦並び */
+body.mode-d{overflow-y:auto!important}
+html.mode-d{overflow:auto!important;height:auto!important}
 #wrap-d{
-  margin-top:calc(-1 * env(safe-area-inset-top));
-  height:calc(100dvh + env(safe-area-inset-top));
   display:none;
-  flex-direction:column;
+  margin-top:calc(-1 * env(safe-area-inset-top));
 }
-#wrap-d .seg{flex:1;min-height:0;width:100%}
-#wrap-d .seg-white{background:#fff}
+.d-map{height:60vh;width:100%}
+.d-white{height:30vh;background:#fff;display:flex;align-items:center;justify-content:center;font-family:-apple-system,sans-serif;font-size:12px;color:#aaa}
 
 /* セーフエリア境界の赤ライン */
 .safe-line{position:fixed;top:env(safe-area-inset-top);left:0;right:0;height:2px;background:rgba(255,60,60,.8);z-index:9000;pointer-events:none}
@@ -78,25 +78,25 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
   <button class="mbtn on" id="btnA" onclick="setMode('A')">Mode A<br><small style="font-weight:400">fixed</small></button>
   <button class="mbtn" id="btnB" onclick="setMode('B')">Mode B<br><small style="font-weight:400">通常フロー</small></button>
   <button class="mbtn" id="btnC" onclick="setMode('C')">Mode C<br><small style="font-weight:400">bg-image</small></button>
-  <button class="mbtn" id="btnD" onclick="setMode('D')">Mode D<br><small style="font-weight:400">map×3/白×2</small></button>
+  <button class="mbtn" id="btnD" onclick="setMode('D')">Mode D<br><small style="font-weight:400">scroll</small></button>
 </div>
 
 <div id="map-a"></div>
 <div id="wrap-b"><div id="map-b"></div></div>
 <div id="wrap-c"><div id="strip-c"></div><div id="map-c"></div></div>
 <div id="wrap-d">
-  <div class="seg" id="map-d1"></div>
-  <div class="seg seg-white"></div>
-  <div class="seg" id="map-d2"></div>
-  <div class="seg seg-white"></div>
-  <div class="seg" id="map-d3"></div>
+  <div class="d-map" id="map-d1"></div>
+  <div class="d-white">— 白 —</div>
+  <div class="d-map" id="map-d2"></div>
+  <div class="d-white">— 白 —</div>
+  <div class="d-map" id="map-d3"></div>
 </div>
 
 <div class="hud">
   <div class="hud-col"><span class="hl">mode</span><span class="hv" id="hv-mode">A / position:fixed</span></div>
   <div class="hud-col"><span class="hl">safe-area-top</span><span class="hv" id="hv-safe">?</span></div>
-  <div class="hud-col"><span class="hl">map center lat</span><span class="hv" id="hv-lat">-</span></div>
-  <div class="hud-col"><span class="hl">map center lng</span><span class="hv" id="hv-lng">-</span></div>
+  <div class="hud-col"><span class="hl" id="hl-lat">map center lat</span><span class="hv" id="hv-lat">-</span></div>
+  <div class="hud-col"><span class="hl" id="hl-lng">map center lng</span><span class="hv" id="hv-lng">-</span></div>
 </div>
 
 <script>
@@ -120,6 +120,11 @@ function updateCenter(m){
   var c=m.getCenter();
   document.getElementById('hv-lat').textContent=c.lat.toFixed(5);
   document.getElementById('hv-lng').textContent=c.lng.toFixed(5);
+}
+
+function updateScrollY(){
+  document.getElementById('hv-lat').textContent=Math.round(window.scrollY)+'px';
+  document.getElementById('hv-lng').textContent=Math.round(document.getElementById('wrap-d').getBoundingClientRect().top)+'px';
 }
 
 function initA(){
@@ -157,13 +162,15 @@ function initD(){
   ['map-d1','map-d2','map-d3'].forEach(function(id){
     var m=L.map(id,{center:center,zoom:zoom,zoomControl:false,attributionControl:false});
     L.tileLayer(tileUrl,tileOpt).addTo(m);
-    if(id==='map-d1') m.on('move',function(){updateCenter(m)});
     mapD.push(m);
   });
   setTimeout(function(){mapD.forEach(function(m){m.invalidateSize({animate:false})})},100);
   setTimeout(function(){mapD.forEach(function(m){m.invalidateSize({animate:false})})},300);
-  updateCenter(mapD[0]);
 }
+
+window.addEventListener('scroll',function(){
+  if(currentMode==='D') updateScrollY();
+},{passive:true});
 
 var currentMode='A';
 function setMode(m){
@@ -171,10 +178,18 @@ function setMode(m){
   ['A','B','C','D'].forEach(function(x){
     document.getElementById('btn'+x).classList.toggle('on',m===x);
   });
+  document.body.classList.remove('mode-d');
+  document.documentElement.classList.remove('mode-d');
+  window.scrollTo(0,0);
+
   document.getElementById('map-a').style.display='none';
   document.getElementById('wrap-b').style.display='none';
   document.getElementById('wrap-c').style.display='none';
   document.getElementById('wrap-d').style.display='none';
+
+  document.getElementById('hl-lat').textContent='map center lat';
+  document.getElementById('hl-lng').textContent='map center lng';
+
   if(m==='A'){
     document.getElementById('map-a').style.display='block';
     document.getElementById('hv-mode').textContent='A / fixed';
@@ -190,10 +205,15 @@ function setMode(m){
     initC();
     setTimeout(function(){mapC&&mapC.invalidateSize({animate:false})},100);
   } else {
-    document.getElementById('wrap-d').style.display='flex';
-    document.getElementById('hv-mode').textContent='D / map×3 白×2';
+    document.body.classList.add('mode-d');
+    document.documentElement.classList.add('mode-d');
+    document.getElementById('wrap-d').style.display='block';
+    document.getElementById('hv-mode').textContent='D / scroll';
+    document.getElementById('hl-lat').textContent='scrollY';
+    document.getElementById('hl-lng').textContent='wrap.top';
     initD();
     setTimeout(function(){mapD.forEach(function(m){m.invalidateSize({animate:false})})},100);
+    updateScrollY();
   }
 }
 
