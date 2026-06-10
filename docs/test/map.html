@@ -13,14 +13,14 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 
-/* Mode A: position:fixed（コンテナはビューポートにクリップされる） */
+/* Mode A: position:fixed */
 #map-a{
   position:fixed;
   top:0;left:0;right:0;bottom:0;
   display:none;
 }
 
-/* Mode B: 通常フロー、マイナスmarginでセーフエリア裸まで物理的に配置 */
+/* Mode B: 通常フロー、マイナスmarginでセーフエリア裏まで物理的に配置 */
 #wrap-b{
   margin-top:calc(-1 * env(safe-area-inset-top));
   height:calc(100dvh + env(safe-area-inset-top));
@@ -28,14 +28,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 }
 #map-b{width:100%;height:100%}
 
-/* Mode C: background-image のdivをセーフエリア裸に配置して滲み出るか検証 */
+/* Mode C: background-image のdivをセーフエリア裏に配置 */
 #wrap-c{
   margin-top:calc(-1 * env(safe-area-inset-top));
   height:calc(100dvh + env(safe-area-inset-top));
   display:none;
   flex-direction:column;
 }
-/* セーフエリア高さ分だけのストリップ（background-image テスト対象） */
 #strip-c{
   height:env(safe-area-inset-top);
   flex-shrink:0;
@@ -45,6 +44,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
   background-position:0 0;
 }
 #map-c{flex:1;min-height:0;width:100%}
+
+/* Mode D: OSM/白/OSM/白/OSM の5分割 */
+#wrap-d{
+  margin-top:calc(-1 * env(safe-area-inset-top));
+  height:calc(100dvh + env(safe-area-inset-top));
+  display:none;
+  flex-direction:column;
+}
+#wrap-d .seg{flex:1;min-height:0;width:100%}
+#wrap-d .seg-white{background:#fff}
 
 /* セーフエリア境界の赤ライン */
 .safe-line{position:fixed;top:env(safe-area-inset-top);left:0;right:0;height:2px;background:rgba(255,60,60,.8);z-index:9000;pointer-events:none}
@@ -68,12 +77,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 <div class="mode-bar">
   <button class="mbtn on" id="btnA" onclick="setMode('A')">Mode A<br><small style="font-weight:400">fixed</small></button>
   <button class="mbtn" id="btnB" onclick="setMode('B')">Mode B<br><small style="font-weight:400">通常フロー</small></button>
-  <button class="mbtn" id="btnC" onclick="setMode('C')">Mode C<br><small style="font-weight:400">bg-image strip</small></button>
+  <button class="mbtn" id="btnC" onclick="setMode('C')">Mode C<br><small style="font-weight:400">bg-image</small></button>
+  <button class="mbtn" id="btnD" onclick="setMode('D')">Mode D<br><small style="font-weight:400">map×3/白×2</small></button>
 </div>
 
 <div id="map-a"></div>
 <div id="wrap-b"><div id="map-b"></div></div>
 <div id="wrap-c"><div id="strip-c"></div><div id="map-c"></div></div>
+<div id="wrap-d">
+  <div class="seg" id="map-d1"></div>
+  <div class="seg seg-white"></div>
+  <div class="seg" id="map-d2"></div>
+  <div class="seg seg-white"></div>
+  <div class="seg" id="map-d3"></div>
+</div>
 
 <div class="hud">
   <div class="hud-col"><span class="hl">mode</span><span class="hv" id="hv-mode">A / position:fixed</span></div>
@@ -86,7 +103,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 var tileUrl='https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 var tileOpt={attribution:'&copy; OSM contributors &copy; CARTO',subdomains:'abcd',maxZoom:19};
 var center=[34.6937,135.5023],zoom=13;
-var mapA=null,mapB=null;
+var mapA=null,mapB=null,mapC=null;
 
 function getSafeTop(){
   var d=document.createElement('div');
@@ -117,7 +134,6 @@ function initA(){
 }
 function initB(){
   if(mapB) return;
-  document.getElementById('wrap-b').style.display='block';
   mapB=L.map('map-b',{center:center,zoom:zoom,zoomControl:true});
   L.tileLayer(tileUrl,tileOpt).addTo(mapB);
   mapB.on('move',function(){updateCenter(mapB)});
@@ -125,8 +141,6 @@ function initB(){
   setTimeout(function(){mapB.invalidateSize({animate:false})},300);
   updateCenter(mapB);
 }
-
-var mapC=null;
 function initC(){
   if(mapC) return;
   mapC=L.map('map-c',{center:center,zoom:zoom,zoomControl:true});
@@ -137,29 +151,49 @@ function initC(){
   updateCenter(mapC);
 }
 
+var mapD=[];
+function initD(){
+  if(mapD.length) return;
+  ['map-d1','map-d2','map-d3'].forEach(function(id){
+    var m=L.map(id,{center:center,zoom:zoom,zoomControl:false,attributionControl:false});
+    L.tileLayer(tileUrl,tileOpt).addTo(m);
+    if(id==='map-d1') m.on('move',function(){updateCenter(m)});
+    mapD.push(m);
+  });
+  setTimeout(function(){mapD.forEach(function(m){m.invalidateSize({animate:false})})},100);
+  setTimeout(function(){mapD.forEach(function(m){m.invalidateSize({animate:false})})},300);
+  updateCenter(mapD[0]);
+}
+
 var currentMode='A';
 function setMode(m){
   currentMode=m;
-  document.getElementById('btnA').classList.toggle('on',m==='A');
-  document.getElementById('btnB').classList.toggle('on',m==='B');
-  document.getElementById('btnC').classList.toggle('on',m==='C');
+  ['A','B','C','D'].forEach(function(x){
+    document.getElementById('btn'+x).classList.toggle('on',m===x);
+  });
   document.getElementById('map-a').style.display='none';
   document.getElementById('wrap-b').style.display='none';
   document.getElementById('wrap-c').style.display='none';
+  document.getElementById('wrap-d').style.display='none';
   if(m==='A'){
     document.getElementById('map-a').style.display='block';
     document.getElementById('hv-mode').textContent='A / fixed';
     initA();
   } else if(m==='B'){
-    document.getElementById('wrap-b').style.display='block';
+    document.getElementById('wrap-b').style.display='flex';
     document.getElementById('hv-mode').textContent='B / 通常フロー';
     initB();
     setTimeout(function(){mapB&&mapB.invalidateSize({animate:false})},100);
-  } else {
+  } else if(m==='C'){
     document.getElementById('wrap-c').style.display='flex';
     document.getElementById('hv-mode').textContent='C / bg-image strip';
     initC();
     setTimeout(function(){mapC&&mapC.invalidateSize({animate:false})},100);
+  } else {
+    document.getElementById('wrap-d').style.display='flex';
+    document.getElementById('hv-mode').textContent='D / map×3 白×2';
+    initD();
+    setTimeout(function(){mapD.forEach(function(m){m.invalidateSize({animate:false})})},100);
   }
 }
 
