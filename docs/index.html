@@ -2009,14 +2009,17 @@ function _cartoCDN(style){
     subdomains:'abcd', maxZoom:19
   });
 }
-function _currentTileStyle(){
-  return document.body.classList.contains('font-shun') && document.body.classList.contains('dark-active') ? 'dark_all' : 'light_all';
+function _gsiTile(){
+  return L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', {
+    attribution:'<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>',
+    maxZoom:18
+  });
 }
 function updateMapTile(){
   if(!_mapObj) return;
-  var style = _currentTileStyle();
+  var isDark = document.body.classList.contains('dark-active');
   if(_mapTile) _mapObj.removeLayer(_mapTile);
-  _mapTile = _cartoCDN(style).addTo(_mapObj);
+  _mapTile = (isDark ? _cartoCDN('dark_all') : _gsiTile()).addTo(_mapObj);
 }
 
 function _geocacheKey(addr){ return 'geo2_' + addr; }
@@ -2080,7 +2083,7 @@ async function initMap() {
 
   if (!_mapObj) {
     _mapObj = L.map('map-container', {center:[34.6937,135.5023], zoom:13, zoomControl:true});
-    _mapTile = _cartoCDN(_currentTileStyle()).addTo(_mapObj);
+    _mapTile = (document.body.classList.contains('dark-active') ? _cartoCDN('dark_all') : _gsiTile()).addTo(_mapObj);
     _mapLayer = L.layerGroup().addTo(_mapObj);
     _locLayer = L.layerGroup().addTo(_mapObj);
     setTimeout(function(){ _mapObj && _mapObj.invalidateSize(); }, 200);
