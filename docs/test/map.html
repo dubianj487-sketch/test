@@ -26,6 +26,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
 body.mode-d{overflow-y:auto!important}
 html.mode-d{overflow:auto!important;height:auto!important}
 #wrap-d{display:none;margin-top:calc(-1 * env(safe-area-inset-top))}
+/* scrollY=-50 相当: さらに50px上へ食い込ませる */
+#wrap-d.overshoot{margin-top:calc(-1 * env(safe-area-inset-top) - 50px)}
 
 .d-section{position:relative;height:60vh}
 .d-map{width:100%;height:100%}
@@ -89,7 +91,7 @@ body.mode-d #btn-scroll-top{display:block}
 </head>
 <body>
 <div class="safe-line"></div>
-<button id="btn-scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ 最上部へ</button>
+<button id="btn-scroll-top" onclick="scrollTopD()">↑ 最上部へ(-50px)</button>
 
 <div class="mode-bar">
   <button class="mbtn on" id="btnA" onclick="setMode('A')">Mode A<br><small style="font-weight:400">fixed</small></button>
@@ -241,6 +243,11 @@ window.addEventListener('scroll',function(){
   if(currentMode==='D') updateScrollY();
 },{passive:true});
 
+function scrollTopD(){
+  document.getElementById('wrap-d').classList.add('overshoot');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
 var currentMode='A';
 function setMode(m){
   currentMode=m;
@@ -249,6 +256,7 @@ function setMode(m){
   });
   document.body.classList.remove('mode-d');
   document.documentElement.classList.remove('mode-d');
+  document.getElementById('wrap-d').classList.remove('overshoot');
   window.scrollTo(0,0);
   document.getElementById('map-a').style.display='none';
   document.getElementById('wrap-b').style.display='none';
