@@ -1803,7 +1803,7 @@ function _applyAll(){
   const dark = _theme==='shun' && (_color==='dark' || (_color==='auto' && _darkMQ.matches));
   b.classList.toggle('dark-active', dark);
 }
-_darkMQ.addEventListener('change', _applyAll);
+_darkMQ.addEventListener('change', function(){ _applyAll(); updateMapTile(); });
 
 function openSettings(){
   document.getElementById('sp-hee').classList.toggle('sel',_theme==='hee');
@@ -1821,7 +1821,7 @@ function setAppTheme(t){
   _applyAll(); openSettings(); updateMapTile();
 }
 function setColorMode(c){
-  _color=c; localStorage.setItem('colorMode',c); _applyAll(); openSettings();
+  _color=c; localStorage.setItem('colorMode',c); _applyAll(); openSettings(); updateMapTile();
 }
 function setAppFont(f){
   _font=(f==='sys'?'system':f); localStorage.setItem('appFont',_font); _applyAll(); openSettings();
@@ -1840,7 +1840,7 @@ function _cartoCDN(style){
   });
 }
 function _currentTileStyle(){
-  return document.body.classList.contains('font-shun') ? 'dark_all' : 'light_all';
+  return document.body.classList.contains('font-shun') && document.body.classList.contains('dark-active') ? 'dark_all' : 'light_all';
 }
 function updateMapTile(){
   if(!_mapObj) return;
