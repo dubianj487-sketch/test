@@ -58,6 +58,22 @@ html.mode-d{overflow:auto!important;height:auto!important}
   pointer-events:none;
 }
 
+#btn-scroll-top{
+  display:none;
+  position:fixed;
+  bottom:calc(env(safe-area-inset-bottom) + 84px);
+  left:14px;
+  z-index:9000;
+  padding:10px 16px;
+  border:none;border-radius:12px;
+  background:rgba(0,0,0,.6);
+  color:#fff;font-size:12px;font-weight:700;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  cursor:pointer;touch-action:manipulation;
+  letter-spacing:.3px;
+}
+body.mode-d #btn-scroll-top{display:block}
+
 .safe-line{position:fixed;top:env(safe-area-inset-top);left:0;right:0;height:2px;background:rgba(255,60,60,.8);z-index:9000;pointer-events:none}
 .safe-line::after{content:'safe-area-inset-top';position:absolute;right:8px;top:3px;font-size:10px;color:rgba(255,100,100,.9)}
 
@@ -73,6 +89,7 @@ html.mode-d{overflow:auto!important;height:auto!important}
 </head>
 <body>
 <div class="safe-line"></div>
+<button id="btn-scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ 最上部へ</button>
 
 <div class="mode-bar">
   <button class="mbtn on" id="btnA" onclick="setMode('A')">Mode A<br><small style="font-weight:400">fixed</small></button>
