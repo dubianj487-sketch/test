@@ -81,6 +81,17 @@ function doPost(e) {
     const body = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
+    // Overland location tracking
+    if (body.locations && Array.isArray(body.locations) && body.locations.length > 0) {
+      const user = (e.parameter && e.parameter.user) || '';
+      if (user) {
+        const latest = body.locations[body.locations.length - 1];
+        const coords = latest.geometry.coordinates; // [lng, lat]
+        writeLocation(ss, {user: user, lat: coords[1], lng: coords[0]});
+      }
+      return makeResponse({result: 'ok'});
+    }
+
     switch(body.action) {
       case 'saveGirls':
         writeRows(ss, 'girls', ['id','name','nick','addr'], body.payload);
