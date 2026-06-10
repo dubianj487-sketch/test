@@ -132,10 +132,13 @@ body.font-shun.dark-active .battery-pct{color:#e8f0f8}
 body.font-shun.dark-active .battery-charge{color:rgba(180,210,240,.5)}
 body.font-shun.dark-active .map-legend{background:#1a1a1a;color:#c8d8e8;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 body.dark-active #map-container .leaflet-tile-pane{filter:brightness(1.6) contrast(1.1)}
-body.map-active{overflow:visible!important;padding-top:0!important}
+body.map-active{overflow:visible!important;padding-top:0!important;background:#e8e4e0!important;background-color:#e8e4e0!important}
+html:has(body.map-active){background:#e8e4e0!important;background-color:#e8e4e0!important}
+body.map-active.dark-active{background:#1a2a40!important;background-color:#1a2a40!important}
+html:has(body.map-active.dark-active){background:#1a2a40!important;background-color:#1a2a40!important}
 body.map-active #pg-map{position:fixed!important;top:0;left:0;right:0;bottom:0;z-index:52!important;height:100dvh!important;padding:0!important;overflow:visible!important;background:transparent!important}
 #map-container{display:none}
-body.map-active #map-container{display:block;position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:100dvh!important;z-index:49}
+body.map-active #map-container{display:block;position:fixed!important;top:calc(-1 * env(safe-area-inset-top,0px))!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:auto!important;z-index:49}
 body.map-active #pg-map .map-legend{position:absolute;top:0;left:0;right:0;z-index:10;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;background:transparent;box-shadow:none;border-bottom:none}
 body.map-active .bnav{background:rgba(250,246,250,0.65)!important;-webkit-backdrop-filter:blur(26px) saturate(1.9)!important;backdrop-filter:blur(26px) saturate(1.9)!important;border-top:1.5px solid rgba(255,255,255,0.5)!important;box-shadow:none!important}
 body.map-active.font-shun.dark-active .bnav{background:rgba(8,14,30,0.65)!important;border-top-color:rgba(90,140,200,0.18)!important}
@@ -901,12 +904,21 @@ function setTomorrow(){const t=new Date();t.setDate(t.getDate()+1);document.getE
 function todayVal(){return fmtDV(new Date())}
 
 // ========== ページ切り替え ==========
+function updateThemeColor(){
+  var m=document.querySelector('meta[name="theme-color"]');
+  if(!m) return;
+  var b=document.body.classList;
+  if(b.contains('map-active')) m.content = b.contains('dark-active') ? '#1a2a40' : '#e8e4e0';
+  else if(b.contains('font-shun')) m.content = b.contains('dark-active') ? '#111111' : '#d8eef8';
+  else m.content='#CE95B0';
+}
 function switchPg(p){
   document.querySelectorAll('.pg').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(e=>e.classList.remove('active'));
   document.getElementById('pg-'+p).classList.add('active');
   document.getElementById('nb-'+p).classList.add('active');
   document.body.classList.toggle('map-active', p==='map');
+  updateThemeColor();
   if(p==='hist') renderHistPage();
   if(p==='map') initMap(); else setPgHeight();
   if(p==='secret') renderSecretPage();
@@ -1813,6 +1825,7 @@ function _applyAll(){
   b.classList.toggle('font-system', _font==='system');
   const dark = _theme==='shun' && (_color==='dark' || (_color==='auto' && _darkMQ.matches));
   b.classList.toggle('dark-active', dark);
+  if(typeof updateThemeColor==='function') updateThemeColor();
 }
 _darkMQ.addEventListener('change', function(){ _applyAll(); updateMapTile(); });
 
@@ -2069,7 +2082,7 @@ async function initMap() {
     var safeTop = parseInt(getComputedStyle(document.body).paddingTop) || 0;
     container.style.height = (window.innerHeight - safeTop - hdrH - legendH - navH) + 'px';
   } else {
-    // CSS handles size via position:fixed top:0/bottom:0; just ensure Leaflet re-reads it
+    // CSS handles size via position:fixed top:-env(safe-area-inset-top)/bottom:0; just ensure Leaflet re-reads it
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
         if(_mapObj){
