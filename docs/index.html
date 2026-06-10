@@ -2095,8 +2095,8 @@ async function initMap() {
     var safeTop = parseInt(getComputedStyle(document.body).paddingTop) || 0;
     container.style.height = (window.innerHeight - safeTop - hdrH - legendH - navH) + 'px';
   } else {
-    container.style.height = '';
-    setTimeout(function(){ _mapObj && _mapObj.invalidateSize(); }, 100);
+    container.style.height = window.innerHeight + 'px';
+    setTimeout(function(){ _mapObj && _mapObj.invalidateSize(); }, 150);
   }
 
   if (!_mapObj) {
