@@ -1968,7 +1968,14 @@ function updateLocMarkers(){
       var pos=_predictPos(u.key)||{lat:+d.lat, lng:+d.lng};
       _locMarkers[u.key]=L.marker([pos.lat,pos.lng],{icon:_liveIcon(u.icon,u.bg),zIndexOffset:2000})
         .addTo(_locLayer);
-      (function(uk){ _locMarkers[uk].on('click',function(){ _locMarkers[uk].bindPopup('<b>'+_LOC_USERS.find(function(x){return x.key===uk}).label+'</b><br><small>'+_fmtAgo(locationData[uk]&&locationData[uk].at)+'</small>').openPopup(); }); })(u.key);
+      (function(uk){
+        _locMarkers[uk].bindPopup('');
+        _locMarkers[uk].on('click',function(){
+          var u2=_LOC_USERS.find(function(x){return x.key===uk;});
+          _locMarkers[uk].getPopup().setContent('<b>'+u2.label+'</b><br><small>'+_fmtAgo(locationData[uk]&&locationData[uk].at)+'</small>');
+          _locMarkers[uk].openPopup();
+        });
+      })(u.key);
     }
   });
 }
