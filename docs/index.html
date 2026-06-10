@@ -201,6 +201,10 @@ body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
 .map-legend-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
 .map-marker{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.8)}
 .leaflet-div-icon{background:none!important;border:none!important}
+.leaflet-marker-icon,.leaflet-marker-shadow{transition:transform 2s linear!important}
+.loc-wrap{position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.loc-pulse{position:absolute;inset:0;border-radius:50%;animation:locPulse 2.4s ease-out infinite}
+@keyframes locPulse{0%{transform:scale(.4);opacity:.7}100%{transform:scale(2.2);opacity:0}}
 @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 12px rgba(180,100,140,.1);overflow:hidden}
@@ -1834,27 +1838,35 @@ function setAppFont(f){
 // ========== リアルタイム位置共有 ==========
 var _locLayer = null;
 var _locPollTimer = null;
+var _locMarkers = {};
 
 function _myUser(){ return localStorage.getItem('fontMode')==='shun' ? 'shun' : 'hee'; }
 
-function _locTimeAgo(iso){
-  var s=Math.floor((Date.now()-new Date(iso).getTime())/1000);
-  if(s<60) return '今さっき';
-  if(s<3600) return Math.floor(s/60)+'分前';
-  return Math.floor(s/3600)+'時間前';
+var _LOC_USERS = [
+  {key:'shun', label:'しゅん',      icon:'🌙', bg:'#2a5a8a'},
+  {key:'hee',  label:'ひーちゃん',  icon:'🌸', bg:'#c478a8'}
+];
+
+function _liveIcon(icon, bg){
+  return L.divIcon({
+    className:'leaflet-div-icon',
+    html:'<div class="loc-wrap"><div class="loc-pulse" style="background:'+bg+'"></div>'
+        +'<div class="map-marker" style="background:'+bg+';width:36px;height:36px;font-size:17px">'+icon+'</div></div>',
+    iconSize:[44,44], iconAnchor:[22,22], popupAnchor:[0,-22]
+  });
 }
 
 function updateLocMarkers(){
   if(!_mapObj||!_locLayer) return;
-  _locLayer.clearLayers();
-  var users=[{key:'shun',label:'しゅん',icon:'🌙',bg:'#1e3050'},{key:'hee',label:'ひーちゃん',icon:'🌸',bg:'#c478a8'}];
-  users.forEach(function(u){
+  _LOC_USERS.forEach(function(u){
     var d=locationData[u.key];
     if(!d||!d.lat||!d.lng) return;
-    var ago=_locTimeAgo(d.at);
-    L.marker([d.lat,d.lng],{icon:_divIcon(u.icon,u.bg),zIndexOffset:2000})
-      .addTo(_locLayer)
-      .bindPopup('<b>'+u.label+'</b><br><small>'+ago+'</small>');
+    if(_locMarkers[u.key]){
+      _locMarkers[u.key].setLatLng([d.lat,d.lng]);
+    } else {
+      _locMarkers[u.key]=L.marker([d.lat,d.lng],{icon:_liveIcon(u.icon,u.bg),zIndexOffset:2000})
+        .addTo(_locLayer).bindPopup('<b>'+u.label+'</b>');
+    }
   });
 }
 
@@ -1867,8 +1879,7 @@ function _fetchLocations(){
 }
 
 function startLocationTracking(){
-  // 位置送信はOverlandが担当。アプリはGASをポーリングするだけ
-  _locPollTimer=setInterval(_fetchLocations, 15000);
+  _locPollTimer=setInterval(_fetchLocations, 5000);
   _fetchLocations();
 }
 
