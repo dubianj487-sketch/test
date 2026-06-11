@@ -1982,27 +1982,60 @@ var _mapLayerMarkers = [];
 function _jaTile(dark){
   return 'https://api.maptiler.com/maps/'+(dark?'streets-v2-dark':'bright-v2')+'/style.json?key=xo1M5L6ZL4wO1wT74HBb';
 }
-function _add3DBuildings(){
+function _initMapLayers(){
   if(!_mapObj||!_mapObj.getSource('openmaptiles')) return;
-  if(_mapObj.getLayer('3d-buildings')) return;
   var isDark=document.body.classList.contains('dark-active');
-  _mapObj.addLayer({
-    id:'3d-buildings',
-    source:'openmaptiles',
-    'source-layer':'building',
-    type:'fill-extrusion',
-    minzoom:14,
-    paint:{
-      'fill-extrusion-color':isDark?'#2a3a4a':'#c8c0b8',
-      'fill-extrusion-height':['get','render_height'],
-      'fill-extrusion-base':['get','render_min_height'],
-      'fill-extrusion-opacity':0.7
+
+  // 日本語ラベル
+  _mapObj.getStyle().layers.forEach(function(layer){
+    if(layer.type==='symbol' && layer.layout && layer.layout['text-field']){
+      _mapObj.setLayoutProperty(layer.id,'text-field',
+        ['coalesce',['get','name:ja'],['get','name:latin'],['get','name']]);
     }
   });
+
+  // 道路ハイライト（端丸・半透明）
+  if(!_mapObj.getLayer('road-highlight')){
+    var firstSymbol;
+    _mapObj.getStyle().layers.forEach(function(l){
+      if(!firstSymbol && l.type==='symbol') firstSymbol=l.id;
+    });
+    _mapObj.addLayer({
+      id:'road-highlight',
+      type:'line',
+      source:'openmaptiles',
+      'source-layer':'transportation',
+      filter:['match',['get','class'],
+        ['motorway','trunk','primary','secondary','tertiary','minor'],true,false],
+      paint:{
+        'line-color':isDark?'rgba(140,200,255,0.35)':'rgba(255,255,255,0.55)',
+        'line-width':['interpolate',['linear'],['zoom'],9,1.5,13,4,17,9],
+        'line-blur':3
+      },
+      layout:{'line-cap':'round','line-join':'round'}
+    }, firstSymbol);
+  }
+
+  // 3Dビル
+  if(!_mapObj.getLayer('3d-buildings')){
+    _mapObj.addLayer({
+      id:'3d-buildings',
+      source:'openmaptiles',
+      'source-layer':'building',
+      type:'fill-extrusion',
+      minzoom:14,
+      paint:{
+        'fill-extrusion-color':isDark?'#2a3a4a':'#c8c0b8',
+        'fill-extrusion-height':['get','render_height'],
+        'fill-extrusion-base':['get','render_min_height'],
+        'fill-extrusion-opacity':0.7
+      }
+    });
+  }
 }
 function updateMapTile(){
   if(!_mapObj) return;
-  _mapObj.once('style.load', _add3DBuildings);
+  _mapObj.once('style.load', _initMapLayers);
   _mapObj.setStyle(_jaTile(document.body.classList.contains('dark-active')));
 }
 
@@ -2067,7 +2100,7 @@ async function initMap() {
       pitch: 50
     });
     await new Promise(function(resolve){ _mapObj.once('load', resolve); });
-    _add3DBuildings();
+    _initMapLayers();
   } else {
     _mapObj.resize();
     _mapLayerMarkers.forEach(function(m){ m.remove(); });
