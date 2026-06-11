@@ -55,6 +55,8 @@ function doGet(e) {
       case 'saveCounters': writeCounters(ss, body.payload); break;
       case 'saveMemo':     writeMemo(ss, body.memo); break;
       case 'saveSecret':   writeSecret(ss, body.payload); break;
+      case 'saveSubscription': savePushSubscription(body.subscription); break;
+      case 'notifyAll':    notifyAllSubscribers(body.title, body.body); break;
       case 'updateBattery':
         writeBattery({
           user:     e.parameter.user,
@@ -312,5 +314,30 @@ function readSecret(ss) {
 function writeSecret(ss, data) {
   const sheet = getOrCreateSheet(ss, 'secret');
   sheet.getRange(1, 1).setValue(JSON.stringify({url: data.url||'', text: data.text||''}));
+}
+
+function savePushSubscription(sub) {
+  const props = PropertiesService.getScriptProperties();
+  const list = JSON.parse(props.getProperty('pushSubscriptions') || '[]');
+  const idx = list.findIndex(function(s) { return s.endpoint === sub.endpoint; });
+  if (idx >= 0) list[idx] = sub; else list.push(sub);
+  props.setProperty('pushSubscriptions', JSON.stringify(list));
+}
+
+function notifyAllSubscribers(title, body) {
+  const props = PropertiesService.getScriptProperties();
+  const list = JSON.parse(props.getProperty('pushSubscriptions') || '[]');
+  const cfUrl = props.getProperty('CF_PUSH_URL');
+  if (!cfUrl || list.length === 0) return;
+  list.forEach(function(sub) {
+    try {
+      UrlFetchApp.fetch(cfUrl, {
+        method: 'post',
+        contentType: 'application/json',
+        payload: JSON.stringify({subscription: sub, title: title, body: body}),
+        muteHttpExceptions: true
+      });
+    } catch(e) { Logger.log('Push error: ' + e); }
+  });
 }
 
