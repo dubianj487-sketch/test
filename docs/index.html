@@ -188,6 +188,7 @@ body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
 #pg-map{padding:0;overflow:hidden;display:none;flex-direction:column}
 #pg-map.active{display:flex}
 #map-container{flex:1;min-height:0;width:100%}
+.maplibregl-popup-content{color:#111!important;background:#fff!important;border-radius:10px!important;padding:10px 14px!important;box-shadow:0 2px 12px rgba(0,0,0,.18)!important}
 .map-legend{padding:10px 14px 6px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .map-legend-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
 .map-marker{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.8)}
@@ -1947,8 +1948,10 @@ function updateLocMarkers(){
         markerEl.addEventListener('click',function(e){
           e.stopPropagation();
           var u2=_LOC_USERS.find(function(x){return x.key===uk;});
+          var lngLat=_locMarkers[uk].getLngLat();
+          _mapObj.flyTo({center:lngLat,zoom:16,pitch:50,duration:600});
           new maplibregl.Popup({offset:25,closeButton:false})
-            .setLngLat(_locMarkers[uk].getLngLat())
+            .setLngLat(lngLat)
             .setHTML('<b>'+u2.label+'</b><br><small>'+_fmtAgo(locationData[uk]&&locationData[uk].at)+'</small>')
             .addTo(_mapObj);
         });
@@ -2163,11 +2166,21 @@ async function initMap() {
     if (st) st.textContent = '📡 ジオコーディング中 ' + (i+1) + '/' + queue.length;
     if (pt) {
       var el = _divIconEl(q.emoji, q.bg);
+      var lngLat = [pt.lng, pt.lat];
       var marker = new maplibregl.Marker({element: el, anchor: 'center'})
-        .setLngLat([pt.lng, pt.lat])
-        .setPopup(new maplibregl.Popup({offset: 25, closeButton: false})
-          .setHTML('<b>'+q.label+'</b><br><small>'+q.addr+'</small>'))
+        .setLngLat(lngLat)
         .addTo(_mapObj);
+      (function(ml, ll, ql){
+        ml.style.cursor='pointer';
+        ml.addEventListener('click', function(e){
+          e.stopPropagation();
+          _mapObj.flyTo({center:ll, zoom:16, pitch:50, duration:600});
+          new maplibregl.Popup({offset:25, closeButton:false})
+            .setLngLat(ll)
+            .setHTML('<b>'+ql.label+'</b><br><small>'+ql.addr+'</small>')
+            .addTo(_mapObj);
+        });
+      })(el, lngLat, q);
       _mapLayerMarkers.push(marker);
       bounds.extend([pt.lng, pt.lat]);
       boundsExtended = true;
