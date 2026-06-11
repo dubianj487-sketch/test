@@ -1875,7 +1875,7 @@ function _pushLocHistory(key, d){
   if(h.length>2) h.shift();
 }
 
-// デッドレコニング：2点の速度から現在位置を推定
+// デッドレコニング：最終点を超えないよう r=1.0 でキャップ、30秒以上古いデータは外挿しない
 function _predictPos(key){
   var h=_locHistory[key];
   if(!h||!h.length) return null;
@@ -1883,8 +1883,9 @@ function _predictPos(key){
   var a=h[0], b=h[1];
   var dt=b.t-a.t;
   if(dt<=0) return {lat:b.lat, lng:b.lng};
+  if(Date.now()-b.t > 30000) return {lat:b.lat, lng:b.lng};
   var dlat=b.lat-a.lat, dlng=b.lng-a.lng;
-  var r=Math.min((Date.now()-b.t)/dt, 1.5);
+  var r=Math.min((Date.now()-b.t)/dt, 1.0);
   return {lat:b.lat+dlat*r, lng:b.lng+dlng*r};
 }
 
@@ -1973,7 +1974,20 @@ function _fetchLocations(){
     .then(function(data){
       if(data.ok){
         var newLoc=data.data||{};
-        Object.keys(newLoc).forEach(function(k){ if(newLoc[k]&&newLoc[k].lat) locationData[k]=newLoc[k]; });
+        Object.keys(newLoc).forEach(function(k){
+          var d=newLoc[k];
+          if(!d||!d.lat) return;
+          var lat=+d.lat, lng=+d.lng;
+          // lat/lng逆転検出：日本の緯度は24〜46、経度は122〜154
+          if(lat>90||(lat<20&&lng>90)){var tmp=lat;lat=lng;lng=tmp;}
+          d.lat=lat; d.lng=lng;
+          // 座標が大きく変わったらvisualPosをリセット（古い位置からのlerpを防ぐ）
+          var prev=locationData[k];
+          if(prev&&prev.lat&&(Math.abs(lat-prev.lat)+Math.abs(lng-prev.lng))>0.05){
+            _locVisualPos[k]=null;
+          }
+          locationData[k]=d;
+        });
         updateLocMarkers();
       }
     }).catch(function(){});
