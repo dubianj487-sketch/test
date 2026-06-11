@@ -1,3 +1,4 @@
 name = "silde-push"
 main = "worker.js"
 compatibility_date = "2025-01-01"
+account_id = "99853c8066e1f3e7448539207b526007"

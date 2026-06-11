@@ -18,7 +18,10 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: "99853c8066e1f3e7448539207b526007"
           workingDirectory: push-server
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Show Worker URL
         run: echo "Worker URL => https://silde-push.$(npx wrangler whoami 2>/dev/null | grep -oP '(?<=@)[a-z0-9]+(?=\.workers\.dev)' || echo 'YOUR_SUBDOMAIN').workers.dev"
