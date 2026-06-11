@@ -185,9 +185,9 @@ body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
 
 .pg{display:none;padding:14px 14px 56px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0;-webkit-overflow-scrolling:touch;background:#f4eef2}
 .pg.active{display:block}
-#pg-map{padding:0;overflow:hidden;display:none;flex-direction:column}
+#pg-map{padding:0;overflow:hidden;display:none;flex-direction:column;height:calc(100vh - 56px)}
 #pg-map.active{display:flex}
-#map-container{flex:1;min-height:0;width:100%}
+#map-container{flex:1;min-height:0;width:100%;height:100%}
 .maplibregl-popup-content,.mapboxgl-popup-content{color:#111!important;background:#fff!important;border-radius:10px!important;padding:10px 14px!important;box-shadow:0 2px 12px rgba(0,0,0,.18)!important}
 .map-legend{padding:10px 14px 6px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .map-legend-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
@@ -1945,6 +1945,7 @@ async function initMap() {
       zoom: 11
     });
     await new Promise(function(resolve){ _map.on('load', resolve); });
+    _map.resize();
   } else {
     _map.resize();
   }
