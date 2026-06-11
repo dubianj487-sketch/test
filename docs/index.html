@@ -1836,9 +1836,10 @@ function setAppFont(f){
 // ========== リアルタイム位置共有 ==========
 var _locPollTimer = null;
 var _locMarkers = {};
-var _locHistory = {}; // {key: [{lat,lng,t}]} 最大2件
-var _locVisualPos = {}; // 表示上の現在位置（lerp補間済み）
+var _locHistory = {};
+var _locVisualPos = {};
 var _predLoop = null;
+var _trackingUser = null; // タップで追従中のユーザーkey
 
 function _myUser(){ return localStorage.getItem('fontMode')==='shun' ? 'shun' : 'hee'; }
 
@@ -1906,6 +1907,7 @@ function _startPredLoop(){
       v.lat+=(target.lat-v.lat)*0.1;
       v.lng+=(target.lng-v.lng)*0.1;
       _locMarkers[u.key].setLngLat([v.lng,v.lat]);
+      if(_trackingUser===u.key) _mapObj.setCenter([v.lng,v.lat]);
     });
   }
   _predLoop=requestAnimationFrame(frame);
@@ -1949,6 +1951,7 @@ function updateLocMarkers(){
           e.stopPropagation();
           var u2=_LOC_USERS.find(function(x){return x.key===uk;});
           var lngLat=_locMarkers[uk].getLngLat();
+          _trackingUser=uk;
           _mapObj.flyTo({center:lngLat,zoom:16,pitch:50,duration:600});
           new maplibregl.Popup({offset:25,closeButton:false})
             .setLngLat(lngLat)
@@ -2121,8 +2124,9 @@ async function initMap() {
       zoom: 13,
       pitch: 50
     });
-    // style.load は初回 + setStyle のたびに発火 → 毎回カスタムレイヤーを再適用
     _mapObj.on('style.load', _initMapLayers);
+    _mapObj.on('click', function(){ _trackingUser=null; });
+    _mapObj.on('dragstart', function(){ _trackingUser=null; });
     await new Promise(function(resolve){ _mapObj.once('load', resolve); });
   } else {
     _mapObj.resize();
