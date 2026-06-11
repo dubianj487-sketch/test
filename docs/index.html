@@ -650,9 +650,9 @@ body.font-shun.dark-active #pg-hist{background:transparent}
       </div>
     </div>
     <div class="sett-section">
-      <div class="sett-label">Discord通知</div>
-      <div style="font-size:11px;color:var(--txs);margin-bottom:8px">スケジュールを新規保存したときにDiscordへ通知します</div>
-      <input type="url" id="discordWebhookInp" placeholder="https://discord.com/api/webhooks/..." autocomplete="off" oninput="saveDiscordWebhook(this.value)" style="margin-bottom:0;font-size:12px">
+      <div class="sett-label">アプリ通知</div>
+      <div style="font-size:11px;color:var(--txs);margin-bottom:8px">スケジュール登録時にアプリ通知を送ります（ホーム画面追加後に有効）</div>
+      <button class="sett-pill" id="notifPermBtn" onclick="requestNotifPerm()">🔔 通知を許可</button>
     </div>
     <div class="sett-section">
       <div class="sett-label">Overland URL（位置共有）</div>
@@ -1330,28 +1330,40 @@ function doSave(){
   else schedHistory.unshift(entry);
 
   gasPost({action:'saveSchedule', payload:entry});
-  if(isNew){saveCounters();sendDiscordNotify(entry);}
+  if(isNew){saveCounters();sendLocalNotif(entry);}
 
   resetSchedForm();
   closeSchedModal();
   showSaveSuccessBar(savedDateLabel, savedShunTxt, savedBoyTxt);
 }
 
-function sendDiscordNotify(entry){
-  var url=(localStorage.getItem('discordWebhook')||'').trim();
-  if(!url) return;
-  var lines=['📅 スケジュールが登録されました！',''];
-  lines.push(entry.shunTxt||entry.dateLabel);
-  fetch(url,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({content:lines.join('\n').slice(0,1900)}),
-    mode:'no-cors'
-  }).catch(function(){});
+function sendLocalNotif(entry){
+  if(!('Notification' in window)||Notification.permission!=='granted') return;
+  var title='📅 '+entry.dateLabel+' スケジュール登録';
+  var body=(entry.shunTxt||'').split('\n').slice(0,6).join('\n');
+  if(navigator.serviceWorker&&navigator.serviceWorker.controller){
+    navigator.serviceWorker.ready.then(function(reg){
+      reg.showNotification(title,{body:body,icon:'/favicon.ico'});
+    }).catch(function(){new Notification(title,{body:body});});
+  } else {
+    try{new Notification(title,{body:body});}catch(e){}
+  }
 }
 
-function saveDiscordWebhook(val){
-  localStorage.setItem('discordWebhook',val.trim());
+function requestNotifPerm(){
+  if(!('Notification' in window)){showToast('この端末は通知に非対応です');return;}
+  Notification.requestPermission().then(function(p){
+    showToast(p==='granted'?'🔔 通知を許可しました！':'通知が許可されませんでした');
+    updateNotifBtn();
+  });
+}
+
+function updateNotifBtn(){
+  var btn=document.getElementById('notifPermBtn');
+  if(!btn||!('Notification' in window)) return;
+  var p=Notification.permission;
+  btn.textContent=p==='granted'?'✅ 許可済み':p==='denied'?'🚫 拒否済み（設定から変更）':'🔔 通知を許可';
+  btn.classList.toggle('sel',p==='granted');
 }
 
 function resetSchedForm(){
@@ -1852,8 +1864,7 @@ function openSettings(){
   var elH = document.getElementById('ovUrlHee');
   if(elS) elS.textContent = base+'?user=shun';
   if(elH) elH.textContent = base+'?user=hee';
-  var webhookInp=document.getElementById('discordWebhookInp');
-  if(webhookInp) webhookInp.value=localStorage.getItem('discordWebhook')||'';
+  updateNotifBtn();
   document.getElementById('moSettings').classList.add('open');
 }
 function copyOverlandUrl(user){
