@@ -1907,7 +1907,6 @@ function _startPredLoop(){
       v.lat+=(target.lat-v.lat)*0.1;
       v.lng+=(target.lng-v.lng)*0.1;
       _locMarkers[u.key].setLngLat([v.lng,v.lat]);
-      if(_trackingUser===u.key) _mapObj.setCenter([v.lng,v.lat]);
     });
   }
   _predLoop=requestAnimationFrame(frame);
@@ -1933,7 +1932,12 @@ function updateLocMarkers(){
   // 履歴を更新（マップ未表示でも記録しておく）
   _LOC_USERS.forEach(function(u){
     var d=locationData[u.key];
-    if(d&&d.lat&&d.lng) _pushLocHistory(u.key, d);
+    if(!d||!d.lat||!d.lng) return;
+    _pushLocHistory(u.key, d);
+    // GPS更新のたびにカメラを実位置へ追従（rAFループではなくここで行うことでflyToと競合しない）
+    if(_trackingUser===u.key && _mapObj){
+      _mapObj.easeTo({center:[+d.lng,+d.lat], zoom:Math.max(_mapObj.getZoom(),16), pitch:50, duration:600});
+    }
   });
   if(!_mapObj) return;
   _LOC_USERS.forEach(function(u){
