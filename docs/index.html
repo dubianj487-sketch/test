@@ -1836,10 +1836,6 @@ function setAppFont(f){
 // ========== リアルタイム位置共有 ==========
 var _locPollTimer = null;
 var _locMarkers = {};
-var _locHistory = {};
-var _locVisualPos = {};
-var _predLoop = null;
-var _trackingUser = null; // タップで追従中のユーザーkey
 
 function _myUser(){ return localStorage.getItem('fontMode')==='shun' ? 'shun' : 'hee'; }
 
@@ -1864,55 +1860,6 @@ function _fmtAgo(isoStr){
   return Math.floor(diff/3600)+'時間前';
 }
 
-// 位置履歴に追加（最大2件）
-function _pushLocHistory(key, d){
-  if(!d||!d.lat||!d.lng) return;
-  if(!_locHistory[key]) _locHistory[key]=[];
-  var h=_locHistory[key];
-  var t=new Date(d.at||0).getTime()||Date.now();
-  if(h.length&&h[h.length-1].t===t) return;
-  h.push({lat:+d.lat, lng:+d.lng, t:t});
-  if(h.length>2) h.shift();
-}
-
-// デッドレコニング：最終点を超えないよう r=1.0 でキャップ、30秒以上古いデータは外挿しない
-function _predictPos(key){
-  var h=_locHistory[key];
-  if(!h||!h.length) return null;
-  if(h.length<2) return {lat:h[0].lat, lng:h[0].lng};
-  var a=h[0], b=h[1];
-  var dt=b.t-a.t;
-  if(dt<=0) return {lat:b.lat, lng:b.lng};
-  if(Date.now()-b.t > 30000) return {lat:b.lat, lng:b.lng};
-  var dlat=b.lat-a.lat, dlng=b.lng-a.lng;
-  var r=Math.min((Date.now()-b.t)/dt, 1.0);
-  return {lat:b.lat+dlat*r, lng:b.lng+dlng*r};
-}
-
-// rAFで60fps lerp補間 — マーカーをターゲット位置へ毎フレーム滑らかに近づける
-function _startPredLoop(){
-  if(_predLoop) return;
-  function frame(){
-    _predLoop=requestAnimationFrame(frame);
-    if(!_mapObj) return;
-    _LOC_USERS.forEach(function(u){
-      if(!_locMarkers[u.key]) return;
-      var target=_predictPos(u.key);
-      if(!target) return;
-      if(!_locVisualPos[u.key]){
-        _locVisualPos[u.key]={lat:target.lat,lng:target.lng};
-        _locMarkers[u.key].setLngLat([target.lng,target.lat]);
-        return;
-      }
-      var v=_locVisualPos[u.key];
-      v.lat+=(target.lat-v.lat)*0.1;
-      v.lng+=(target.lng-v.lng)*0.1;
-      _locMarkers[u.key].setLngLat([v.lng,v.lat]);
-    });
-  }
-  _predLoop=requestAnimationFrame(frame);
-}
-
 function updateLocStatus(){
   _LOC_USERS.forEach(function(u){
     var el=document.getElementById('locStatus'+u.key.charAt(0).toUpperCase()+u.key.slice(1));
@@ -1928,42 +1875,34 @@ function updateLocStatus(){
   });
 }
 
+// 場所マーカーと同じ仕様：実座標にマーカーを置き、更新時はsetLngLatで動かすだけ
 function updateLocMarkers(){
   updateLocStatus();
-  // 履歴を更新（マップ未表示でも記録しておく）
-  _LOC_USERS.forEach(function(u){
-    var d=locationData[u.key];
-    if(!d||!d.lat||!d.lng) return;
-    _pushLocHistory(u.key, d);
-    // GPS更新のたびにカメラを実位置へ追従（rAFループではなくここで行うことでflyToと競合しない）
-    if(_trackingUser===u.key && _mapObj){
-      _mapObj.easeTo({center:[+d.lng,+d.lat], zoom:Math.max(_mapObj.getZoom(),16), pitch:50, duration:600});
-    }
-  });
   if(!_mapObj) return;
   _LOC_USERS.forEach(function(u){
     var d=locationData[u.key];
     if(!d||!d.lat||!d.lng) return;
+    var lngLat=[+d.lng, +d.lat];
     if(!_locMarkers[u.key]){
-      var pos=_predictPos(u.key)||{lat:+d.lat,lng:+d.lng};
       var el=_liveIconEl(u.icon,u.bg);
       _locMarkers[u.key]=new maplibregl.Marker({element:el,anchor:'center'})
-        .setLngLat([pos.lng,pos.lat])
+        .setLngLat(lngLat)
         .addTo(_mapObj);
       (function(uk,markerEl){
         markerEl.style.cursor='pointer';
         markerEl.addEventListener('click',function(e){
           e.stopPropagation();
           var u2=_LOC_USERS.find(function(x){return x.key===uk;});
-          var lngLat=_locMarkers[uk].getLngLat();
-          _trackingUser=uk;
-          _mapObj.flyTo({center:lngLat,zoom:16,pitch:50,duration:600});
+          var ll=_locMarkers[uk].getLngLat();
+          _mapObj.flyTo({center:ll,zoom:16,pitch:50,duration:600});
           new maplibregl.Popup({offset:25,closeButton:false})
-            .setLngLat(lngLat)
+            .setLngLat(ll)
             .setHTML('<b>'+u2.label+'</b><br><small>'+_fmtAgo(locationData[uk]&&locationData[uk].at)+'</small>')
             .addTo(_mapObj);
         });
       })(u.key,el);
+    } else {
+      _locMarkers[u.key].setLngLat(lngLat);
     }
   });
 }
@@ -1975,10 +1914,6 @@ function _normalizeLocData(locObj){
     var lat=+d.lat, lng=+d.lng;
     if(isNaN(lat)||isNaN(lng)) return;
     if(lat>90||(lat<20&&lng>90)){var tmp=lat;lat=lng;lng=tmp;}
-    var prev=locationData[k];
-    if(prev&&prev.lat&&(Math.abs(lat-prev.lat)+Math.abs(lng-prev.lng))>0.05){
-      _locVisualPos[k]=null;
-    }
     d.lat=lat; d.lng=lng;
     locationData[k]=d;
   });
@@ -1997,7 +1932,6 @@ function _fetchLocations(){
 }
 
 function startLocationTracking(){
-  _startPredLoop();
   _locPollTimer=setInterval(_fetchLocations, 2000);
   _fetchLocations();
 }
@@ -2146,8 +2080,6 @@ async function initMap() {
       pitch: 50
     });
     _mapObj.on('style.load', _initMapLayers);
-    _mapObj.on('click', function(){ _trackingUser=null; });
-    _mapObj.on('dragstart', function(){ _trackingUser=null; });
     await new Promise(function(resolve){ _mapObj.once('load', resolve); });
   } else {
     _mapObj.resize();
