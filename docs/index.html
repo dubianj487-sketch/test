@@ -650,9 +650,9 @@ body.font-shun.dark-active #pg-hist{background:transparent}
       </div>
     </div>
     <div class="sett-section">
-      <div class="sett-label">アプリ通知</div>
-      <div style="font-size:11px;color:var(--txs);margin-bottom:8px">スケジュール登録時にアプリ通知を送ります（ホーム画面追加後に有効）</div>
-      <button class="sett-pill" id="notifPermBtn" onclick="requestNotifPerm()">🔔 通知を許可</button>
+      <div class="sett-label">プッシュ通知</div>
+      <div style="font-size:11px;color:var(--txs);margin-bottom:8px" id="notifDesc">-</div>
+      <button class="sett-pill" id="notifPermBtn" onclick="onNotifBtnTap()"></button>
     </div>
     <div class="sett-section">
       <div class="sett-label">Overland URL（位置共有）</div>
@@ -679,6 +679,11 @@ if(window.navigator.standalone){document.documentElement.classList.add('ios-pwa'
 // GASをデプロイした後、ここにURLを貼り付けてください
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbymJJag2hZIXnudvejecWckv2YTzexAMPE7dSgcf-OQuj1Jk_BpygOXL489KBwD11W-sA/exec';
 
+// ========== Web Push設定 ==========
+// CloudflareワーカーをデプロイしてからURLを貼り付けてください（push-server/worker.js）
+const CF_PUSH_URL = '';
+const VAPID_PUBLIC_KEY = 'BOrgMpK6DpVKY9xwHbogrjQNfbL0p8D25qH_3pz0KJOR0lyqgefO0qI0kaC17P1NlgtvrszRZPbPpJX6hnBtsEs';
+
 // ========== 状態変数 ==========
 let memoText = '', memoTimer = null;
 let depLocs = [];
@@ -697,6 +702,7 @@ let currentBuiltDate='', currentBuiltDateLabel='';
 let batteryData={};
 let locationData={};
 let secretData={url:'',text:''};
+let heeSubscription=null;
 
 // ========== GAS通信 ==========
 async function gasGet() {
@@ -754,6 +760,7 @@ function onMemoInput(){
       batteryData = res.data.battery || {};
       locationData = res.data.location || {};
       secretData = res.data.secret || {url:'',text:''};
+      heeSubscription = res.data.heeSubscription || null;
     }
   } catch(e) {
     console.error('GAS load failed:', e);
@@ -784,8 +791,14 @@ function onMemoInput(){
         const inp = document.getElementById('memoInp');
         if (document.activeElement !== inp) inp.value = newMemo;
       }
+      if (res.data.heeSubscription) heeSubscription = res.data.heeSubscription;
     } catch(e) {}
   }, 10000);
+
+  // SW登録
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(function(e){ console.warn('SW:', e); });
+  }
 })();
 
 function setPgHeight(){
@@ -1330,40 +1343,75 @@ function doSave(){
   else schedHistory.unshift(entry);
 
   gasPost({action:'saveSchedule', payload:entry});
-  if(isNew){saveCounters();sendLocalNotif(entry);}
+  if(isNew){saveCounters();triggerWebPush(entry);}
 
   resetSchedForm();
   closeSchedModal();
   showSaveSuccessBar(savedDateLabel, savedShunTxt, savedBoyTxt);
 }
 
-function sendLocalNotif(entry){
-  if(!('Notification' in window)||Notification.permission!=='granted') return;
+function urlB64ToUint8Array(b64){
+  var pad='='.repeat((4-b64.length%4)%4);
+  var raw=atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
+  var out=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i);
+  return out;
+}
+
+function triggerWebPush(entry){
+  if(!CF_PUSH_URL||!heeSubscription) return;
   var title='📅 '+entry.dateLabel+' スケジュール登録';
   var body=(entry.shunTxt||'').split('\n').slice(0,6).join('\n');
-  if(navigator.serviceWorker&&navigator.serviceWorker.controller){
-    navigator.serviceWorker.ready.then(function(reg){
-      reg.showNotification(title,{body:body,icon:'/favicon.ico'});
-    }).catch(function(){new Notification(title,{body:body});});
-  } else {
-    try{new Notification(title,{body:body});}catch(e){}
+  fetch(CF_PUSH_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({subscription:heeSubscription,title:title,body:body})
+  }).catch(function(e){console.warn('WebPush failed:',e);});
+}
+
+async function subscribeHeePush(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+    showToast('このブラウザはプッシュ通知に非対応です'); return;
+  }
+  var perm=await Notification.requestPermission();
+  if(perm!=='granted'){showToast('通知が許可されませんでした');updatePushBtn();return;}
+  try{
+    var reg=await navigator.serviceWorker.ready;
+    var sub=await reg.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey:urlB64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+    heeSubscription=sub.toJSON();
+    gasPost({action:'saveHeeSubscription',subscription:heeSubscription});
+    showToast('✅ プッシュ通知を登録しました');
+    updatePushBtn();
+  }catch(e){
+    console.error('Push subscribe failed:',e);
+    showToast('通知登録に失敗しました');
   }
 }
 
-function requestNotifPerm(){
-  if(!('Notification' in window)){showToast('この端末は通知に非対応です');return;}
-  Notification.requestPermission().then(function(p){
-    showToast(p==='granted'?'🔔 通知を許可しました！':'通知が許可されませんでした');
-    updateNotifBtn();
-  });
+function onNotifBtnTap(){
+  if(_myUser()==='hee') subscribeHeePush();
 }
 
-function updateNotifBtn(){
+function updatePushBtn(){
   var btn=document.getElementById('notifPermBtn');
-  if(!btn||!('Notification' in window)) return;
-  var p=Notification.permission;
-  btn.textContent=p==='granted'?'✅ 許可済み':p==='denied'?'🚫 拒否済み（設定から変更）':'🔔 通知を許可';
-  btn.classList.toggle('sel',p==='granted');
+  var desc=document.getElementById('notifDesc');
+  if(!btn) return;
+  if(_myUser()==='hee'){
+    if(desc) desc.textContent='スケジュールが追加されたときにプッシュ通知を受け取ります';
+    var p=('Notification' in window)?Notification.permission:'default';
+    btn.textContent=p==='granted'?'✅ 登録済み（再登録）':p==='denied'?'🚫 拒否済み（設定から変更）':'🔔 通知を受け取る';
+    btn.disabled=(p==='denied');
+    btn.classList.toggle('sel',p==='granted');
+  } else {
+    if(desc) desc.textContent='ひーちゃんの端末で「通知を受け取る」を押すと、スケジュール保存時に自動送信されます';
+    btn.textContent=heeSubscription?'✅ ひーちゃん登録済み':'📭 ひーちゃん未登録';
+    btn.disabled=true;
+    btn.style.opacity='0.65';
+    btn.classList.toggle('sel',!!heeSubscription);
+  }
 }
 
 function resetSchedForm(){
@@ -1864,7 +1912,7 @@ function openSettings(){
   var elH = document.getElementById('ovUrlHee');
   if(elS) elS.textContent = base+'?user=shun';
   if(elH) elH.textContent = base+'?user=hee';
-  updateNotifBtn();
+  updatePushBtn();
   document.getElementById('moSettings').classList.add('open');
 }
 function copyOverlandUrl(user){
