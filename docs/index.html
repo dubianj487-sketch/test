@@ -2129,10 +2129,14 @@ async function initMap() {
 
   // リアルタイム位置マーカー
   updateLocMarkers();
-  var myLoc = locationData[_myUser()];
-  var centerLngLat = myLoc ? [myLoc.lng, myLoc.lat] : [135.5023, 34.6937];
+  var centerLngLat = [135.5023, 34.6937];
   var bounds = new maplibregl.LngLatBounds(centerLngLat, centerLngLat);
   var boundsExtended = false;
+  // しゅん・ひーちゃん両方の位置をboundsに含める
+  _LOC_USERS.forEach(function(u){
+    var d = locationData[u.key];
+    if(d && d.lat && d.lng){ bounds.extend([+d.lng, +d.lat]); boundsExtended = true; }
+  });
 
   // キューに全住所を積む
   var queue = [];
