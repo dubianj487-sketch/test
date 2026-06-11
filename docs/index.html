@@ -2001,32 +2001,13 @@ function _initMapLayers(){
   if(!src) return;
   var isDark=document.body.classList.contains('dark-active');
 
-  // 日本語ラベル & POIアイコン色付け
+  // 日本語ラベル（name:latin = ローマ字を挟まず、name:ja → name の順）
   _mapObj.getStyle().layers.forEach(function(layer){
     if(layer.type!=='symbol') return;
     if(layer.layout && layer.layout['text-field']){
-      _mapObj.setLayoutProperty(layer.id,'text-field',
-        ['coalesce',['get','name:ja'],['get','name:latin'],['get','name']]);
-    }
-    if(layer['source-layer']==='poi'){
       try {
-        _mapObj.setPaintProperty(layer.id,'icon-color',[
-          'match',['get','class'],
-          'food_drink',    '#e87c3e',
-          'shop',          '#3b82f6',
-          'transportation','#10b981',
-          'accommodation', '#8b5cf6',
-          'attraction',    '#ef4444',
-          'sport',         '#22c55e',
-          'park',          '#22c55e',
-          'education',     '#f59e0b',
-          'medical',       '#f43f5e',
-          'office',        '#64748b',
-          'religion',      '#a78bfa',
-          '#6b7280'
-        ]);
-        _mapObj.setPaintProperty(layer.id,'icon-halo-color','rgba(255,255,255,0.9)');
-        _mapObj.setPaintProperty(layer.id,'icon-halo-width',1.5);
+        _mapObj.setLayoutProperty(layer.id,'text-field',
+          ['coalesce',['get','name:ja'],['get','name']]);
       } catch(e){}
     }
   });
@@ -2138,6 +2119,8 @@ async function initMap() {
     });
     await new Promise(function(resolve){ _mapObj.once('load', resolve); });
     _initMapLayers();
+    // idle後に再適用（タイルストリーミング完了後の日本語漏れ対策）
+    _mapObj.once('idle', _initMapLayers);
   } else {
     _mapObj.resize();
     _mapLayerMarkers.forEach(function(m){ m.remove(); });
