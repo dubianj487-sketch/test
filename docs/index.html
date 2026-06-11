@@ -200,6 +200,7 @@ body.dark-active #map-container .leaflet-container{background:#1a2a40}
 .loc-wrap{position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
 .loc-pulse{position:absolute;inset:0;border-radius:50%;animation:locPulse 2.4s ease-out infinite}
 @keyframes locPulse{0%{transform:scale(.4);opacity:.7}100%{transform:scale(2.2);opacity:0}}
+.loc-smooth{transition:transform 0.2s linear}
 @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 12px rgba(180,100,140,.1);overflow:hidden}
@@ -1964,6 +1965,10 @@ function updateLocMarkers(){
           _locMarkers[uk].getPopup().setContent('<b>'+u2.label+'</b><br><small>'+_fmtAgo(locationData[uk]&&locationData[uk].at)+'</small>');
           _locMarkers[uk].openPopup();
         });
+        setTimeout(function(){
+          var el=_locMarkers[uk]&&_locMarkers[uk].getElement();
+          if(el) el.classList.add('loc-smooth');
+        }, 100);
       })(u.key);
     }
   });
