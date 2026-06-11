@@ -651,10 +651,10 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     </div>
     <div class="sett-section">
       <div class="sett-label">プッシュ通知</div>
-      <div style="font-size:11px;color:var(--txs);margin-bottom:8px" id="notifDesc">-</div>
+      <div style="font-size:11px;color:var(--txs);margin-bottom:8px">スケジュール保存時にこの端末へ通知を受け取ります</div>
       <div class="sett-row" style="gap:6px">
         <button class="sett-pill" id="notifPermBtn" onclick="onNotifBtnTap()"></button>
-        <button class="sett-pill" id="notifTestBtn" onclick="testPushNotif()" style="display:none">📤 テスト</button>
+        <button class="sett-pill" id="notifTestBtn" onclick="testPushNotif()">📤 テスト</button>
       </div>
     </div>
     <div class="sett-section">
@@ -704,7 +704,6 @@ let currentBuiltDate='', currentBuiltDateLabel='';
 let batteryData={};
 let locationData={};
 let secretData={url:'',text:''};
-let heeSubscribed=false;
 let _lastSaveAt=0;
 
 // ========== GAS通信 ==========
@@ -763,7 +762,6 @@ function onMemoInput(){
       batteryData = res.data.battery || {};
       locationData = res.data.location || {};
       secretData = res.data.secret || {url:'',text:''};
-      heeSubscribed = !!res.data.heeSubscribed;
     }
   } catch(e) {
     console.error('GAS load failed:', e);
@@ -796,7 +794,6 @@ function onMemoInput(){
         const inp = document.getElementById('memoInp');
         if (document.activeElement !== inp) inp.value = newMemo;
       }
-      heeSubscribed = !!res.data.heeSubscribed;
     } catch(e) {}
   }, 10000);
 
@@ -1369,14 +1366,13 @@ function _b64urlToUint8(b64){
   return out;
 }
 
-// GASにnotifyHeeアクションを投げる（GAS側がCF Workerを呼ぶ）
 function triggerWebPush(entry){
   var title='📅 '+entry.dateLabel+' スケジュール登録';
   var body=(entry.shunTxt||'').split('\n').slice(0,6).join('\n');
-  gasPost({action:'notifyHee',title:title,body:body});
+  gasPost({action:'notifyAll',title:title,body:body});
 }
 
-async function subscribeHeePush(){
+async function subscribePush(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window)){
     showToast('このブラウザはプッシュ通知に非対応です'); return;
   }
@@ -1388,38 +1384,30 @@ async function subscribeHeePush(){
       userVisibleOnly:true,
       applicationServerKey:_b64urlToUint8(VAPID_PUBLIC_KEY)
     });
-    // toJSON()非対応ブラウザの互換対応
     var subJson=sub.toJSON?sub.toJSON():{
       endpoint:sub.endpoint,
-      keys:{
-        p256dh:_abToB64url(sub.getKey('p256dh')),
-        auth:_abToB64url(sub.getKey('auth'))
-      }
+      keys:{p256dh:_abToB64url(sub.getKey('p256dh')),auth:_abToB64url(sub.getKey('auth'))}
     };
-    gasPost({action:'saveHeeSubscription',subscription:subJson});
-    heeSubscribed=true;
+    gasPost({action:'saveSubscription',subscription:subJson});
     showToast('✅ プッシュ通知を登録しました');
     updatePushBtn();
   }catch(e){
-    console.error('Push subscribe failed:',e);
     showToast('通知登録に失敗しました: '+e.message);
   }
 }
 
-function onNotifBtnTap(){
-  if(_myUser()==='hee') subscribeHeePush();
-}
+function onNotifBtnTap(){ subscribePush(); }
 
 async function testPushNotif(){
   showToast('📤 テスト送信中...');
   try{
-    var res=await fetch(GAS_URL+'?action=notifyHee&data='+encodeURIComponent(JSON.stringify({
+    var res=await fetch(GAS_URL+'?action=notifyAll&data='+encodeURIComponent(JSON.stringify({
       title:'🔔 SILDEテスト通知',
       body:'通知テスト！届いてたら設定OKです'
     }))+'&_='+Date.now());
     var d=await res.json();
-    if(d.ok) showToast('✅ GASに送信済み — ひーちゃんの端末を確認して');
-    else showToast('⚠️ GASエラー: notifyHeeアクションをGASに追加してください');
+    if(d.ok) showToast('✅ 送信しました！届いてるか確認して');
+    else showToast('⚠️ GASエラー: GASの設定を確認してください');
   }catch(e){
     showToast('❌ エラー: '+e.message);
   }
@@ -1427,24 +1415,11 @@ async function testPushNotif(){
 
 function updatePushBtn(){
   var btn=document.getElementById('notifPermBtn');
-  var testBtn=document.getElementById('notifTestBtn');
-  var desc=document.getElementById('notifDesc');
   if(!btn) return;
-  if(_myUser()==='hee'){
-    if(desc) desc.textContent='スケジュールが追加されたときにプッシュ通知を受け取ります';
-    var p=('Notification' in window)?Notification.permission:'default';
-    btn.textContent=p==='granted'?'✅ 登録済み（再登録）':p==='denied'?'🚫 拒否済み（設定から変更）':'🔔 通知を受け取る';
-    btn.disabled=(p==='denied');
-    btn.classList.toggle('sel',p==='granted');
-    if(testBtn) testBtn.style.display='none';
-  } else {
-    if(desc) desc.textContent='ひーちゃんの端末で「通知を受け取る」を押すと、スケジュール保存時に自動送信されます';
-    btn.textContent=heeSubscribed?'✅ ひーちゃん登録済み':'📭 ひーちゃん未登録';
-    btn.disabled=true;
-    btn.style.opacity='0.65';
-    btn.classList.toggle('sel',heeSubscribed);
-    if(testBtn) testBtn.style.display='';
-  }
+  var p=('Notification' in window)?Notification.permission:'default';
+  btn.textContent=p==='granted'?'✅ 登録済み（再登録）':p==='denied'?'🚫 拒否済み（設定から変更）':'🔔 通知を受け取る';
+  btn.disabled=(p==='denied');
+  btn.classList.toggle('sel',p==='granted');
 }
 
 function resetSchedForm(){
