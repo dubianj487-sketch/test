@@ -56,7 +56,6 @@ body.font-shun{
 }
 html:has(body.font-shun){background:#d8eef8 !important}
 body.font-shun .pg{background:#c0d8ec}
-body.font-shun .loading-overlay{background:rgba(30,48,80,.92)}
 body.font-shun .bp{background:#2a5a8a;box-shadow:0 4px 14px rgba(30,60,120,.3)}
 body.font-shun .bgr{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
 body.font-shun .bmap{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
@@ -389,12 +388,7 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .empty-note{font-size:12px;color:#bbb;text-align:center;padding:14px}
 hr.dv{border:none;border-top:1px solid #f0eaf0;margin:10px 0}
 
-/* ローディングオーバーレイ */
-.loading-overlay{position:fixed;inset:0;background:rgba(206,149,176,.95);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
-.loading-spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:15px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif}
-.loading-sub{font-size:12px;opacity:.75;margin-top:6px;font-family:'Zen Maru Gothic',sans-serif}
+
 #starfield{display:none;position:fixed;inset:0;pointer-events:none;z-index:0}
 body.font-shun.dark-active #starfield{display:block}
 body.font-shun.dark-active .pg{background:transparent;position:relative;z-index:1}
@@ -428,12 +422,6 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 <body>
 <canvas id="starfield"></canvas>
 
-<!-- ローディング -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">🌙 読み込み中...</div>
-  <div class="loading-sub">スプレッドシートからデータを取得しています</div>
-</div>
 
 <!-- SCHEDULE MODAL (bottom sheet) -->
 <div class="mo" id="moSched">
@@ -721,16 +709,6 @@ function onMemoInput(){
 
 // ========== 起動処理（非同期） ==========
 (async function(){
-  const overlay = document.getElementById('loadingOverlay');
-
-  if (!GAS_URL || GAS_URL.startsWith('YOUR')) {
-    overlay.querySelector('.loading-text').textContent = '⚠️ GAS URLが未設定です';
-    overlay.querySelector('.loading-sub').textContent = 'docs/index.html の GAS_URL を設定してください';
-    overlay.querySelector('.loading-spinner').style.display = 'none';
-    setTimeout(function(){ overlay.style.display='none'; initApp(); }, 2000);
-    return;
-  }
-
   try {
     const res = await gasGet();
     if (res.ok) {
@@ -754,7 +732,6 @@ function onMemoInput(){
     showToast('⚠️ データの読み込みに失敗しました');
   }
 
-  overlay.style.display = 'none';
   initApp();
   startLocationTracking();
   renderHistPage();
