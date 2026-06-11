@@ -1856,6 +1856,21 @@ function _ago(isoStr){
   return Math.floor(diff/3600) + '時間前';
 }
 
+function _livePopupHtml(u, d){
+  var BS = ['','🔌 未接続','⚡ 充電中','🔋 満充電'];
+  var lines = ['<b>' + u.label + '</b>'];
+  var battStr = '';
+  if(d.batt != null) battStr = d.batt + '%';
+  if(d.bs != null && BS[d.bs]) battStr += (battStr?' ':'') + BS[d.bs];
+  if(battStr) lines.push('🔋 ' + battStr);
+  if(d.vel != null) lines.push('🚗 ' + d.vel + ' km/h');
+  if(d.motionactivities && d.motionactivities.length){
+    lines.push('🏃 ' + d.motionactivities.join(' · '));
+  }
+  lines.push('<small>' + _ago(d.at) + '</small>');
+  return lines.join('<br>');
+}
+
 // しゅん・ひーちゃんのマーカーを作成/更新
 function _renderLive(){
   _MAP_USERS.forEach(function(u){
@@ -1865,7 +1880,7 @@ function _renderLive(){
     if(!lat || !lng || isNaN(lat) || isNaN(lng)) return;
     var st = document.getElementById('locStatus' + u.key.charAt(0).toUpperCase() + u.key.slice(1));
     if(st) st.style.opacity = '1';
-    var html = '<b>' + u.label + '</b><br><small>' + _ago(d.at) + '</small>';
+    var html = _livePopupHtml(u, d);
     if(_liveMarkers[u.key]){
       _liveMarkers[u.key].setLngLat([lng, lat]);
       _liveMarkers[u.key].getPopup().setHTML(html);

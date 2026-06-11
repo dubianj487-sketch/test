@@ -84,7 +84,12 @@ function doPost(e) {
     // OwnTracks HTTP format: {"_type":"location","lat":...,"lon":...}
     if (body._type === 'location' && body.lat && body.lon) {
       const user = (e.parameter && e.parameter.user) || '';
-      if (user) writeLocation(ss, {user: user, lat: body.lat, lng: body.lon});
+      if (user) writeLocation(ss, {
+        user: user, lat: body.lat, lng: body.lon,
+        batt: body.batt, bs: body.bs,
+        vel: body.vel,
+        motionactivities: body.motionactivities
+      });
       return ContentService.createTextOutput('[]').setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -298,7 +303,11 @@ function writeLocation(ss, data) {
   loc[data.user] = {
     lat: parseFloat(data.lat),
     lng: parseFloat(data.lng),
-    at: new Date().toISOString()
+    at: new Date().toISOString(),
+    batt: data.batt != null ? parseInt(data.batt) : undefined,
+    bs:   data.bs   != null ? parseInt(data.bs)   : undefined,
+    vel:  data.vel  != null ? parseInt(data.vel)  : undefined,
+    motionactivities: data.motionactivities || undefined
   };
   sheet.getRange(1, 1).setValue(JSON.stringify(loc));
 }
