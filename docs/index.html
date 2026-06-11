@@ -680,8 +680,7 @@ if(window.navigator.standalone){document.documentElement.classList.add('ios-pwa'
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbymJJag2hZIXnudvejecWckv2YTzexAMPE7dSgcf-OQuj1Jk_BpygOXL489KBwD11W-sA/exec';
 
 // ========== Web Push設定 ==========
-// CloudflareワーカーをデプロイしてからURLを貼り付けてください（push-server/worker.js）
-const CF_PUSH_URL = '';
+// CF_PUSH_URLはGAS Script Propertiesに保管（コードに書かない）
 const VAPID_PUBLIC_KEY = 'BOrgMpK6DpVKY9xwHbogrjQNfbL0p8D25qH_3pz0KJOR0lyqgefO0qI0kaC17P1NlgtvrszRZPbPpJX6hnBtsEs';
 
 // ========== 状態変数 ==========
@@ -702,7 +701,7 @@ let currentBuiltDate='', currentBuiltDateLabel='';
 let batteryData={};
 let locationData={};
 let secretData={url:'',text:''};
-let heeSubscription=null;
+let heeSubscribed=false;
 
 // ========== GAS通信 ==========
 async function gasGet() {
@@ -760,7 +759,7 @@ function onMemoInput(){
       batteryData = res.data.battery || {};
       locationData = res.data.location || {};
       secretData = res.data.secret || {url:'',text:''};
-      heeSubscription = res.data.heeSubscription || null;
+      heeSubscribed = !!res.data.heeSubscribed;
     }
   } catch(e) {
     console.error('GAS load failed:', e);
@@ -791,7 +790,7 @@ function onMemoInput(){
         const inp = document.getElementById('memoInp');
         if (document.activeElement !== inp) inp.value = newMemo;
       }
-      if (res.data.heeSubscription) heeSubscription = res.data.heeSubscription;
+      heeSubscribed = !!res.data.heeSubscribed;
     } catch(e) {}
   }, 10000);
 
@@ -1350,7 +1349,11 @@ function doSave(){
   showSaveSuccessBar(savedDateLabel, savedShunTxt, savedBoyTxt);
 }
 
-function urlB64ToUint8Array(b64){
+function _abToB64url(buf){
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+function _b64urlToUint8(b64){
   var pad='='.repeat((4-b64.length%4)%4);
   var raw=atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
   var out=new Uint8Array(raw.length);
@@ -1358,15 +1361,11 @@ function urlB64ToUint8Array(b64){
   return out;
 }
 
+// GASにnotifyHeeアクションを投げる（GAS側がCF Workerを呼ぶ）
 function triggerWebPush(entry){
-  if(!CF_PUSH_URL||!heeSubscription) return;
   var title='📅 '+entry.dateLabel+' スケジュール登録';
   var body=(entry.shunTxt||'').split('\n').slice(0,6).join('\n');
-  fetch(CF_PUSH_URL,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({subscription:heeSubscription,title:title,body:body})
-  }).catch(function(e){console.warn('WebPush failed:',e);});
+  gasPost({action:'notifyHee',title:title,body:body});
 }
 
 async function subscribeHeePush(){
@@ -1379,15 +1378,23 @@ async function subscribeHeePush(){
     var reg=await navigator.serviceWorker.ready;
     var sub=await reg.pushManager.subscribe({
       userVisibleOnly:true,
-      applicationServerKey:urlB64ToUint8Array(VAPID_PUBLIC_KEY)
+      applicationServerKey:_b64urlToUint8(VAPID_PUBLIC_KEY)
     });
-    heeSubscription=sub.toJSON();
-    gasPost({action:'saveHeeSubscription',subscription:heeSubscription});
+    // toJSON()非対応ブラウザの互換対応
+    var subJson=sub.toJSON?sub.toJSON():{
+      endpoint:sub.endpoint,
+      keys:{
+        p256dh:_abToB64url(sub.getKey('p256dh')),
+        auth:_abToB64url(sub.getKey('auth'))
+      }
+    };
+    gasPost({action:'saveHeeSubscription',subscription:subJson});
+    heeSubscribed=true;
     showToast('✅ プッシュ通知を登録しました');
     updatePushBtn();
   }catch(e){
     console.error('Push subscribe failed:',e);
-    showToast('通知登録に失敗しました');
+    showToast('通知登録に失敗しました: '+e.message);
   }
 }
 
@@ -1407,10 +1414,10 @@ function updatePushBtn(){
     btn.classList.toggle('sel',p==='granted');
   } else {
     if(desc) desc.textContent='ひーちゃんの端末で「通知を受け取る」を押すと、スケジュール保存時に自動送信されます';
-    btn.textContent=heeSubscription?'✅ ひーちゃん登録済み':'📭 ひーちゃん未登録';
+    btn.textContent=heeSubscribed?'✅ ひーちゃん登録済み':'📭 ひーちゃん未登録';
     btn.disabled=true;
     btn.style.opacity='0.65';
-    btn.classList.toggle('sel',!!heeSubscription);
+    btn.classList.toggle('sel',heeSubscribed);
   }
 }
 
