@@ -1,0 +1,3 @@
+name = "silde-push"
+main = "worker.js"
+compatibility_date = "2025-01-01"
