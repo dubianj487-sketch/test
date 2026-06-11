@@ -721,7 +721,7 @@ function onMemoInput(){
       histCnt = c.histCnt || 0;
       memoText = res.data.memo || '';
       batteryData = res.data.battery || {};
-      locationData = res.data.location || {};
+      _normalizeLocData(res.data.location || {});
       secretData = res.data.secret || {url:'',text:''};
     }
   } catch(e) {
@@ -1968,26 +1968,29 @@ function updateLocMarkers(){
   });
 }
 
+function _normalizeLocData(locObj){
+  Object.keys(locObj).forEach(function(k){
+    var d=locObj[k];
+    if(!d||!d.lat) return;
+    var lat=+d.lat, lng=+d.lng;
+    if(isNaN(lat)||isNaN(lng)) return;
+    if(lat>90||(lat<20&&lng>90)){var tmp=lat;lat=lng;lng=tmp;}
+    var prev=locationData[k];
+    if(prev&&prev.lat&&(Math.abs(lat-prev.lat)+Math.abs(lng-prev.lng))>0.05){
+      _locVisualPos[k]=null;
+    }
+    d.lat=lat; d.lng=lng;
+    locationData[k]=d;
+  });
+  return locObj;
+}
+
 function _fetchLocations(){
   fetch(GAS_URL+'?action=location&_='+Date.now())
     .then(function(r){return r.json();})
     .then(function(data){
       if(data.ok){
-        var newLoc=data.data||{};
-        Object.keys(newLoc).forEach(function(k){
-          var d=newLoc[k];
-          if(!d||!d.lat) return;
-          var lat=+d.lat, lng=+d.lng;
-          // lat/lng逆転検出：日本の緯度は24〜46、経度は122〜154
-          if(lat>90||(lat<20&&lng>90)){var tmp=lat;lat=lng;lng=tmp;}
-          d.lat=lat; d.lng=lng;
-          // 座標が大きく変わったらvisualPosをリセット（古い位置からのlerpを防ぐ）
-          var prev=locationData[k];
-          if(prev&&prev.lat&&(Math.abs(lat-prev.lat)+Math.abs(lng-prev.lng))>0.05){
-            _locVisualPos[k]=null;
-          }
-          locationData[k]=d;
-        });
+        _normalizeLocData(data.data||{});
         updateLocMarkers();
       }
     }).catch(function(){});
