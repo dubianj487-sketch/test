@@ -650,13 +650,6 @@ body.font-shun.dark-active #pg-hist{background:transparent}
       </div>
     </div>
     <div class="sett-section">
-      <div class="sett-label">プッシュ通知</div>
-      <div class="sett-row" style="gap:6px">
-        <button class="sett-pill" id="notifPermBtn" onclick="onNotifBtnTap()"></button>
-        <button class="sett-pill" onclick="testPushNotif()">📤 テスト</button>
-      </div>
-    </div>
-    <div class="sett-section">
       <div class="sett-label">Overland URL（位置共有）</div>
       <div style="font-size:11px;color:var(--txs);margin-bottom:6px">OverlandアプリのServer URLにコピーして設定してください</div>
       <div class="overland-url-row" onclick="copyOverlandUrl('shun')" title="タップでコピー">
@@ -681,10 +674,6 @@ if(window.navigator.standalone){document.documentElement.classList.add('ios-pwa'
 // GASをデプロイした後、ここにURLを貼り付けてください
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbymJJag2hZIXnudvejecWckv2YTzexAMPE7dSgcf-OQuj1Jk_BpygOXL489KBwD11W-sA/exec';
 
-// ========== Web Push設定 ==========
-// CF_PUSH_URLはGAS Script Propertiesに保管（コードに書かない）
-const VAPID_PUBLIC_KEY = 'BOrgMpK6DpVKY9xwHbogrjQNfbL0p8D25qH_3pz0KJOR0lyqgefO0qI0kaC17P1NlgtvrszRZPbPpJX6hnBtsEs';
-
 // ========== 状態変数 ==========
 let memoText = '', memoTimer = null;
 let depLocs = [];
@@ -703,8 +692,6 @@ let currentBuiltDate='', currentBuiltDateLabel='';
 let batteryData={};
 let locationData={};
 let secretData={url:'',text:''};
-let _lastSaveAt=0;
-
 // ========== GAS通信 ==========
 async function gasGet() {
   const res = await fetch(GAS_URL + '?action=all&_=' + Date.now());
@@ -781,7 +768,7 @@ function onMemoInput(){
     try {
       const res = await gasGet();
       if (!res.ok) return;
-      if (Date.now() - _lastSaveAt > 30000) {
+      {
         schedHistory = res.data.schedHistory || schedHistory;
         schedHistory.forEach(function(e){ rebuildHistTexts(e); });
         histCnt = (res.data.counters || {}).histCnt || histCnt;
@@ -797,11 +784,6 @@ function onMemoInput(){
   }, 10000);
 
   // SW登録 + 通知許可済みなら自動でサブスクリプション登録
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(function(){ _registerPushSub(); })
-      .catch(function(e){ console.warn('SW:', e); });
-  }
 })();
 
 function setPgHeight(){
@@ -1345,81 +1327,12 @@ function doSave(){
   if(existing>=0) schedHistory[existing]=entry;
   else schedHistory.unshift(entry);
 
-  _lastSaveAt = Date.now();
   gasPost({action:'saveSchedule', payload:entry});
   if(isNew) saveCounters();
-  triggerWebPush(entry);
 
   resetSchedForm();
   closeSchedModal();
   showSaveSuccessBar(savedDateLabel, savedShunTxt, savedBoyTxt);
-}
-
-function _abToB64url(buf){
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
-    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-function _b64urlToUint8(b64){
-  var pad='='.repeat((4-b64.length%4)%4);
-  var raw=atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
-  var out=new Uint8Array(raw.length);
-  for(var i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i);
-  return out;
-}
-
-function triggerWebPush(entry){
-  var title='📅 '+entry.dateLabel+' スケジュール登録';
-  var body=(entry.shunTxt||'').split('\n').slice(0,6).join('\n');
-  gasPost({action:'notifyAll',title:title,body:body});
-}
-
-// 通知許可済みなら自動でGASにサブスクリプションを保存（ページ読み込み時に毎回）
-function _registerPushSub(){
-  if(!('serviceWorker' in navigator)||!('PushManager' in window)) return;
-  if(Notification.permission!=='granted') return;
-  navigator.serviceWorker.ready.then(function(reg){
-    return reg.pushManager.subscribe({
-      userVisibleOnly:true,
-      applicationServerKey:_b64urlToUint8(VAPID_PUBLIC_KEY)
-    });
-  }).then(function(sub){
-    var s=sub.toJSON?sub.toJSON():{
-      endpoint:sub.endpoint,
-      keys:{p256dh:_abToB64url(sub.getKey('p256dh')),auth:_abToB64url(sub.getKey('auth'))}
-    };
-    gasPost({action:'saveSubscription',subscription:s});
-  }).catch(function(){});
-}
-
-async function onNotifBtnTap(){
-  var p=await Notification.requestPermission();
-  updatePushBtn();
-  if(p==='granted'){ _registerPushSub(); showToast('✅ 通知をオンにしました'); }
-  else if(p==='denied') showToast('🚫 通知が拒否されています。ブラウザ設定から許可してください');
-}
-
-async function testPushNotif(){
-  showToast('📤 テスト送信中...');
-  try{
-    var res=await fetch(GAS_URL+'?action=notifyAll&data='+encodeURIComponent(JSON.stringify({
-      title:'🔔 SILDEテスト通知',
-      body:'通知テスト！届いてたら設定OKです'
-    }))+'&_='+Date.now());
-    var d=await res.json();
-    if(d.ok) showToast('✅ '+(d.notified||0)+'台に送信しました！');
-    else showToast('⚠️ GASエラー');
-  }catch(e){
-    showToast('❌ エラー: '+e.message);
-  }
-}
-
-function updatePushBtn(){
-  var btn=document.getElementById('notifPermBtn');
-  if(!btn) return;
-  var p=('Notification' in window)?Notification.permission:'default';
-  btn.textContent=p==='granted'?'✅ 登録済み（再登録）':p==='denied'?'🚫 拒否済み（設定から変更）':'🔔 通知を受け取る';
-  btn.disabled=(p==='denied');
-  btn.classList.toggle('sel',p==='granted');
 }
 
 function resetSchedForm(){
@@ -1920,7 +1833,6 @@ function openSettings(){
   var elH = document.getElementById('ovUrlHee');
   if(elS) elS.textContent = base+'?user=shun';
   if(elH) elH.textContent = base+'?user=hee';
-  updatePushBtn();
   document.getElementById('moSettings').classList.add('open');
 }
 function copyOverlandUrl(user){
