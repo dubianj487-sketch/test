@@ -2001,15 +2001,17 @@ function _initMapLayers(){
   if(!src) return;
   var isDark=document.body.classList.contains('dark-active');
 
-  // 日本語ラベル（name:latin = ローマ字を挟まず、name:ja → name の順）
+  // 日本語ラベル：nameを参照しているsymbolレイヤーだけ上書き
   _mapObj.getStyle().layers.forEach(function(layer){
     if(layer.type!=='symbol') return;
-    if(layer.layout && layer.layout['text-field']){
-      try {
-        _mapObj.setLayoutProperty(layer.id,'text-field',
-          ['coalesce',['get','name:ja'],['get','name']]);
-      } catch(e){}
-    }
+    var tf = layer.layout && layer.layout['text-field'];
+    if(!tf) return;
+    // ref/housenumber等nameを使わないレイヤーはスキップ
+    if(JSON.stringify(tf).indexOf('name')===-1) return;
+    try {
+      _mapObj.setLayoutProperty(layer.id,'text-field',
+        ['coalesce',['get','name:ja'],['get','name']]);
+    } catch(e){}
   });
 
   // 道路ハイライト（端丸・半透明）— 毎回再追加
@@ -2052,6 +2054,8 @@ function _initMapLayers(){
 function updateMapTile(){
   if(!_mapObj) return;
   _mapObj.setStyle(_jaTile(document.body.classList.contains('dark-active')));
+  // style.load が早すぎる場合のバックアップ：idle後にも再適用
+  _mapObj.once('idle', _initMapLayers);
 }
 
 function _geocacheKey(addr){ return 'geo2_' + addr; }
