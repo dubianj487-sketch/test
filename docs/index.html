@@ -1859,11 +1859,10 @@ function _ago(isoStr){
 function _livePopupHtml(u, d){
   var BS = ['','🔌 未接続','⚡ 充電中','🔋 満充電'];
   var lines = ['<b>' + u.label + '</b>'];
-  var battStr = '';
-  if(d.batt != null) battStr = d.batt + '%';
-  if(d.bs != null && BS[d.bs]) battStr += (battStr?' ':'') + BS[d.bs];
-  if(battStr) lines.push('🔋 ' + battStr);
-  if(d.vel != null) lines.push('🚗 ' + d.vel + ' km/h');
+  var battStr = (d.batt != null) ? d.batt + '%' : '';
+  if(d.bs != null && BS[d.bs]) battStr += (battStr ? ' ' : '') + BS[d.bs];
+  lines.push('🔋 ' + (battStr || '–'));
+  lines.push('🚗 ' + (d.vel != null ? d.vel + ' km/h' : '–'));
   if(d.motionactivities && d.motionactivities.length){
     lines.push('🏃 ' + d.motionactivities.join(' · '));
   }
@@ -1885,10 +1884,17 @@ function _renderLive(){
       _liveMarkers[u.key].setLngLat([lng, lat]);
       _liveMarkers[u.key].getPopup().setHTML(html);
     } else if(_map){
-      _liveMarkers[u.key] = new maplibregl.Marker({element:_markerEl(u.emoji, u.bg), anchor:'center'})
+      var el = _markerEl(u.emoji, u.bg);
+      var popup = new maplibregl.Popup({offset:20, closeButton:false}).setHTML(html);
+      var marker = new maplibregl.Marker({element:el, anchor:'center'})
         .setLngLat([lng, lat])
-        .setPopup(new maplibregl.Popup({offset:20, closeButton:false}).setHTML(html))
+        .setPopup(popup)
         .addTo(_map);
+      el.addEventListener('click', function(e){
+        e.stopPropagation();
+        if(popup.isOpen()) popup.remove(); else popup.addTo(_map);
+      });
+      _liveMarkers[u.key] = marker;
     }
   });
 }
