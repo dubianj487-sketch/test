@@ -651,10 +651,9 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     </div>
     <div class="sett-section">
       <div class="sett-label">プッシュ通知</div>
-      <div style="font-size:11px;color:var(--txs);margin-bottom:8px">スケジュール保存時にこの端末へ通知を受け取ります</div>
       <div class="sett-row" style="gap:6px">
         <button class="sett-pill" id="notifPermBtn" onclick="onNotifBtnTap()"></button>
-        <button class="sett-pill" id="notifTestBtn" onclick="testPushNotif()">📤 テスト</button>
+        <button class="sett-pill" onclick="testPushNotif()">📤 テスト</button>
       </div>
     </div>
     <div class="sett-section">
@@ -797,9 +796,11 @@ function onMemoInput(){
     } catch(e) {}
   }, 10000);
 
-  // SW登録
+  // SW登録 + 通知許可済みなら自動でサブスクリプション登録
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(function(e){ console.warn('SW:', e); });
+    navigator.serviceWorker.register('./sw.js')
+      .then(function(){ _registerPushSub(); })
+      .catch(function(e){ console.warn('SW:', e); });
   }
 })();
 
@@ -1372,53 +1373,41 @@ function triggerWebPush(entry){
   gasPost({action:'notifyAll',title:title,body:body});
 }
 
-async function subscribePush(){
-  if(!('serviceWorker' in navigator)||!('PushManager' in window)){
-    showToast('このブラウザはプッシュ通知に非対応です'); return;
-  }
-  var perm=await Notification.requestPermission();
-  if(perm!=='granted'){showToast('通知が許可されませんでした');updatePushBtn();return;}
-  try{
-    var reg=await navigator.serviceWorker.ready;
-    var sub=await reg.pushManager.subscribe({
+// 通知許可済みなら自動でGASにサブスクリプションを保存（ページ読み込み時に毎回）
+function _registerPushSub(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)) return;
+  if(Notification.permission!=='granted') return;
+  navigator.serviceWorker.ready.then(function(reg){
+    return reg.pushManager.subscribe({
       userVisibleOnly:true,
       applicationServerKey:_b64urlToUint8(VAPID_PUBLIC_KEY)
     });
-    var subJson=sub.toJSON?sub.toJSON():{
+  }).then(function(sub){
+    var s=sub.toJSON?sub.toJSON():{
       endpoint:sub.endpoint,
       keys:{p256dh:_abToB64url(sub.getKey('p256dh')),auth:_abToB64url(sub.getKey('auth'))}
     };
-    var saveRes=await fetch(GAS_URL+'?action=saveSubscription&data='+encodeURIComponent(JSON.stringify({subscription:subJson}))+'&_='+Date.now());
-    var saveData=await saveRes.json();
-    if(saveData.ok){
-      showToast('✅ この端末を通知リストに登録しました');
-    } else {
-      showToast('⚠️ 登録失敗: GASを確認してください');
-    }
-    updatePushBtn();
-  }catch(e){
-    showToast('通知登録に失敗しました: '+e.message);
-  }
+    gasPost({action:'saveSubscription',subscription:s});
+  }).catch(function(){});
 }
 
-function onNotifBtnTap(){ subscribePush(); }
+async function onNotifBtnTap(){
+  var p=await Notification.requestPermission();
+  updatePushBtn();
+  if(p==='granted'){ _registerPushSub(); showToast('✅ 通知をオンにしました'); }
+  else if(p==='denied') showToast('🚫 通知が拒否されています。ブラウザ設定から許可してください');
+}
 
 async function testPushNotif(){
-  showToast('📤 確認中...');
+  showToast('📤 テスト送信中...');
   try{
-    var infoRes=await fetch(GAS_URL+'?action=getSubInfo&_='+Date.now());
-    var info=await infoRes.json();
-    if(!info.ok||info.count===0){
-      showToast('⚠️ 登録端末が0件！先に「通知を受け取る」を押してください');
-      return;
-    }
     var res=await fetch(GAS_URL+'?action=notifyAll&data='+encodeURIComponent(JSON.stringify({
       title:'🔔 SILDEテスト通知',
       body:'通知テスト！届いてたら設定OKです'
     }))+'&_='+Date.now());
     var d=await res.json();
-    if(d.ok) showToast('✅ '+d.notified+'台に送信！届いてるか確認して');
-    else showToast('⚠️ GASエラー: '+JSON.stringify(d));
+    if(d.ok) showToast('✅ '+(d.notified||0)+'台に送信しました！');
+    else showToast('⚠️ GASエラー');
   }catch(e){
     showToast('❌ エラー: '+e.message);
   }
