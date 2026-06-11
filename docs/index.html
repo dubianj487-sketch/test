@@ -1388,8 +1388,13 @@ async function subscribePush(){
       endpoint:sub.endpoint,
       keys:{p256dh:_abToB64url(sub.getKey('p256dh')),auth:_abToB64url(sub.getKey('auth'))}
     };
-    gasPost({action:'saveSubscription',subscription:subJson});
-    showToast('✅ プッシュ通知を登録しました');
+    var saveRes=await fetch(GAS_URL+'?action=saveSubscription&data='+encodeURIComponent(JSON.stringify({subscription:subJson}))+'&_='+Date.now());
+    var saveData=await saveRes.json();
+    if(saveData.ok){
+      showToast('✅ この端末を通知リストに登録しました');
+    } else {
+      showToast('⚠️ 登録失敗: GASを確認してください');
+    }
     updatePushBtn();
   }catch(e){
     showToast('通知登録に失敗しました: '+e.message);
@@ -1399,15 +1404,21 @@ async function subscribePush(){
 function onNotifBtnTap(){ subscribePush(); }
 
 async function testPushNotif(){
-  showToast('📤 テスト送信中...');
+  showToast('📤 確認中...');
   try{
+    var infoRes=await fetch(GAS_URL+'?action=getSubInfo&_='+Date.now());
+    var info=await infoRes.json();
+    if(!info.ok||info.count===0){
+      showToast('⚠️ 登録端末が0件！先に「通知を受け取る」を押してください');
+      return;
+    }
     var res=await fetch(GAS_URL+'?action=notifyAll&data='+encodeURIComponent(JSON.stringify({
       title:'🔔 SILDEテスト通知',
       body:'通知テスト！届いてたら設定OKです'
     }))+'&_='+Date.now());
     var d=await res.json();
-    if(d.ok) showToast('✅ 送信しました！届いてるか確認して');
-    else showToast('⚠️ GASエラー: GASの設定を確認してください');
+    if(d.ok) showToast('✅ '+d.notified+'台に送信！届いてるか確認して');
+    else showToast('⚠️ GASエラー: '+JSON.stringify(d));
   }catch(e){
     showToast('❌ エラー: '+e.message);
   }

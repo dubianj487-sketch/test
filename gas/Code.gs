@@ -55,8 +55,19 @@ function doGet(e) {
       case 'saveCounters': writeCounters(ss, body.payload); break;
       case 'saveMemo':     writeMemo(ss, body.memo); break;
       case 'saveSecret':   writeSecret(ss, body.payload); break;
-      case 'saveSubscription': savePushSubscription(body.subscription); break;
-      case 'notifyAll':    notifyAllSubscribers(body.title, body.body); break;
+      case 'saveSubscription': savePushSubscription(body.subscription); return makeResponse({ok:true});
+      case 'notifyAll': {
+        var props_ = PropertiesService.getScriptProperties();
+        var subs_ = JSON.parse(props_.getProperty('pushSubscriptions') || '[]');
+        var cfUrl_ = props_.getProperty('CF_PUSH_URL');
+        notifyAllSubscribers(body.title, body.body);
+        return makeResponse({ok:true, notified:subs_.length, hasCfUrl:!!cfUrl_});
+      }
+      case 'getSubInfo': {
+        var p_ = PropertiesService.getScriptProperties();
+        var s_ = JSON.parse(p_.getProperty('pushSubscriptions') || '[]');
+        return makeResponse({ok:true, count:s_.length, hasCfUrl:!!p_.getProperty('CF_PUSH_URL')});
+      }
       case 'updateBattery':
         writeBattery({
           user:     e.parameter.user,
