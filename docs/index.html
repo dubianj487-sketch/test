@@ -11,8 +11,8 @@
 <meta name="supported-color-schemes" content="light dark">
 <title>🌙 SILDE</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Opti:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
-<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/@maptiler/sdk@3/dist/maptiler-sdk.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@maptiler/sdk@3/dist/maptiler-sdk.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{color-scheme:light dark}
@@ -193,8 +193,6 @@ body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
 .map-legend-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
 .map-marker{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.8)}
 
-.loc-pulse{position:absolute;inset:0;border-radius:50%;animation:locPulse 2.4s ease-out infinite;z-index:-1;pointer-events:none}
-@keyframes locPulse{0%{transform:scale(.4);opacity:.7}100%{transform:scale(2.2);opacity:0}}
 @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 12px rgba(180,100,140,.1);overflow:hidden}
@@ -720,7 +718,7 @@ function onMemoInput(){
       histCnt = c.histCnt || 0;
       memoText = res.data.memo || '';
       batteryData = res.data.battery || {};
-      _normalizeLocData(res.data.location || {});
+      locationData = res.data.location || {};
       secretData = res.data.secret || {url:'',text:''};
     }
   } catch(e) {
@@ -729,7 +727,6 @@ function onMemoInput(){
   }
 
   initApp();
-  startLocationTracking();
   renderHistPage();
   document.getElementById('memoInp').value = memoText;
   var seenMemo = localStorage.getItem('memoSeen') || '';
@@ -1790,7 +1787,7 @@ function _applyAll(){
   b.classList.toggle('dark-active', dark);
   if(typeof updateThemeColor==='function') updateThemeColor();
 }
-_darkMQ.addEventListener('change', function(){ _applyAll(); updateMapTile(); });
+_darkMQ.addEventListener('change', function(){ _applyAll(); });
 
 function openSettings(){
   document.getElementById('sp-hee').classList.toggle('sel',_theme==='hee');
@@ -1822,206 +1819,80 @@ function _fallbackCopy(text){
 }
 function setAppTheme(t){
   _theme=t; localStorage.setItem('appTheme',t); localStorage.setItem('fontMode',t==='shun'?'shun':'hee');
-  _applyAll(); openSettings(); updateMapTile();
+  _applyAll(); openSettings();
 }
 function setColorMode(c){
-  _color=c; localStorage.setItem('colorMode',c); _applyAll(); openSettings(); updateMapTile();
+  _color=c; localStorage.setItem('colorMode',c); _applyAll(); openSettings();
 }
 function setAppFont(f){
   _font=(f==='sys'?'system':f); localStorage.setItem('appFont',_font); _applyAll(); openSettings();
 }
 (function(){ _applyAll(); })();
 
-// ========== リアルタイム位置共有 ==========
-var _locPollTimer = null;
-var _locMarkers = {};
+// ========== マップ（MapTiler SDK 公式JS） ==========
+maptilersdk.config.apiKey = 'xo1M5L6ZL4wO1wT74HBb';
 
-function _myUser(){ return localStorage.getItem('fontMode')==='shun' ? 'shun' : 'hee'; }
+var _map = null;
+var _placeMarkers = [];
+var _liveMarkers = {};
+var _mapPoll = null;
 
-var _LOC_USERS = [
-  {key:'shun', label:'しゅん',      icon:'🌙', bg:'#2a5a8a'},
-  {key:'hee',  label:'ひーちゃん',  icon:'🌸', bg:'#c478a8'}
+var _MAP_USERS = [
+  {key:'shun', label:'しゅん',     emoji:'🌙', bg:'#2a5a8a'},
+  {key:'hee',  label:'ひーちゃん', emoji:'🌸', bg:'#c478a8'}
 ];
 
-// 場所マーカーと同一のアンカー挙動にするため、トップ要素を36pxの.map-marker dot本体にする
-// （pulseは絶対配置の装飾子。MapLibreがアンカーする箱を場所マーカーと完全に揃える）
-function _liveIconEl(icon, bg){
-  var el=document.createElement('div');
-  el.className='map-marker';
-  el.style.cssText='background:'+bg+';width:36px;height:36px;font-size:17px;position:relative';
-  el.textContent=icon;
-  var pulse=document.createElement('div');
-  pulse.className='loc-pulse';
-  pulse.style.background=bg;
-  el.appendChild(pulse);
+function _markerEl(emoji, bg){
+  var el = document.createElement('div');
+  el.className = 'map-marker';
+  el.style.background = bg;
+  el.textContent = emoji;
   return el;
 }
 
-function _fmtAgo(isoStr){
-  if(!isoStr) return '–';
-  var diff=Math.floor((Date.now()-new Date(isoStr).getTime())/1000);
-  if(diff<60) return diff+'秒前';
-  if(diff<3600) return Math.floor(diff/60)+'分前';
-  return Math.floor(diff/3600)+'時間前';
+function _ago(isoStr){
+  if(!isoStr) return '';
+  var diff = Math.floor((Date.now() - new Date(isoStr).getTime())/1000);
+  if(diff < 60) return diff + '秒前';
+  if(diff < 3600) return Math.floor(diff/60) + '分前';
+  return Math.floor(diff/3600) + '時間前';
 }
 
-function updateLocStatus(){
-  _LOC_USERS.forEach(function(u){
-    var el=document.getElementById('locStatus'+u.key.charAt(0).toUpperCase()+u.key.slice(1));
-    if(!el) return;
-    var d=locationData[u.key];
-    if(d&&d.lat&&d.lng){
-      el.style.opacity='1';
-      el.title=_fmtAgo(d.at);
-    } else {
-      el.style.opacity='.4';
-      el.title='データなし';
+// しゅん・ひーちゃんのマーカーを作成/更新
+function _renderLive(){
+  _MAP_USERS.forEach(function(u){
+    var d = locationData[u.key];
+    if(!d) return;
+    var lat = +d.lat, lng = +d.lng;
+    if(!lat || !lng || isNaN(lat) || isNaN(lng)) return;
+    var st = document.getElementById('locStatus' + u.key.charAt(0).toUpperCase() + u.key.slice(1));
+    if(st) st.style.opacity = '1';
+    var html = '<b>' + u.label + '</b><br><small>' + _ago(d.at) + '</small>';
+    if(_liveMarkers[u.key]){
+      _liveMarkers[u.key].setLngLat([lng, lat]);
+      _liveMarkers[u.key].getPopup().setHTML(html);
+    } else if(_map){
+      _liveMarkers[u.key] = new maptilersdk.Marker({element:_markerEl(u.emoji, u.bg), anchor:'center'})
+        .setLngLat([lng, lat])
+        .setPopup(new maptilersdk.Popup({offset:20, closeButton:false}).setHTML(html))
+        .addTo(_map);
     }
   });
 }
 
-// 場所マーカーと同じ仕様：実座標にマーカーを置き、更新時はsetLngLatで動かすだけ
-function updateLocMarkers(){
-  updateLocStatus();
-  if(!_mapObj) return;
-  _LOC_USERS.forEach(function(u){
-    var d=locationData[u.key];
-    if(!d||!d.lat||!d.lng) return;
-    var lngLat=[+d.lng, +d.lat];
-    if(!_locMarkers[u.key]){
-      var el=_liveIconEl(u.icon,u.bg);
-      _locMarkers[u.key]=new maplibregl.Marker({element:el,anchor:'center'})
-        .setLngLat(lngLat)
-        .addTo(_mapObj);
-      (function(uk,markerEl){
-        markerEl.style.cursor='pointer';
-        markerEl.addEventListener('click',function(e){
-          e.stopPropagation();
-          var u2=_LOC_USERS.find(function(x){return x.key===uk;});
-          var ll=_locMarkers[uk].getLngLat();
-          _mapObj.flyTo({center:ll,zoom:16,pitch:50,duration:600});
-          new maplibregl.Popup({offset:25,closeButton:false})
-            .setLngLat(ll)
-            .setHTML('<b>'+u2.label+'</b><br><small>'+_fmtAgo(locationData[uk]&&locationData[uk].at)+'</small>')
-            .addTo(_mapObj);
-        });
-      })(u.key,el);
-    } else {
-      _locMarkers[u.key].setLngLat(lngLat);
-    }
-  });
-}
-
-function _normalizeLocData(locObj){
-  Object.keys(locObj).forEach(function(k){
-    var d=locObj[k];
-    if(!d||!d.lat) return;
-    var lat=+d.lat, lng=+d.lng;
-    if(isNaN(lat)||isNaN(lng)) return;
-    if(lat>90||(lat<20&&lng>90)){var tmp=lat;lat=lng;lng=tmp;}
-    d.lat=lat; d.lng=lng;
-    locationData[k]=d;
-  });
-  return locObj;
-}
-
-function _fetchLocations(){
-  fetch(GAS_URL+'?action=location&_='+Date.now())
-    .then(function(r){return r.json();})
+// しゅん・ひーちゃんの最新位置を取得して反映
+function _pollLive(){
+  fetch(GAS_URL + '?action=location&_=' + Date.now())
+    .then(function(r){ return r.json(); })
     .then(function(data){
-      if(data.ok){
-        _normalizeLocData(data.data||{});
-        updateLocMarkers();
+      if(data && data.ok && data.data){
+        Object.keys(data.data).forEach(function(k){
+          var d = data.data[k];
+          if(d && d.lat) locationData[k] = d;
+        });
+        _renderLive();
       }
     }).catch(function(){});
-}
-
-function startLocationTracking(){
-  _locPollTimer=setInterval(_fetchLocations, 2000);
-  _fetchLocations();
-}
-
-// ========== マップ ==========
-var _mapObj = null;
-var _mapLayerMarkers = [];
-
-function _jaTile(dark){
-  return 'https://api.maptiler.com/maps/'+(dark?'streets-v2-dark':'bright-v2')+'/style.json?key=xo1M5L6ZL4wO1wT74HBb';
-}
-function _getVecSrc(){
-  // スタイルのレイヤーからtransportation/buildingが属するソース名を動的に取得
-  var layers=_mapObj.getStyle().layers;
-  for(var i=0;i<layers.length;i++){
-    var sl=layers[i]['source-layer'];
-    if(sl==='transportation'||sl==='building') return layers[i].source;
-  }
-  // フォールバック：最初のvectorソース
-  var sources=_mapObj.getStyle().sources;
-  for(var k in sources){ if(sources[k].type==='vector') return k; }
-  return null;
-}
-
-function _initMapLayers(){
-  if(!_mapObj) return;
-  var src=_getVecSrc();
-  if(!src) return;
-  var isDark=document.body.classList.contains('dark-active');
-
-  // 日本語ラベル：nameを参照しているsymbolレイヤーだけ上書き
-  _mapObj.getStyle().layers.forEach(function(layer){
-    if(layer.type!=='symbol') return;
-    var tf = layer.layout && layer.layout['text-field'];
-    if(!tf) return;
-    // ref/housenumber等nameを使わないレイヤーはスキップ
-    if(JSON.stringify(tf).indexOf('name')===-1) return;
-    try {
-      _mapObj.setLayoutProperty(layer.id,'text-field',
-        ['coalesce',['get','name:ja'],['get','name']]);
-    } catch(e){}
-  });
-
-  // 道路ハイライト（端丸・半透明）— 毎回再追加
-  try { _mapObj.removeLayer('road-highlight'); } catch(e){}
-  var firstSymbol;
-  _mapObj.getStyle().layers.forEach(function(l){
-    if(!firstSymbol && l.type==='symbol') firstSymbol=l.id;
-  });
-  _mapObj.addLayer({
-    id:'road-highlight',
-    type:'line',
-    source:src,
-    'source-layer':'transportation',
-    filter:['match',['get','class'],
-      ['motorway','trunk','primary','secondary','tertiary','minor'],true,false],
-    paint:{
-      'line-color':isDark?'rgba(140,200,255,0.45)':'rgba(210,140,170,0.45)',
-      'line-width':['interpolate',['linear'],['zoom'],9,2,13,5,17,11],
-      'line-blur':3
-    },
-    layout:{'line-cap':'round','line-join':'round'}
-  }, firstSymbol);
-
-  // 3Dビル — 毎回再追加
-  try { _mapObj.removeLayer('3d-buildings'); } catch(e){}
-  _mapObj.addLayer({
-    id:'3d-buildings',
-    source:src,
-    'source-layer':'building',
-    type:'fill-extrusion',
-    minzoom:14,
-    paint:{
-      'fill-extrusion-color':isDark?'#2a3a4a':'#c8c0b8',
-      'fill-extrusion-height':['coalesce',['get','render_height'],['get','height'],5],
-      'fill-extrusion-base':['coalesce',['get','render_min_height'],['get','min_height'],0],
-      'fill-extrusion-opacity':0.7
-    }
-  });
-}
-function updateMapTile(){
-  if(!_mapObj) return;
-  _mapObj.setStyle(_jaTile(document.body.classList.contains('dark-active')));
-  // style.load が早すぎる場合のバックアップ：idle後にも再適用
-  _mapObj.once('idle', _initMapLayers);
 }
 
 function _geocacheKey(addr){ return 'geo2_' + addr; }
@@ -2063,47 +1934,38 @@ async function _geocode(addr) {
   return null;
 }
 
-function _divIconEl(emoji, bg){
-  var el=document.createElement('div');
-  el.className='map-marker';
-  el.style.background=bg;
-  el.textContent=emoji;
-  return el;
-}
-
 async function initMap() {
   var container = document.getElementById('map-container');
   if (!container) return;
 
-  if (!_mapObj) {
-    var isDark = document.body.classList.contains('dark-active');
-    _mapObj = new maplibregl.Map({
+  if (!_map) {
+    _map = new maptilersdk.Map({
       container: 'map-container',
-      style: _jaTile(isDark),
+      style: maptilersdk.MapStyle.STREETS,
       center: [135.5023, 34.6937],
-      zoom: 13,
-      pitch: 50
+      zoom: 11
     });
-    _mapObj.on('style.load', _initMapLayers);
-    await new Promise(function(resolve){ _mapObj.once('load', resolve); });
+    await new Promise(function(resolve){ _map.on('load', resolve); });
   } else {
-    _mapObj.resize();
-    _mapLayerMarkers.forEach(function(m){ m.remove(); });
-    _mapLayerMarkers = [];
+    _map.resize();
   }
 
-  // リアルタイム位置マーカー
-  updateLocMarkers();
-  var centerLngLat = [135.5023, 34.6937];
-  var bounds = new maplibregl.LngLatBounds(centerLngLat, centerLngLat);
-  var boundsExtended = false;
-  // しゅん・ひーちゃん両方の位置をboundsに含める
-  _LOC_USERS.forEach(function(u){
+  // 場所マーカーをいったん消す
+  _placeMarkers.forEach(function(m){ m.remove(); });
+  _placeMarkers = [];
+
+  var pts = []; // [lng,lat] 全マーカー位置
+
+  // しゅん・ひーちゃん
+  _renderLive();
+  _MAP_USERS.forEach(function(u){
     var d = locationData[u.key];
-    if(d && d.lat && d.lng){ bounds.extend([+d.lng, +d.lat]); boundsExtended = true; }
+    if(!d) return;
+    var lat = +d.lat, lng = +d.lng;
+    if(lat && lng && !isNaN(lat) && !isNaN(lng)) pts.push([lng, lat]);
   });
 
-  // キューに全住所を積む
+  // 登録してある場所（場所・女の子・出発地）
   var queue = [];
   places.forEach(function(p){ var a=String(p.addr||'').trim(); if(a) queue.push({addr:a, emoji:'🏠', bg:'#e88fac', label:p.name}); });
   girls.forEach(function(g){ var a=String(g.addr||'').trim(); if(a) queue.push({addr:a, emoji:'👧', bg:'#c478a8', label:g.name+(g.nick?'（'+g.nick+'）':'')}); });
@@ -2124,39 +1986,37 @@ async function initMap() {
   for (var i = 0; i < queue.length; i++) {
     var q = queue[i];
     var pt = await _geocode(q.addr);
-    var st = document.getElementById('mapGeoStatus');
-    if (st) st.textContent = '📡 ジオコーディング中 ' + (i+1) + '/' + queue.length;
+    var stp = document.getElementById('mapGeoStatus');
+    if (stp) stp.textContent = '📡 ジオコーディング中 ' + (i+1) + '/' + queue.length;
     if (pt) {
-      var el = _divIconEl(q.emoji, q.bg);
-      var lngLat = [pt.lng, pt.lat];
-      var marker = new maplibregl.Marker({element: el, anchor: 'center'})
-        .setLngLat(lngLat)
-        .addTo(_mapObj);
-      (function(ml, ll, ql){
-        ml.style.cursor='pointer';
-        ml.addEventListener('click', function(e){
-          e.stopPropagation();
-          _mapObj.flyTo({center:ll, zoom:16, pitch:50, duration:600});
-          new maplibregl.Popup({offset:25, closeButton:false})
-            .setLngLat(ll)
-            .setHTML('<b>'+ql.label+'</b><br><small>'+ql.addr+'</small>')
-            .addTo(_mapObj);
-        });
-      })(el, lngLat, q);
-      _mapLayerMarkers.push(marker);
-      bounds.extend([pt.lng, pt.lat]);
-      boundsExtended = true;
+      var marker = new maptilersdk.Marker({element: _markerEl(q.emoji, q.bg), anchor: 'center'})
+        .setLngLat([pt.lng, pt.lat])
+        .setPopup(new maptilersdk.Popup({offset:20, closeButton:false})
+          .setHTML('<b>'+q.label+'</b><br><small>'+q.addr+'</small>'))
+        .addTo(_map);
+      _placeMarkers.push(marker);
+      pts.push([pt.lng, pt.lat]);
     }
   }
 
   var st = document.getElementById('mapGeoStatus');
   if (st) st.remove();
 
-  if (boundsExtended) {
-    _mapObj.fitBounds(bounds, {padding: 60, maxZoom: 15, pitch: 50});
-  } else {
-    _mapObj.flyTo({center: centerLngLat, zoom: 13, pitch: 50});
+  // 全マーカーが収まるよう表示
+  if (pts.length === 1) {
+    _map.flyTo({center: pts[0], zoom: 15});
+  } else if (pts.length > 1) {
+    var minLng=pts[0][0], maxLng=pts[0][0], minLat=pts[0][1], maxLat=pts[0][1];
+    pts.forEach(function(p){
+      if(p[0]<minLng)minLng=p[0]; if(p[0]>maxLng)maxLng=p[0];
+      if(p[1]<minLat)minLat=p[1]; if(p[1]>maxLat)maxLat=p[1];
+    });
+    _map.fitBounds([[minLng,minLat],[maxLng,maxLat]], {padding:60, maxZoom:15});
   }
+
+  // しゅん・ひーちゃんの位置を定期更新
+  if (_mapPoll) clearInterval(_mapPoll);
+  _mapPoll = setInterval(_pollLive, 5000);
 }
 </script>
 </body>
