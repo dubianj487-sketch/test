@@ -11,8 +11,8 @@
 <meta name="supported-color-schemes" content="light dark">
 <title>🌙 SILDE</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Opti:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/@maptiler/sdk@2/dist/maptiler-sdk.css" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@maptiler/sdk@2/dist/maptiler-sdk.umd.min.js"></script>
+<link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{color-scheme:light dark}
@@ -1829,7 +1829,7 @@ function setAppFont(f){
 }
 (function(){ _applyAll(); })();
 
-// ========== マップ（MapTiler SDK 公式JS） ==========
+// ========== マップ ==========
 var _map = null;
 var _placeMarkers = [];
 var _liveMarkers = {};
@@ -1870,9 +1870,9 @@ function _renderLive(){
       _liveMarkers[u.key].setLngLat([lng, lat]);
       _liveMarkers[u.key].getPopup().setHTML(html);
     } else if(_map){
-      _liveMarkers[u.key] = new maptilersdk.Marker({element:_markerEl(u.emoji, u.bg), anchor:'center'})
+      _liveMarkers[u.key] = new maplibregl.Marker({element:_markerEl(u.emoji, u.bg), anchor:'center'})
         .setLngLat([lng, lat])
-        .setPopup(new maptilersdk.Popup({offset:20, closeButton:false}).setHTML(html))
+        .setPopup(new maplibregl.Popup({offset:20, closeButton:false}).setHTML(html))
         .addTo(_map);
     }
   });
@@ -1937,8 +1937,7 @@ async function initMap() {
   if (!container) return;
 
   if (!_map) {
-    maptilersdk.config.apiKey = 'xo1M5L6ZL4wO1wT74HBb';
-    _map = new maptilersdk.Map({
+    _map = new maplibregl.Map({
       container: 'map-container',
       style: 'https://api.maptiler.com/maps/streets-v2/style.json?key=xo1M5L6ZL4wO1wT74HBb',
       center: [135.5023, 34.6937],
@@ -1989,9 +1988,9 @@ async function initMap() {
     var stp = document.getElementById('mapGeoStatus');
     if (stp) stp.textContent = '📡 ジオコーディング中 ' + (i+1) + '/' + queue.length;
     if (pt) {
-      var marker = new maptilersdk.Marker({element: _markerEl(q.emoji, q.bg), anchor: 'center'})
+      var marker = new maplibregl.Marker({element: _markerEl(q.emoji, q.bg), anchor: 'center'})
         .setLngLat([pt.lng, pt.lat])
-        .setPopup(new maptilersdk.Popup({offset:20, closeButton:false})
+        .setPopup(new maplibregl.Popup({offset:20, closeButton:false})
           .setHTML('<b>'+q.label+'</b><br><small>'+q.addr+'</small>'))
         .addTo(_map);
       _placeMarkers.push(marker);
