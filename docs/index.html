@@ -1982,8 +1982,23 @@ var _mapLayerMarkers = [];
 function _jaTile(dark){
   return 'https://api.maptiler.com/maps/'+(dark?'streets-v2-dark':'bright-v2')+'/style.json?key=xo1M5L6ZL4wO1wT74HBb';
 }
+function _getVecSrc(){
+  // スタイルのレイヤーからtransportation/buildingが属するソース名を動的に取得
+  var layers=_mapObj.getStyle().layers;
+  for(var i=0;i<layers.length;i++){
+    var sl=layers[i]['source-layer'];
+    if(sl==='transportation'||sl==='building') return layers[i].source;
+  }
+  // フォールバック：最初のvectorソース
+  var sources=_mapObj.getStyle().sources;
+  for(var k in sources){ if(sources[k].type==='vector') return k; }
+  return null;
+}
+
 function _initMapLayers(){
-  if(!_mapObj||!_mapObj.getSource('openmaptiles')) return;
+  if(!_mapObj) return;
+  var src=_getVecSrc();
+  if(!src) return;
   var isDark=document.body.classList.contains('dark-active');
 
   // 日本語ラベル
@@ -2003,13 +2018,13 @@ function _initMapLayers(){
     _mapObj.addLayer({
       id:'road-highlight',
       type:'line',
-      source:'openmaptiles',
+      source:src,
       'source-layer':'transportation',
       filter:['match',['get','class'],
         ['motorway','trunk','primary','secondary','tertiary','minor'],true,false],
       paint:{
-        'line-color':isDark?'rgba(140,200,255,0.35)':'rgba(255,255,255,0.55)',
-        'line-width':['interpolate',['linear'],['zoom'],9,1.5,13,4,17,9],
+        'line-color':isDark?'rgba(140,200,255,0.4)':'rgba(255,255,255,0.6)',
+        'line-width':['interpolate',['linear'],['zoom'],9,2,13,5,17,11],
         'line-blur':3
       },
       layout:{'line-cap':'round','line-join':'round'}
@@ -2020,14 +2035,14 @@ function _initMapLayers(){
   if(!_mapObj.getLayer('3d-buildings')){
     _mapObj.addLayer({
       id:'3d-buildings',
-      source:'openmaptiles',
+      source:src,
       'source-layer':'building',
       type:'fill-extrusion',
       minzoom:14,
       paint:{
         'fill-extrusion-color':isDark?'#2a3a4a':'#c8c0b8',
-        'fill-extrusion-height':['get','render_height'],
-        'fill-extrusion-base':['get','render_min_height'],
+        'fill-extrusion-height':['coalesce',['get','render_height'],['get','height'],5],
+        'fill-extrusion-base':['coalesce',['get','render_min_height'],['get','min_height'],0],
         'fill-extrusion-opacity':0.7
       }
     });
