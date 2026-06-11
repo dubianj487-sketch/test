@@ -652,7 +652,10 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     <div class="sett-section">
       <div class="sett-label">プッシュ通知</div>
       <div style="font-size:11px;color:var(--txs);margin-bottom:8px" id="notifDesc">-</div>
-      <button class="sett-pill" id="notifPermBtn" onclick="onNotifBtnTap()"></button>
+      <div class="sett-row" style="gap:6px">
+        <button class="sett-pill" id="notifPermBtn" onclick="onNotifBtnTap()"></button>
+        <button class="sett-pill" id="notifTestBtn" onclick="testPushNotif()" style="display:none">📤 テスト</button>
+      </div>
     </div>
     <div class="sett-section">
       <div class="sett-label">Overland URL（位置共有）</div>
@@ -702,6 +705,7 @@ let batteryData={};
 let locationData={};
 let secretData={url:'',text:''};
 let heeSubscribed=false;
+let _lastSaveAt=0;
 
 // ========== GAS通信 ==========
 async function gasGet() {
@@ -780,10 +784,12 @@ function onMemoInput(){
     try {
       const res = await gasGet();
       if (!res.ok) return;
-      schedHistory = res.data.schedHistory || schedHistory;
-      schedHistory.forEach(function(e){ rebuildHistTexts(e); });
-      histCnt = (res.data.counters || {}).histCnt || histCnt;
-      if (document.getElementById('pg-hist').classList.contains('active')) renderHistPage();
+      if (Date.now() - _lastSaveAt > 30000) {
+        schedHistory = res.data.schedHistory || schedHistory;
+        schedHistory.forEach(function(e){ rebuildHistTexts(e); });
+        histCnt = (res.data.counters || {}).histCnt || histCnt;
+        if (document.getElementById('pg-hist').classList.contains('active')) renderHistPage();
+      }
       const newMemo = res.data.memo || '';
       if (newMemo !== memoText) {
         memoText = newMemo;
@@ -1341,8 +1347,10 @@ function doSave(){
   if(existing>=0) schedHistory[existing]=entry;
   else schedHistory.unshift(entry);
 
+  _lastSaveAt = Date.now();
   gasPost({action:'saveSchedule', payload:entry});
-  if(isNew){saveCounters();triggerWebPush(entry);}
+  if(isNew) saveCounters();
+  triggerWebPush(entry);
 
   resetSchedForm();
   closeSchedModal();
@@ -1402,8 +1410,24 @@ function onNotifBtnTap(){
   if(_myUser()==='hee') subscribeHeePush();
 }
 
+async function testPushNotif(){
+  showToast('📤 テスト送信中...');
+  try{
+    var res=await fetch(GAS_URL+'?action=notifyHee&data='+encodeURIComponent(JSON.stringify({
+      title:'🔔 SILDEテスト通知',
+      body:'通知テスト！届いてたら設定OKです'
+    }))+'&_='+Date.now());
+    var d=await res.json();
+    if(d.ok) showToast('✅ GASに送信済み — ひーちゃんの端末を確認して');
+    else showToast('⚠️ GASエラー: notifyHeeアクションをGASに追加してください');
+  }catch(e){
+    showToast('❌ エラー: '+e.message);
+  }
+}
+
 function updatePushBtn(){
   var btn=document.getElementById('notifPermBtn');
+  var testBtn=document.getElementById('notifTestBtn');
   var desc=document.getElementById('notifDesc');
   if(!btn) return;
   if(_myUser()==='hee'){
@@ -1412,12 +1436,14 @@ function updatePushBtn(){
     btn.textContent=p==='granted'?'✅ 登録済み（再登録）':p==='denied'?'🚫 拒否済み（設定から変更）':'🔔 通知を受け取る';
     btn.disabled=(p==='denied');
     btn.classList.toggle('sel',p==='granted');
+    if(testBtn) testBtn.style.display='none';
   } else {
     if(desc) desc.textContent='ひーちゃんの端末で「通知を受け取る」を押すと、スケジュール保存時に自動送信されます';
     btn.textContent=heeSubscribed?'✅ ひーちゃん登録済み':'📭 ひーちゃん未登録';
     btn.disabled=true;
     btn.style.opacity='0.65';
     btn.classList.toggle('sel',heeSubscribed);
+    if(testBtn) testBtn.style.display=heeSubscribed?'':'none';
   }
 }
 
