@@ -650,6 +650,11 @@ body.font-shun.dark-active #pg-hist{background:transparent}
       </div>
     </div>
     <div class="sett-section">
+      <div class="sett-label">Discord通知</div>
+      <div style="font-size:11px;color:var(--txs);margin-bottom:8px">スケジュールを新規保存したときにDiscordへ通知します</div>
+      <input type="url" id="discordWebhookInp" placeholder="https://discord.com/api/webhooks/..." autocomplete="off" oninput="saveDiscordWebhook(this.value)" style="margin-bottom:0;font-size:12px">
+    </div>
+    <div class="sett-section">
       <div class="sett-label">Overland URL（位置共有）</div>
       <div style="font-size:11px;color:var(--txs);margin-bottom:6px">OverlandアプリのServer URLにコピーして設定してください</div>
       <div class="overland-url-row" onclick="copyOverlandUrl('shun')" title="タップでコピー">
@@ -1309,10 +1314,11 @@ function saveSchedule(){
 function doSave(){
   closeMo('moOverwrite');
   const existing=schedHistory.findIndex(x=>x.dateVal===currentBuiltDate);
+  const isNew=existing<0;
   const savedShunTxt=outShunTxt, savedBoyTxt=outBoyTxt;
   const savedDateLabel=currentBuiltDateLabel;
   const entry={
-    id: existing>=0 ? schedHistory[existing].id : ++histCnt,
+    id: isNew ? ++histCnt : schedHistory[existing].id,
     dateVal: currentBuiltDate,
     dateLabel: savedDateLabel,
     runs: JSON.parse(JSON.stringify(builtRuns)),
@@ -1324,11 +1330,28 @@ function doSave(){
   else schedHistory.unshift(entry);
 
   gasPost({action:'saveSchedule', payload:entry});
-  if(existing<0) saveCounters();
+  if(isNew){saveCounters();sendDiscordNotify(entry);}
 
   resetSchedForm();
   closeSchedModal();
   showSaveSuccessBar(savedDateLabel, savedShunTxt, savedBoyTxt);
+}
+
+function sendDiscordNotify(entry){
+  var url=(localStorage.getItem('discordWebhook')||'').trim();
+  if(!url) return;
+  var lines=['📅 スケジュールが登録されました！',''];
+  lines.push(entry.shunTxt||entry.dateLabel);
+  fetch(url,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({content:lines.join('\n').slice(0,1900)}),
+    mode:'no-cors'
+  }).catch(function(){});
+}
+
+function saveDiscordWebhook(val){
+  localStorage.setItem('discordWebhook',val.trim());
 }
 
 function resetSchedForm(){
@@ -1829,6 +1852,8 @@ function openSettings(){
   var elH = document.getElementById('ovUrlHee');
   if(elS) elS.textContent = base+'?user=shun';
   if(elH) elH.textContent = base+'?user=hee';
+  var webhookInp=document.getElementById('discordWebhookInp');
+  if(webhookInp) webhookInp.value=localStorage.getItem('discordWebhook')||'';
   document.getElementById('moSettings').classList.add('open');
 }
 function copyOverlandUrl(user){
