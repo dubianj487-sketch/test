@@ -2012,48 +2012,45 @@ function _initMapLayers(){
     }
   });
 
-  // 道路ハイライト（端丸・半透明）
-  if(!_mapObj.getLayer('road-highlight')){
-    var firstSymbol;
-    _mapObj.getStyle().layers.forEach(function(l){
-      if(!firstSymbol && l.type==='symbol') firstSymbol=l.id;
-    });
-    _mapObj.addLayer({
-      id:'road-highlight',
-      type:'line',
-      source:src,
-      'source-layer':'transportation',
-      filter:['match',['get','class'],
-        ['motorway','trunk','primary','secondary','tertiary','minor'],true,false],
-      paint:{
-        'line-color':isDark?'rgba(140,200,255,0.4)':'rgba(255,255,255,0.6)',
-        'line-width':['interpolate',['linear'],['zoom'],9,2,13,5,17,11],
-        'line-blur':3
-      },
-      layout:{'line-cap':'round','line-join':'round'}
-    }, firstSymbol);
-  }
+  // 道路ハイライト（端丸・半透明）— 毎回再追加
+  try { _mapObj.removeLayer('road-highlight'); } catch(e){}
+  var firstSymbol;
+  _mapObj.getStyle().layers.forEach(function(l){
+    if(!firstSymbol && l.type==='symbol') firstSymbol=l.id;
+  });
+  _mapObj.addLayer({
+    id:'road-highlight',
+    type:'line',
+    source:src,
+    'source-layer':'transportation',
+    filter:['match',['get','class'],
+      ['motorway','trunk','primary','secondary','tertiary','minor'],true,false],
+    paint:{
+      'line-color':isDark?'rgba(140,200,255,0.45)':'rgba(210,140,170,0.45)',
+      'line-width':['interpolate',['linear'],['zoom'],9,2,13,5,17,11],
+      'line-blur':3
+    },
+    layout:{'line-cap':'round','line-join':'round'}
+  }, firstSymbol);
 
-  // 3Dビル
-  if(!_mapObj.getLayer('3d-buildings')){
-    _mapObj.addLayer({
-      id:'3d-buildings',
-      source:src,
-      'source-layer':'building',
-      type:'fill-extrusion',
-      minzoom:14,
-      paint:{
-        'fill-extrusion-color':isDark?'#2a3a4a':'#c8c0b8',
-        'fill-extrusion-height':['coalesce',['get','render_height'],['get','height'],5],
-        'fill-extrusion-base':['coalesce',['get','render_min_height'],['get','min_height'],0],
-        'fill-extrusion-opacity':0.7
-      }
-    });
-  }
+  // 3Dビル — 毎回再追加
+  try { _mapObj.removeLayer('3d-buildings'); } catch(e){}
+  _mapObj.addLayer({
+    id:'3d-buildings',
+    source:src,
+    'source-layer':'building',
+    type:'fill-extrusion',
+    minzoom:14,
+    paint:{
+      'fill-extrusion-color':isDark?'#2a3a4a':'#c8c0b8',
+      'fill-extrusion-height':['coalesce',['get','render_height'],['get','height'],5],
+      'fill-extrusion-base':['coalesce',['get','render_min_height'],['get','min_height'],0],
+      'fill-extrusion-opacity':0.7
+    }
+  });
 }
 function updateMapTile(){
   if(!_mapObj) return;
-  _mapObj.once('style.load', _initMapLayers);
   _mapObj.setStyle(_jaTile(document.body.classList.contains('dark-active')));
 }
 
@@ -2117,10 +2114,9 @@ async function initMap() {
       zoom: 13,
       pitch: 50
     });
+    // style.load は初回 + setStyle のたびに発火 → 毎回カスタムレイヤーを再適用
+    _mapObj.on('style.load', _initMapLayers);
     await new Promise(function(resolve){ _mapObj.once('load', resolve); });
-    _initMapLayers();
-    // idle後に再適用（タイルストリーミング完了後の日本語漏れ対策）
-    _mapObj.once('idle', _initMapLayers);
   } else {
     _mapObj.resize();
     _mapLayerMarkers.forEach(function(m){ m.remove(); });
