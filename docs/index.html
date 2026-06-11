@@ -132,15 +132,8 @@ body.font-shun.dark-active .battery-pct{color:#e8f0f8}
 body.font-shun.dark-active .battery-charge{color:rgba(180,210,240,.5)}
 body.font-shun.dark-active .map-legend{background:#1a1a1a;color:#c8d8e8;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 body.dark-active #map-container .leaflet-tile-pane{filter:brightness(1.6) contrast(1.1)}
-body.map-active{overflow:visible!important;padding-top:0!important}
-html:has(body.map-active){background:transparent!important;background-color:transparent!important}
-body.map-active #pg-map{position:fixed!important;top:0;left:0;right:0;bottom:0;z-index:52!important;height:100%;padding:0!important;overflow:visible!important;background:transparent!important}
-#map-container{display:none}
-body.map-active #map-container{display:block;position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:100%!important;z-index:49}
-body.map-active #pg-map .map-legend{position:absolute;top:0;left:0;right:0;z-index:10;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;background:transparent;box-shadow:none;border-bottom:none}
 body.map-active .bnav{background:rgba(250,246,250,0.65)!important;-webkit-backdrop-filter:blur(26px) saturate(1.9)!important;backdrop-filter:blur(26px) saturate(1.9)!important;border-top:1.5px solid rgba(255,255,255,0.5)!important;box-shadow:none!important}
 body.map-active.font-shun.dark-active .bnav{background:rgba(8,14,30,0.65)!important;border-top-color:rgba(90,140,200,0.18)!important}
-#mapGlassTop{display:none;position:absolute;top:0;left:0;right:0;height:env(safe-area-inset-top);z-index:1000;background:rgba(250,246,250,0.55);-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8)}
 body.font-shun.dark-active .hist-item-sub{color:rgba(180,210,240,.45)}
 body.font-shun.dark-active .hist-item-arr{color:rgba(180,210,240,.3)}
 body.font-shun.dark-active .today-card-empty p{color:rgba(180,210,240,.45)}
@@ -531,7 +524,6 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 </div>
 
 <div class="pg" id="pg-map">
-  <div id="mapGlassTop"></div>
   <div class="map-legend" id="mapLegend">
     <span class="map-legend-item">🏠 場所</span>
     <span class="map-legend-item">👧 女の子</span>
@@ -539,9 +531,8 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     <span class="map-legend-item" id="locStatusShun" style="opacity:.4">🌙 しゅん</span>
     <span class="map-legend-item" id="locStatusHee" style="opacity:.4">🌸 ひーちゃん</span>
   </div>
+  <div id="map-container"></div>
 </div>
-
-<div id="map-container"></div>
 
 <div class="pg" id="pg-master">
   <div class="card">
@@ -793,7 +784,6 @@ function onMemoInput(){
 })();
 
 function setPgHeight(){
-  if(document.body.classList.contains('map-active')) return;
   document.querySelectorAll('.pg:not(#pg-map)').forEach(function(el){
     el.style.height='';
   });
@@ -2070,24 +2060,6 @@ function _divIcon(emoji, bg) {
 async function initMap() {
   var container = document.getElementById('map-container');
   if (!container) return;
-
-  if(!document.body.classList.contains('map-active')){
-    var hdrH = 0;
-    var navH = (document.querySelector('.bnav') || {}).offsetHeight || 56;
-    var legendH = (document.getElementById('mapLegend') || {}).offsetHeight || 44;
-    var safeTop = parseInt(getComputedStyle(document.body).paddingTop) || 0;
-    container.style.height = (window.innerHeight - safeTop - hdrH - legendH - navH) + 'px';
-  } else {
-    // CSS handles size via position:fixed top:-env(safe-area-inset-top)/bottom:0; just ensure Leaflet re-reads it
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){
-        if(_mapObj){
-          _mapObj.invalidateSize({animate:false});
-          _mapObj.setView(_mapObj.getCenter(), _mapObj.getZoom(), {reset:true, animate:false});
-        }
-      });
-    });
-  }
 
   if (!_mapObj) {
     _mapObj = L.map('map-container', {center:[34.6937,135.5023], zoom:13, zoomControl:true});
