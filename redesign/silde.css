@@ -376,3 +376,5 @@ select.inp{cursor:pointer; background-image:none}
 .testrow .clr{margin-left:auto; border:none; background:none; color:var(--tx-2); font-size:12px; cursor:pointer; font-family:var(--font-ui); opacity:.7}
 
 hr.dv{border:none; border-top:1px solid var(--line); margin:12px 0}
+
+@keyframes spin{to{transform:rotate(360deg)}}

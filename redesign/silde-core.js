@@ -68,70 +68,30 @@ const sutil = {
   nowHHMM(dbg){if(dbg)return dbg;const d=new Date();return sutil.p2(d.getHours())+':'+sutil.p2(d.getMinutes())},
 };
 
-/* ---------- MOCK DATA ---------- */
-const _t = new Date();
-const _today = sutil.fmtDV(_t);
-const _d = (off)=>{const x=new Date();x.setDate(x.getDate()+off);return sutil.fmtDV(x)};
+/* ---------- GAS ---------- */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbymJJag2hZIXnudvejecWckv2YTzexAMPE7dSgcf-OQuj1Jk_BpygOXL489KBwD11W-sA/exec';
 
+async function gasGet(action='all'){
+  const res = await fetch(`${GAS_URL}?action=${action}&_=${Date.now()}`);
+  if (!res.ok) throw new Error('HTTP '+res.status);
+  return res.json();
+}
+function gasPost(data){
+  if (!GAS_URL) return;
+  const d = JSON.parse(JSON.stringify(data));
+  if (d.payload){ delete d.payload.shunTxt; delete d.payload.boyTxt; }
+  const action = d.action; delete d.action;
+  fetch(`${GAS_URL}?action=${action}&data=${encodeURIComponent(JSON.stringify(d))}`, {mode:'no-cors'})
+    .catch(e=>console.warn('GAS post failed:',e));
+}
+
+/* ---------- DEFAULT DATA (replaced on load) ---------- */
 const SILDE_DATA = {
-  girls:[
-    {id:1,name:'さな',nick:'さなマンション前',addr:'大阪市北区中崎西2-1-1'},
-    {id:2,name:'みく',nick:'みくさん自宅',addr:'大阪市福島区福島3-2-5'},
-    {id:3,name:'ゆい',nick:'ゆいハイツ前',addr:'大阪市西区新町1-4-8'},
-    {id:4,name:'りお',nick:'りおさんコンビニ',addr:'大阪市淀川区十三本町2-3'},
-  ],
-  places:[{id:1,name:'Venus',addr:'大阪市中央区東心斎橋1-1-1'}],
-  depLocs:[
-    {id:1,name:'自宅',addr:'大阪市都島区網島町5-1'},
-    {id:2,name:'梅田オフィス',addr:'大阪市北区梅田1-1-3'},
-  ],
-  memo:'今日は雨予報☔️ 早めに出発。\nさなちゃん、出発前に電話します。',
-  battery:{
-    hee:{level:82,charging:true, at:new Date(Date.now()-40*1000).toISOString()},
-    shun:{level:47,charging:false,at:new Date(Date.now()-6*60*1000).toISOString()},
-  },
-  location:{
-    shun:{lat:34.71,lng:135.50,at:new Date(Date.now()-12*1000).toISOString()},
-    hee:{lat:34.69,lng:135.49,at:new Date(Date.now()-4*1000).toISOString()},
-  },
-  secret:{url:'',text:''},
-  // pre-built history entries (runs already computed)
-  history:[
-    {id:101,dateVal:_today,dateLabel:sutil.fmtDL(_today),
-     runs:[{departLabel:'18:05 梅田オフィス出発',departTime:'18:05',stops:[
-        {time:'18:25',name:'さな',type:'pick',min:20},
-        {time:'18:40',name:'みく',type:'pick',min:15},
-        {time:'18:50',name:'Venus',type:'drop',min:10},
-      ]},
-      {departLabel:'19:35 Venus出発',departTime:'19:35',stops:[
-        {time:'19:55',name:'ゆい',type:'pick',min:20},
-        {time:'20:10',name:'Venus',type:'drop',min:15},
-      ]}]},
-    {id:95,dateVal:_d(-2),dateLabel:sutil.fmtDL(_d(-2)),
-     runs:[{departLabel:'18:10 自宅出発',departTime:'18:10',stops:[
-        {time:'18:35',name:'りお',type:'pick',min:25},
-        {time:'18:50',name:'さな',type:'pick',min:15},
-        {time:'19:00',name:'Venus',type:'drop',min:10},
-      ]}]},
-    {id:88,dateVal:_d(-9),dateLabel:sutil.fmtDL(_d(-9)),
-     runs:[{departLabel:'17:50 自宅出発',departTime:'17:50',stops:[
-        {time:'18:15',name:'みく',type:'pick',min:25},
-        {time:'18:25',name:'Venus',type:'drop',min:10},
-      ]}]},
-    {id:74,dateVal:_d(-34),dateLabel:sutil.fmtDL(_d(-34)),
-     runs:[{departLabel:'18:20 梅田オフィス出発',departTime:'18:20',stops:[
-        {time:'18:40',name:'ゆい',type:'pick',min:20},
-        {time:'18:55',name:'さな',type:'pick',min:15},
-        {time:'19:05',name:'Venus',type:'drop',min:10},
-      ]}]},
-    {id:60,dateVal:_d(-41),dateLabel:sutil.fmtDL(_d(-41)),
-     runs:[{departLabel:'19:00 自宅出発',departTime:'19:00',stops:[
-        {time:'19:20',name:'りお',type:'pick',min:20},
-        {time:'19:30',name:'Venus',type:'drop',min:10},
-      ]}]},
-  ],
+  girls:[], places:[], depLocs:[], memo:'',
+  battery:{}, location:{}, secret:{url:'',text:''},
+  history:[],
 };
-// rebuild copy-text for each history entry
+
 function rebuildTexts(e){
   let shun=[e.dateLabel,''],boy=[e.dateLabel,''];
   e.runs.forEach((run,ri)=>{
@@ -141,6 +101,5 @@ function rebuildTexts(e){
   });
   e.shunTxt=shun.join('\n');e.boyTxt=boy.join('\n');
 }
-SILDE_DATA.history.forEach(rebuildTexts);
 
-Object.assign(window,{h,Icon,Paw,sutil,SILDE_DATA,rebuildTexts});
+Object.assign(window,{h,Icon,Paw,sutil,SILDE_DATA,rebuildTexts,gasGet,gasPost});
