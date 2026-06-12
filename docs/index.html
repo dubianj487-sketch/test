@@ -1908,7 +1908,7 @@ function renderMasters(){
       <div class="mc-info">
         <div class="mc-name">${l.name}${l.nick?` <span style="font-weight:normal;color:var(--txs);font-size:12px">（${l.nick}）</span>`:''}${l.isShop?`<span style="font-size:10px;background:#fff3e0;color:#e65100;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700">店舗</span>`:''}
         </div>
-        <div class="mc-sub">${l.addr||'住所なし'}</div>
+        <div class="mc-sub">${l.isShop&&l.shopLabel?`<span style="color:var(--pk);font-weight:600">${l.shopLabel}</span>　`:''  }${l.addr||'住所なし'}</div>
       </div>
       <button class="btn bg sm" onclick="openLocMo(${l.id})">編集</button>
     </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
