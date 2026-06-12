@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#c06d96">
+<title>SILDE</title>
+<link rel="stylesheet" href="silde.css">
+<style>html,body{height:100%;background:var(--bg,#f6eef2)}</style>
+</head>
+<body>
+<div id="app"></div>
+<template id="__bundler_thumbnail" data-bg-color="#c06d96">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#c06d96"/>
+    <circle cx="600" cy="300" r="120" fill="none" stroke="#fff" stroke-width="14" opacity="0.95"/>
+    <path d="M600 230 V300 L650 340" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+    <text x="600" y="560" font-family="Georgia, serif" font-size="150" font-weight="700" letter-spacing="14" fill="#fff" text-anchor="middle">SILDE</text>
+    <text x="600" y="630" font-family="sans-serif" font-size="40" fill="#fbeaf1" text-anchor="middle">送迎スケジュール</text>
+  </svg>
+</template>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="silde-core.js"></script>
+<script type="text/babel" src="silde-screens.jsx"></script>
+<script type="text/babel" src="silde-sheets.jsx"></script>
+<script type="text/babel" src="silde-app.jsx"></script>
+</body>
+</html>

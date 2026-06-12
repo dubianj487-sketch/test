@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SILDE — リデザイン</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Opti:wght@700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Zen Maru Gothic',sans-serif;background:#e8e6ea;color:#2a2230;min-height:100vh;overflow-x:hidden}
+  .hdr{text-align:center;padding:30px 20px 6px}
+  .hdr .wm{font-family:'Kaisei Opti',serif;font-size:30px;font-weight:700;letter-spacing:.08em;display:inline-flex;align-items:center;gap:11px}
+  .hdr .wm .dot{width:11px;height:11px;border-radius:50%;background:#c06d96;box-shadow:0 0 0 5px #f2e2ec}
+  .hdr .sub{font-size:13px;color:#7a7080;margin-top:8px;font-weight:500}
+  .hint{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11.5px;color:#9a90a4;margin-top:12px}
+  .hint .k{background:#fff;border:1px solid #d8d4dc;border-radius:7px;padding:3px 9px;font-size:11px;color:#6a6075;box-shadow:0 1px 0 #d8d4dc}
+  .scale-wrap{display:flex;justify-content:center;align-items:flex-start;width:100%;overflow:hidden;padding:10px 0 50px}
+  .stage{display:flex;gap:64px;align-items:flex-end;transform-origin:top center;padding:18px}
+
+  .device{position:relative;flex-shrink:0}
+  .dlabel{position:absolute;top:-30px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;letter-spacing:.12em;color:#8a8094;white-space:nowrap;text-transform:uppercase}
+  .bezel{background:linear-gradient(160deg,#2b2b2f,#161618);border-radius:60px;box-shadow:0 50px 90px -40px rgba(40,20,50,.5),0 0 0 2px rgba(255,255,255,.05) inset,0 8px 22px rgba(0,0,0,.25);position:relative}
+  .iphone .bezel{padding:13px;border-radius:60px}
+  .ipad .bezel{padding:18px;border-radius:38px;background:linear-gradient(160deg,#2e2e33,#191a1d)}
+  .screen{position:relative;overflow:hidden;background:#000;border-radius:48px}
+  .ipad .screen{border-radius:22px}
+  .screen iframe{display:block;border:0;background:#f6eef2}
+  /* dynamic island */
+  .island{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:108px;height:31px;background:#0a0a0b;border-radius:20px;z-index:5;pointer-events:none}
+  /* ipad camera */
+  .ipad-cam{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:7px;height:7px;border-radius:50%;background:#3a3a40;box-shadow:0 0 0 2px rgba(255,255,255,.04);z-index:5}
+  .footnote{text-align:center;font-size:12px;color:#8a8094;padding:0 24px 40px}
+  .footnote a{color:#c06d96;font-weight:700;text-decoration:none}
+  @media (max-width:560px){ .hdr{padding-top:20px} }
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <div class="wm"><span class="dot"></span>SILDE</div>
+    <div class="sub">送迎スケジュール管理 · リファインド・リデザイン</div>
+    <div class="hint">
+      <span>どちらも実際に操作できます</span>
+      <span class="k">設定</span><span>からテーマ／ダークモード切替</span>
+    </div>
+  </div>
+  <div class="scale-wrap">
+    <div class="stage" id="stage">
+      <div class="device iphone">
+        <div class="dlabel">iPhone</div>
+        <div class="bezel">
+          <div class="screen">
+            <div class="island"></div>
+            <iframe src="silde.html" width="390" height="844" title="SILDE iPhone"></iframe>
+          </div>
+        </div>
+      </div>
+      <div class="device ipad">
+        <div class="dlabel">iPad</div>
+        <div class="bezel">
+          <div class="ipad-cam"></div>
+          <div class="screen">
+            <iframe src="silde.html" width="834" height="1112" title="SILDE iPad"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footnote">単体でフルサイズで使うには <a href="silde.html">silde.html</a> を開いてください</div>
+
+  <script>
+    function fit(){
+      var stage=document.getElementById('stage');
+      stage.style.transform='scale(1)';
+      var w=stage.scrollWidth, avail=window.innerWidth-40;
+      var s=Math.min(1, avail/w);
+      // also cap by height so the iPad fits vertically
+      var h=stage.scrollHeight, availH=window.innerHeight-230;
+      s=Math.min(s, availH/h);
+      s=Math.max(s,0.28);
+      stage.style.transform='scale('+s+')';
+      document.querySelector('.scale-wrap').style.height=(h*s+40)+'px';
+    }
+    window.addEventListener('resize',fit);
+    window.addEventListener('load',fit);
+    fit();
+  </script>
+</body>
+</html>
