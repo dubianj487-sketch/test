@@ -1331,7 +1331,7 @@ function renderResult(dateLabel){
   builtRuns.forEach(run=>{
     const d=document.createElement('div');
     d.className='run-block';
-    let html=`<div class="run-label">🚗 ${run.departLabel}</div>`;
+    let html=`<div class="run-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>${run.departLabel}</div>`;
     run.stops.forEach(s=>{
       const badge=s.type==='pick'?'<span class="tl-badge badge-pick">迎え</span>':'<span class="tl-badge badge-drop">到着</span>';
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
@@ -1586,7 +1586,7 @@ function buildRunsHtml(e,showNow){
   const now=showNow?nowHHMM():null;
   let h='';
   e.runs.forEach((run,ri)=>{
-    h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl">🚗 ${run.departLabel}</div>`;
+    h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>${run.departLabel}</div>`;
     const allPast=now?run.stops.every(s=>s.time<=now):false;
     let nowInserted=false;
     run.stops.forEach((s,si)=>{
@@ -1797,7 +1797,7 @@ function quickCopyBoy(id){
 function buildRevHtml(rev){
   let h='';
   (rev.runs||[]).forEach(run=>{
-    h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl">🚗 ${run.departLabel}</div>`;
+    h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>${run.departLabel}</div>`;
     (run.stops||[]).forEach(s=>{
       const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">到着</span>';
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
