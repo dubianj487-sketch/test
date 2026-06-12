@@ -2025,7 +2025,7 @@ var _swipeOpenId=null;    // 再描画をまたいで開いているアイテム
 var _swipeTouching=false; // スワイプ操作中フラグ
 var _renderPending=false; // 操作中に発生したリフレッシュを保留するフラグ
 
-function initSwipe(innerEl, actionsWidth, tapAction, itemId){
+function initSwipe(innerEl, actionsWidth, tapAction, itemId, rightSwipeAction){
   var startX,startY,dx=0,isHoriz=false,isVert=false,moved=false,isPassthrough=false;
   var velX=0,lastX=0,lastT=0;
   var opened=(_swipeOpenId!==null&&_swipeOpenId===itemId);
@@ -2058,17 +2058,18 @@ function initSwipe(innerEl, actionsWidth, tapAction, itemId){
     _swipeTouching=true;
   },{passive:true});
   innerEl.addEventListener('touchmove',function(ev){
-    if(isVert||isPassthrough)return;
+    if(isVert)return;
     var cx=ev.touches[0].clientX,cy=ev.touches[0].clientY;
     var now=Date.now(),dt=now-lastT;
     if(dt>0)velX=(cx-lastX)/dt;
     lastX=cx;lastT=now;
     var diffX=cx-startX,diffY=cy-startY;
+    // 右スワイプ中は touch-action:pan-y のせいでブラウザに渡せないため dx だけ追跡
+    if(isPassthrough){dx=diffX;return;}
     if(!isHoriz){
       if(Math.abs(diffY)>Math.abs(diffX)+3){isVert=true;return;}
       if(Math.abs(diffX)<5)return;
-      // 右スワイプ＆閉じている状態 → ページスライダーに渡す
-      if(diffX>0&&!opened){isPassthrough=true;return;}
+      if(diffX>0&&!opened){isPassthrough=true;dx=diffX;return;}
       isHoriz=true;
     }
     ev.preventDefault();
@@ -2080,8 +2081,14 @@ function initSwipe(innerEl, actionsWidth, tapAction, itemId){
     innerEl.style.transform='translateX('+tx+'px)';
   },{passive:false});
   innerEl.addEventListener('touchend',function(){
+    if(isPassthrough){
+      if((dx>50||velX>0.2)&&rightSwipeAction)rightSwipeAction();
+      _swipeTouching=false;
+      if(_renderPending){_renderPending=false;renderHistPage();}
+      return;
+    }
     if(!moved){
-      if(isVert||isPassthrough)return;
+      if(isVert)return;
       if(opened){closeFn();return;}
       if(tapAction)tapAction();
       return;
@@ -2099,7 +2106,7 @@ function initSwipe(innerEl, actionsWidth, tapAction, itemId){
 function initSwipeItems(){
   document.querySelectorAll('#histContent .hist-item.swipe-inner').forEach(function(el){
     var id=parseInt(el.getAttribute('data-id'));
-    initSwipe(el,160,function(){openHistDetail(id);},String(id));
+    initSwipe(el,160,function(){openHistDetail(id);},String(id),function(){slideTo(0);});
   });
 }
 
