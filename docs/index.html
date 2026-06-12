@@ -1357,8 +1357,8 @@ function updateRunCountdowns(){
     const t=el.dataset.time;
     if(!t) return;
     const parts=t.split(':');
-    const now=new Date();
-    const diff=(parseInt(parts[0])*60+parseInt(parts[1]))-(now.getHours()*60+now.getMinutes());
+    const cur=nowHHMM().split(':');
+    const diff=(parseInt(parts[0])*60+parseInt(parts[1]))-(parseInt(cur[0])*60+parseInt(cur[1]));
     if(diff>0){
       const h=Math.floor(diff/60),m=diff%60;
       el.textContent=h>0?(m>0?`あと${h}時間${m}分`:`あと${h}時間`):`あと${m}分`;
@@ -1619,6 +1619,7 @@ function setDebugTime(v){
   const newRuns=[...tmp.querySelectorAll('.hist-detail-run')];
   const oldRuns=[...document.querySelectorAll('#histPageToday .hist-detail-run')];
   oldRuns.forEach((r,i)=>{if(newRuns[i])r.replaceWith(newRuns[i]);});
+  updateRunCountdowns();
 }
 function buildRunsHtml(e,showNow){
   const now=showNow?nowHHMM():null;
