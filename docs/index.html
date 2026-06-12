@@ -1502,9 +1502,9 @@ function parseImportText(text){
       const pm=l.match(/^(\d{1,2}:\d{2})(.+?)迎え?$/);
       if(pm){stops.push({time:pm[1],name:pm[2],type:'pick',min:pMin||''});pMin=null;i++;continue;}
       const sm=l.match(/^(\d{1,2}:\d{2})(.+?)着$/);
-      if(sm){stops.push({time:sm[1],name:sm[2],type:'drop',min:pMin||''});pMin=null;i++;break;}
+      if(sm){stops.push({time:sm[1],name:sm[2],type:'drop',min:pMin||''});pMin=null;i++;continue;}
       const bt=l.match(/^(\d{1,2}:\d{2})$/);
-      if(bt){stops.push({time:bt[1],name:'店',type:'drop',min:pMin||''});pMin=null;i++;break;}
+      if(bt){stops.push({time:bt[1],name:'店',type:'drop',min:pMin||''});pMin=null;i++;continue;}
       break;
     }
     if(stops.length)runs.push({departTime,departLabel,stops});
