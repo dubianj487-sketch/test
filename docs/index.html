@@ -554,6 +554,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     <div class="mtitle"><span id="moDepTitle">🚩 出発地を登録</span><button class="mclose" onclick="closeMo('moDepLoc')">✕</button></div>
     <input type="hidden" id="edId">
     <label>場所名</label><input type="text" id="dNameInp" placeholder="職場・家・〇〇など">
+    <label>通称（任意）</label><input type="text" id="dNickInp" placeholder="いつもの場所・北口など">
     <label>住所（任意）</label><input type="text" id="dAddrInp" placeholder="大阪市〇〇区…">
     <button class="btn bp" onclick="saveDepLoc()">💾 保存</button>
     <button class="btn bd" id="delDepBtn" style="display:none" onclick="delDepLoc()">🗑️ 削除</button>
@@ -565,6 +566,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     <div class="mtitle"><span id="moGirlTitle">👩 女の子を登録</span><button class="mclose" onclick="closeMo('moGirl')">✕</button></div>
     <input type="hidden" id="egId">
     <label>名前</label><input type="text" id="gNameInp" placeholder="さなさん">
+    <label>店舗名（任意）</label><input type="text" id="gShopInp" placeholder="〇〇店・△△など">
     <label>迎え場所（通称）</label><input type="text" id="gNickInp" placeholder="さなさんマンション前">
     <label>住所</label><input type="text" id="gAddrInp" placeholder="大阪市北区〇〇 1-2-3">
     <button class="btn bp" onclick="saveGirl()">💾 保存</button>
@@ -1608,13 +1610,13 @@ function renderMasters(){
   document.getElementById('depMasterList').innerHTML=depLocs.length?depLocs.map(d=>`
     <div class="mcard dep">
       <div class="mc-av d">🚩</div>
-      <div class="mc-info"><div class="mc-name">${d.name}</div><div class="mc-sub">${d.addr||'住所なし'}</div></div>
+      <div class="mc-info"><div class="mc-name">${d.name}${d.nick?` <span style="font-weight:normal;color:var(--txs);font-size:12px">（${d.nick}）</span>`:''}</div><div class="mc-sub">${d.addr||'住所なし'}</div></div>
       <button class="btn bg sm" onclick="openDepMo(${d.id})">編集</button>
     </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
   document.getElementById('girlMasterList').innerHTML=girls.length?girls.map(g=>`
     <div class="mcard girl">
       <div class="mc-av g">👩</div>
-      <div class="mc-info"><div class="mc-name">${g.name}</div><div class="mc-sub">${g.nick} / ${g.addr}</div></div>
+      <div class="mc-info"><div class="mc-name">${g.name}${g.shop?` <span style="font-weight:normal;color:var(--txs);font-size:12px">／${g.shop}</span>`:''}</div><div class="mc-sub">${g.nick||''}${g.nick&&g.addr?' / ':''}${g.addr||''}</div></div>
       <button class="btn bg sm" onclick="openGirlMo(${g.id})">編集</button>
     </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
   document.getElementById('placeMasterList').innerHTML=places.length?places.map(p=>`
@@ -1626,20 +1628,21 @@ function renderMasters(){
 }
 
 function openDepMo(id){
-  ['dNameInp','dAddrInp'].forEach(x=>document.getElementById(x).value='');
+  ['dNameInp','dNickInp','dAddrInp'].forEach(x=>document.getElementById(x).value='');
   document.getElementById('edId').value='';
   document.getElementById('moDepTitle').textContent='🚩 出発地を登録';
   document.getElementById('delDepBtn').style.display='none';
-  if(id){const d=depLocs.find(x=>x.id===id);if(d){document.getElementById('dNameInp').value=d.name;document.getElementById('dAddrInp').value=d.addr||'';document.getElementById('edId').value=d.id;document.getElementById('moDepTitle').textContent='🚩 編集';document.getElementById('delDepBtn').style.display='flex';}}
+  if(id){const d=depLocs.find(x=>x.id===id);if(d){document.getElementById('dNameInp').value=d.name;document.getElementById('dNickInp').value=d.nick||'';document.getElementById('dAddrInp').value=d.addr||'';document.getElementById('edId').value=d.id;document.getElementById('moDepTitle').textContent='🚩 編集';document.getElementById('delDepBtn').style.display='flex';}}
   document.getElementById('moDepLoc').classList.add('open');
 }
 function saveDepLoc(){
   const name=document.getElementById('dNameInp').value.trim();
   if(!name){showToast('名前を入れてね！');return;}
+  const nick=document.getElementById('dNickInp').value.trim();
   const addr=document.getElementById('dAddrInp').value.trim();
   const eid=parseInt(document.getElementById('edId').value);
-  if(eid){const d=depLocs.find(x=>x.id===eid);if(d){d.name=name;d.addr=addr;}}
-  else{depLocs.push({id:++dCnt,name,addr});saveCounters();}
+  if(eid){const d=depLocs.find(x=>x.id===eid);if(d){d.name=name;d.nick=nick;d.addr=addr;}}
+  else{depLocs.push({id:++dCnt,name,nick,addr});saveCounters();}
   gasPost({action:'saveDepLocs', payload:depLocs});
   closeMo('moDepLoc');renderMasters();refreshDepSel();showToast('保存しました！💾');
 }
@@ -1651,20 +1654,20 @@ function delDepLoc(){
 }
 
 function openGirlMo(id){
-  ['gNameInp','gNickInp','gAddrInp'].forEach(x=>document.getElementById(x).value='');
+  ['gNameInp','gShopInp','gNickInp','gAddrInp'].forEach(x=>document.getElementById(x).value='');
   document.getElementById('egId').value='';
   document.getElementById('moGirlTitle').textContent='👩 登録';
   document.getElementById('delGirlBtn').style.display='none';
-  if(id){const g=girls.find(x=>x.id===id);if(g){document.getElementById('gNameInp').value=g.name;document.getElementById('gNickInp').value=g.nick;document.getElementById('gAddrInp').value=g.addr;document.getElementById('egId').value=g.id;document.getElementById('moGirlTitle').textContent='👩 編集';document.getElementById('delGirlBtn').style.display='flex';}}
+  if(id){const g=girls.find(x=>x.id===id);if(g){document.getElementById('gNameInp').value=g.name;document.getElementById('gShopInp').value=g.shop||'';document.getElementById('gNickInp').value=g.nick||'';document.getElementById('gAddrInp').value=g.addr||'';document.getElementById('egId').value=g.id;document.getElementById('moGirlTitle').textContent='👩 編集';document.getElementById('delGirlBtn').style.display='flex';}}
   document.getElementById('moGirl').classList.add('open');
 }
 function saveGirl(){
   const name=document.getElementById('gNameInp').value.trim();
   if(!name){showToast('名前を入れてね！');return;}
-  const nick=document.getElementById('gNickInp').value.trim(),addr=document.getElementById('gAddrInp').value.trim();
+  const shop=document.getElementById('gShopInp').value.trim(),nick=document.getElementById('gNickInp').value.trim(),addr=document.getElementById('gAddrInp').value.trim();
   const eid=parseInt(document.getElementById('egId').value);
-  if(eid){const g=girls.find(x=>x.id===eid);if(g){g.name=name;g.nick=nick;g.addr=addr;}}
-  else{girls.push({id:++gCnt,name,nick,addr});saveCounters();}
+  if(eid){const g=girls.find(x=>x.id===eid);if(g){g.name=name;g.shop=shop;g.nick=nick;g.addr=addr;}}
+  else{girls.push({id:++gCnt,name,shop,nick,addr});saveCounters();}
   gasPost({action:'saveGirls', payload:girls});
   closeMo('moGirl');renderMasters();renderGirlInputs();showToast('保存しました！💾');
 }
