@@ -826,7 +826,27 @@ function closeMemoSheet(animate){
 function initApp() {
   setPgHeight();
   window.addEventListener('resize',setPgHeight);
-  (function schedNowTimer(){function tick(){if(!_debugTime&&document.getElementById('pg-hist').classList.contains('active'))renderHistPage();setTimeout(tick,60000-Date.now()%60000);}setTimeout(tick,60000-Date.now()%60000);})();
+  var _tickLastDate=null;
+  (function schedNowTimer(){function tick(){
+    if(!_debugTime&&document.getElementById('pg-hist').classList.contains('active')){
+      var today=todayVal();
+      if(today!==_tickLastDate){
+        // 日付が変わったときだけ全体再描画
+        _tickLastDate=today;renderHistPage();
+      } else {
+        // 通常は今日カードの時刻行だけ差し替え（アコーディオン状態を壊さない）
+        var entry=schedHistory.find(function(x){return x.dateVal===today;});
+        if(entry){
+          var tmp=document.createElement('div');
+          tmp.innerHTML=buildRunsHtml(entry,true);
+          var newRuns=[].slice.call(tmp.querySelectorAll('.hist-detail-run'));
+          var oldRuns=[].slice.call(document.querySelectorAll('#histPageToday .hist-detail-run'));
+          oldRuns.forEach(function(r,i){if(newRuns[i])r.replaceWith(newRuns[i]);});
+        }
+      }
+    }
+    setTimeout(tick,60000-Date.now()%60000);
+  }setTimeout(tick,60000-Date.now()%60000);})();
   var sl=document.getElementById('histSlider');
   sl.addEventListener('scroll',function(){
     var m=this.scrollLeft>this.offsetWidth*0.5;
@@ -1680,7 +1700,16 @@ function renderHistPage(){
     });
     html+=`</div></div>`;
   });
+  // 開いていた月を月タイトル名で記録して復元
+  const openMonths=new Set();
+  document.querySelectorAll('#histContent .month-acc.open .month-acc-title').forEach(function(el){openMonths.add(el.textContent);});
   c.innerHTML=html;
+  if(openMonths.size){
+    document.querySelectorAll('#histContent .month-acc').forEach(function(el){
+      var t=el.querySelector('.month-acc-title');
+      if(t&&openMonths.has(t.textContent))el.classList.add('open');
+    });
+  }
   initSwipeItems();
 }
 
