@@ -1584,7 +1584,7 @@ function _doImportSave(parsed,existing){
   const isNew=existing<0;
   const oldEntry=isNew?null:schedHistory[existing];
   let revisions=oldEntry?oldEntry.revisions||[]:[];
-  if(!isNew&&parsed.revised&&oldEntry){
+  if(!isNew&&oldEntry){
     revisions=[{runs:oldEntry.runs,shunTxt:oldEntry.shunTxt,boyTxt:oldEntry.boyTxt,
       savedAt:oldEntry.savedAt,dateVal:oldEntry.dateVal,dateLabel:oldEntry.dateLabel},
       ...revisions].slice(0,3);
@@ -1596,7 +1596,7 @@ function _doImportSave(parsed,existing){
     runs:parsed.runs,
     shunTxt:shunTxt,
     boyTxt:'',
-    revised:parsed.revised||false,
+    revised:!isNew||parsed.revised||false,
     revisions:revisions,
     savedAt:new Date().toISOString()
   };
