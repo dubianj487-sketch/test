@@ -443,7 +443,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 <div class="mo" id="moSched">
   <div class="mbox" style="max-height:calc(100dvh - 80px)">
     <div class="mtitle" style="position:sticky;top:0;z-index:10;background:#f4eef2">
-      <span style="font-size:16px;font-weight:700">🚗 スケジュール作成</span>
+      <span id="schedModalTitle" style="font-size:16px;font-weight:700">🚗 スケジュール作成</span>
       <button class="mclose" style="font-size:13px;color:#fff;background:var(--teal);border-radius:20px;padding:6px 14px;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;font-weight:700" onclick="closeSchedModal()">キャンセル</button>
     </div>
     <div id="schedFormContent">
@@ -509,7 +509,10 @@ body.font-shun.dark-active #pg-hist{background:transparent}
         <button class="btn bdk" id="cpyS" onclick="copyOut('shun')">📋 しゅんくん用をコピー</button>
         <button class="btn bgr" id="cpyB" style="display:none" onclick="copyOut('boy')">📤 ボーイさん用をコピー</button>
       </div>
-      <button class="btn bsave" onclick="saveSchedule()">💾 このスケジュールを保存</button>
+      <button id="schedSaveBtn" class="btn bsave" onclick="saveSchedule()">💾 このスケジュールを保存</button>
+    </div>
+    <div id="editModeActions" style="display:none">
+      <button class="btn bd" onclick="deleteFromEdit()">🗑️ このスケジュールを削除</button>
     </div>
     </div>
   </div>
@@ -624,15 +627,6 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   </div>
 </div>
 
-<div class="mo" id="moHistEdit">
-  <div class="mbox" style="max-height:calc(100dvh - 80px)">
-    <div class="mtitle" style="position:sticky;top:0;z-index:10;background:#f4eef2">
-      <span style="font-size:16px;font-weight:700" id="moHistEditTitle">✏️ 編集</span>
-      <button class="mclose" style="font-size:13px;color:#fff;background:var(--teal);border-radius:20px;padding:6px 14px;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;font-weight:700" onclick="closeMo('moHistEdit')">キャンセル</button>
-    </div>
-    <div id="moHistEditBody"></div>
-  </div>
-</div>
 
 <div class="mo" id="moOverwrite">
   <div class="mbox">
@@ -972,6 +966,10 @@ function openSchedModal(){
 }
 function closeSchedModal(){
   document.getElementById('moSched').classList.remove('open');
+  _editingHistId=null;
+  document.getElementById('schedModalTitle').textContent='🚗 スケジュール作成';
+  document.getElementById('editModeActions').style.display='none';
+  document.getElementById('schedSaveBtn').textContent='💾 このスケジュールを保存';
 }
 
 // ========== 出発地モード ==========
@@ -1376,6 +1374,7 @@ function openOverwriteMo(msg, action){
 // ========== スケジュール保存 ==========
 function saveSchedule(){
   if(!builtRuns.length){showToast('先にスケジュールを生成してね！');return;}
+  if(_editingHistId!=null){doSave();return;}
   const existing=schedHistory.findIndex(x=>x.dateVal===currentBuiltDate);
   if(existing>=0){
     openOverwriteMo(`${currentBuiltDateLabel} のスケジュールはすでに保存されています。上書きしますか？`, doSave);
@@ -1386,10 +1385,32 @@ function saveSchedule(){
 
 function doSave(){
   closeMo('moOverwrite');
-  const existing=schedHistory.findIndex(x=>x.dateVal===currentBuiltDate);
-  const isNew=existing<0;
   const savedShunTxt=outShunTxt, savedBoyTxt=outBoyTxt;
   const savedDateLabel=currentBuiltDateLabel;
+
+  if(_editingHistId!=null){
+    const idx=schedHistory.findIndex(x=>x.id===_editingHistId);
+    const entry={
+      id:_editingHistId,
+      dateVal:currentBuiltDate,
+      dateLabel:savedDateLabel,
+      runs:JSON.parse(JSON.stringify(builtRuns)),
+      shunTxt:savedShunTxt,
+      boyTxt:savedBoyTxt,
+      savedAt:new Date().toISOString()
+    };
+    if(idx>=0) schedHistory[idx]=entry;
+    else schedHistory.unshift(entry);
+    gasPost({action:'saveSchedule',payload:entry});
+    resetSchedForm();
+    closeSchedModal();
+    renderHistPage();
+    showSaveSuccessBar(savedDateLabel,savedShunTxt,savedBoyTxt);
+    return;
+  }
+
+  const existing=schedHistory.findIndex(x=>x.dateVal===currentBuiltDate);
+  const isNew=existing<0;
   const entry={
     id: isNew ? ++histCnt : schedHistory[existing].id,
     dateVal: currentBuiltDate,
@@ -1401,10 +1422,8 @@ function doSave(){
   };
   if(existing>=0) schedHistory[existing]=entry;
   else schedHistory.unshift(entry);
-
   gasPost({action:'saveSchedule', payload:entry});
   if(isNew) saveCounters();
-
   resetSchedForm();
   closeSchedModal();
   showSaveSuccessBar(savedDateLabel, savedShunTxt, savedBoyTxt);
@@ -1756,65 +1775,78 @@ function openHistDetail(id){
   document.getElementById('moHistDetail').classList.add('open');
 }
 
-let _editHistEntry=null;
+let _editingHistId=null;
 
 function openHistEdit(id){
   const e=schedHistory.find(x=>x.id==id);
   if(!e) return;
-  _editHistEntry=JSON.parse(JSON.stringify(e));
-  _renderHistEditModal();
-  document.getElementById('moHistEdit').classList.add('open');
-}
+  _editingHistId=id;
 
-function _renderHistEditModal(){
-  const e=_editHistEntry;
-  document.getElementById('moHistEditTitle').textContent=`✏️ ${fmtDLFull(e.dateVal)}`;
-  let html=`<div class="card">
-    <div class="ctitle">📅 日付</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <input type="date" id="heditDate" value="${e.dateVal}" style="flex:1;margin-bottom:0" oninput="_editHistEntry.dateVal=this.value;_editHistEntry.dateLabel=fmtDL(this.value);document.getElementById('moHistEditTitle').textContent='✏️ '+fmtDLFull(this.value)">
-    </div>
-  </div>`;
-  e.runs.forEach((run,ri)=>{
-    const depTime=run.departTime||run.departLabel.slice(0,5);
-    const depSuffix=run.departLabel.slice(5);
-    html+=`<div class="card"><div class="ctitle">🚗 ${e.runs.length>1?`ルート ${ri+1}`:'ルート'}</div>
-    <div class="hedit-dep-row">
-      <input class="edit-time-inp" type="time" value="${depTime}" onchange="_editHistEntry.runs[${ri}].departTime=this.value;_editHistEntry.runs[${ri}].departLabel=this.value+'${depSuffix}'">
-      <span class="hedit-dep-label">${depSuffix}</span>
-    </div>`;
-    run.stops.forEach((s,si)=>{
-      const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">店着</span>';
-      const dot=s.type==='pick'?'dot-pick':'dot-drop';
-      const minB=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
-      html+=`<div class="edit-time-row"><div class="tl-dot ${dot}"></div><input class="edit-time-inp" type="time" value="${s.time}" onchange="_editHistEntry.runs[${ri}].stops[${si}].time=this.value"><span class="edit-time-name">${s.name}</span>${badge}${minB}</div>`;
+  // フォームリセット（girlRows等）
+  girlRows=[];rowUid=0;
+  document.getElementById('dateInp').value=e.dateVal;
+  document.getElementById('resultSection').style.display='none';
+  builtRuns=[];outShunTxt='';outBoyTxt='';
+
+  // 出発地を復元
+  if(e.runs.length>0){
+    const firstRun=e.runs[0];
+    const depTime=firstRun.departTime||firstRun.departLabel.slice(0,5);
+    const startLabel=firstRun.departLabel.slice(5,-2);
+    const matchedDep=locations.find(l=>l.name===startLabel||l.nick===startLabel);
+    if(matchedDep){
+      setDepMode('saved');
+      document.getElementById('depLocSel').value=matchedDep.id;
+    } else {
+      setDepMode('manual');
+      document.getElementById('depManualName').value=startLabel;
+      document.getElementById('depManualAddr').value='';
+      document.getElementById('depManualTime').value=depTime;
+    }
+  }
+
+  // 送り先を復元
+  const dropStop=e.runs.length>0?e.runs[0].stops.find(s=>s.type==='drop'):null;
+  if(dropStop){
+    const matchedStore=locations.find(l=>l.isShop&&l.name===dropStop.name);
+    document.getElementById('storeLocSel').value=matchedStore?matchedStore.id:'';
+  }
+
+  // 女の子RowをRunsから復元
+  e.runs.forEach(run=>{
+    const pickStops=run.stops.filter(s=>s.type==='pick');
+    const dStop=run.stops.find(s=>s.type==='drop');
+    const shiftTime=dStop?addMin(dStop.time,10):'19:00';
+    const mins={};
+    pickStops.forEach((s,i)=>{
+      mins[i===0?'start_to_0':`${i-1}_to_${i}`]=s.min;
     });
-    html+=`</div>`;
+    if(dStop) mins[`${pickStops.length-1}_to_store`]=dStop.min;
+    pickStops.forEach((s,i)=>{
+      const uid=++rowUid;
+      const mg=girls.find(g=>g.name===s.name);
+      girlRows.push({uid,girlId:mg?mg.id:'_c',customName:mg?'':s.name,shiftTime,mins:i===0?mins:{}});
+    });
   });
-  html+=`<button class="btn bsave" onclick="saveHistEdit()">💾 保存</button>
-  <button class="btn bd" onclick="deleteHistFromEdit()">🗑️ 削除</button>`;
-  document.getElementById('moHistEditBody').innerHTML=html;
+
+  renderGirlInputs();
+  updateAutoDepDisplay();
+
+  // 編集モードUI
+  document.getElementById('schedModalTitle').textContent='✏️ スケジュール編集';
+  document.getElementById('editModeActions').style.display='';
+  document.getElementById('schedSaveBtn').textContent='💾 スケジュールを更新';
+
+  document.getElementById('moSched').classList.add('open');
 }
 
-function saveHistEdit(){
-  if(!_editHistEntry) return;
-  rebuildHistTexts(_editHistEntry);
-  _editHistEntry.savedAt=new Date().toISOString();
-  const idx=schedHistory.findIndex(x=>x.id===_editHistEntry.id);
-  if(idx>=0) schedHistory[idx]=_editHistEntry;
-  else schedHistory.unshift(_editHistEntry);
-  gasPost({action:'saveSchedule',payload:_editHistEntry});
-  closeMo('moHistEdit');
-  renderHistPage();
-  showToast('保存しました！💾');
-}
-
-function deleteHistFromEdit(){
-  if(!_editHistEntry) return;
-  const id=_editHistEntry.id;
+function deleteFromEdit(){
+  if(_editingHistId==null) return;
+  const id=_editingHistId;
   schedHistory=schedHistory.filter(x=>x.id!=id);
   gasPost({action:'deleteSchedule',id});
-  closeMo('moHistEdit');
+  resetSchedForm();
+  closeSchedModal();
   renderHistPage();
   showToast('削除しました 🗑️');
 }
