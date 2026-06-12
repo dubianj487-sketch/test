@@ -604,7 +604,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   <div class="mbox">
     <div class="mtitle"><span>⚠️ 上書き確認</span></div>
     <div id="moOverwriteMsg" style="font-size:13px;color:var(--tx);margin-bottom:16px;line-height:1.7"></div>
-    <button class="btn bp" onclick="doSave()">✅ 上書きして保存</button>
+    <button class="btn bp" onclick="_overwriteAction()">✅ 上書きして保存</button>
     <button class="btn bg" onclick="closeMo('moOverwrite')">キャンセル</button>
   </div>
 </div>
@@ -1296,14 +1296,19 @@ function copyOut(who){
   else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('コピーしました！📋');}
 }
 
+let _overwriteAction=function(){};
+function openOverwriteMo(msg, action){
+  document.getElementById('moOverwriteMsg').textContent=msg;
+  _overwriteAction=function(){closeMo('moOverwrite');action();};
+  document.getElementById('moOverwrite').classList.add('open');
+}
+
 // ========== スケジュール保存 ==========
 function saveSchedule(){
   if(!builtRuns.length){showToast('先にスケジュールを生成してね！');return;}
   const existing=schedHistory.findIndex(x=>x.dateVal===currentBuiltDate);
   if(existing>=0){
-    document.getElementById('moOverwriteMsg').textContent=
-      `${currentBuiltDateLabel} のスケジュールはすでに保存されています。上書きしますか？`;
-    document.getElementById('moOverwrite').classList.add('open');
+    openOverwriteMo(`${currentBuiltDateLabel} のスケジュールはすでに保存されています。上書きしますか？`, doSave);
     return;
   }
   doSave();
@@ -1405,6 +1410,14 @@ function doImport(){
   const parsed=parseImportText(text);
   if(!parsed){showToast('⚠️ 解析できませんでした\n日付と出発行を確認してね');return;}
   const existing=schedHistory.findIndex(x=>x.dateVal===parsed.dateVal);
+  if(existing>=0){
+    openOverwriteMo(`${parsed.dateLabel} のスケジュールはすでに保存されています。上書きしますか？`,
+      function(){_doImportSave(parsed,existing);});
+    return;
+  }
+  _doImportSave(parsed,existing);
+}
+function _doImportSave(parsed,existing){
   let shunLines=[parsed.dateLabel,''];
   parsed.runs.forEach((run,ri)=>{
     shunLines.push(run.departLabel);
@@ -1415,8 +1428,9 @@ function doImport(){
     if(ri<parsed.runs.length-1)shunLines.push('');
   });
   const shunTxt=shunLines.join('\n');
+  const isNew=existing<0;
   const entry={
-    id:existing>=0?schedHistory[existing].id:++histCnt,
+    id:isNew?++histCnt:schedHistory[existing].id,
     dateVal:parsed.dateVal,
     dateLabel:parsed.dateLabel,
     runs:parsed.runs,
@@ -1424,10 +1438,10 @@ function doImport(){
     boyTxt:'',
     savedAt:new Date().toISOString()
   };
-  if(existing>=0)schedHistory[existing]=entry;
+  if(!isNew)schedHistory[existing]=entry;
   else schedHistory.unshift(entry);
   gasPost({action:'saveSchedule',payload:entry});
-  if(existing<0)saveCounters();
+  if(isNew)saveCounters();
   closeMo('moImport');
   renderHistPage();
   showToast('💾 インポートしました！');
