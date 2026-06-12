@@ -753,10 +753,12 @@ function onMemoInput(){
       const res = await gasGet();
       if (!res.ok) return;
       {
-        schedHistory = res.data.schedHistory || schedHistory;
-        schedHistory.forEach(function(e){ rebuildHistTexts(e); });
-        histCnt = (res.data.counters || {}).histCnt || histCnt;
-        if (document.getElementById('pg-hist').classList.contains('active')) renderHistPage();
+        if (Date.now() - _schedSavedAt > 20000) {
+          schedHistory = res.data.schedHistory || schedHistory;
+          schedHistory.forEach(function(e){ rebuildHistTexts(e); });
+          histCnt = (res.data.counters || {}).histCnt || histCnt;
+          if (document.getElementById('pg-hist').classList.contains('active')) renderHistPage();
+        }
       }
       const newMemo = res.data.memo || '';
       if (newMemo !== memoText) {
@@ -1297,6 +1299,7 @@ function copyOut(who){
 }
 
 var _overwriteAction=function(){};
+var _schedSavedAt=0;
 function callOverwriteAction(){_overwriteAction();}
 function openOverwriteMo(msg, action){
   document.getElementById('moOverwriteMsg').textContent=msg;
@@ -1333,7 +1336,7 @@ function doSave(){
   if(existing>=0) schedHistory[existing]=entry;
   else schedHistory.unshift(entry);
 
-  gasPost({action:'saveSchedule', payload:entry});
+  _schedSavedAt=Date.now();gasPost({action:'saveSchedule', payload:entry});
   if(isNew) saveCounters();
 
   resetSchedForm();
