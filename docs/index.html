@@ -1961,8 +1961,10 @@ function updateHistStop(entryId, runIdx, stopIdx, newTime){
   const e=schedHistory.find(x=>x.id==entryId);
   if(!e) return;
   e.runs[runIdx].stops[stopIdx].time=newTime;
+  e.revised=true;
   rebuildHistTexts(e);
   gasPost({action:'updateSchedule', payload:e});
+  renderHistPage();
   showToast('時間を更新しました ✏️');
 }
 
