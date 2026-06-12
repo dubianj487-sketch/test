@@ -499,6 +499,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   <div class="hist-dots">
     <span class="hist-dot active" id="dot-today" onclick="slideTo(0)"></span>
     <span class="hist-dot" id="dot-months" onclick="slideTo(1)"></span>
+    <button onclick="document.getElementById('moImport').classList.add('open')" style="background:none;border:none;font-size:11px;color:var(--txs);opacity:.6;cursor:pointer;padding:0 0 0 8px;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif">📥 インポート</button>
   </div>
   <div id="histSlider">
     <div id="histPageToday"></div>
@@ -563,6 +564,15 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     </label>
     <button class="btn bp" onclick="saveLocation()">💾 保存</button>
     <button class="btn bd" id="delLocBtn" style="display:none" onclick="delLocation()">🗑️ 削除</button>
+  </div>
+</div>
+
+<div class="mo" id="moImport">
+  <div class="mbox">
+    <div class="mtitle"><span>📥 テキストからインポート</span><button class="mclose" onclick="closeMo('moImport')">✕</button></div>
+    <p style="font-size:12px;color:var(--txs);margin-bottom:10px">しゅんくん用テキストを貼り付けてください（1便・2便どちらも対応）</p>
+    <textarea id="importTxt" style="width:100%;height:200px;padding:12px;border:1.5px solid var(--lav);border-radius:12px;font-size:13px;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:var(--pkp);color:var(--tx);resize:vertical;outline:none;margin-bottom:12px;display:block" placeholder="6/12(金)&#10;&#10;19:45ケーユー出発&#10;25分&#10;20:10いろはさん迎&#10;…"></textarea>
+    <button class="btn bp" onclick="doImport()">💾 インポート・保存</button>
   </div>
 </div>
 
@@ -1348,6 +1358,79 @@ function showSaveSuccessBar(dateLabel, shunTxt, boyTxt){
 function copyText(txt){
   if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>showToast('コピーしました！📋'));
   else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('コピーしました！📋');}
+}
+
+// ========== テキストインポート ==========
+function parseImportText(text){
+  const lines=text.split('\n').map(l=>l.trim());
+  let i=0;
+  while(i<lines.length&&!lines[i])i++;
+  if(i>=lines.length)return null;
+  const dm=lines[i].match(/^(\d{1,2})\/(\d{1,2})/);
+  if(!dm)return null;
+  const yr=new Date().getFullYear();
+  const dateVal=`${yr}-${dm[1].padStart(2,'0')}-${dm[2].padStart(2,'0')}`;
+  const dateLabel=lines[i];
+  i++;
+  while(i<lines.length&&!lines[i])i++;
+  const runs=[];
+  while(i<lines.length){
+    if(!lines[i]){i++;continue;}
+    const dm2=lines[i].match(/^(\d{1,2}:\d{2})(.+)出発$/);
+    if(!dm2){i++;continue;}
+    const departTime=dm2[1],departLabel=lines[i];
+    i++;
+    const stops=[];
+    let pMin=null;
+    while(i<lines.length){
+      const l=lines[i];
+      if(!l){i++;break;}
+      const mm=l.match(/^(\d+)分$/);
+      if(mm){pMin=parseInt(mm[1]);i++;continue;}
+      const pm=l.match(/^(\d{1,2}:\d{2})(.+?)迎え?$/);
+      if(pm){stops.push({time:pm[1],name:pm[2],type:'pick',min:pMin||''});pMin=null;i++;continue;}
+      const sm=l.match(/^(\d{1,2}:\d{2})(.+?)着$/);
+      if(sm){stops.push({time:sm[1],name:sm[2],type:'drop',min:pMin||''});pMin=null;i++;break;}
+      const bt=l.match(/^(\d{1,2}:\d{2})$/);
+      if(bt){stops.push({time:bt[1],name:'店',type:'drop',min:pMin||''});pMin=null;i++;break;}
+      break;
+    }
+    if(stops.length)runs.push({departTime,departLabel,stops});
+  }
+  return runs.length?{dateVal,dateLabel,runs}:null;
+}
+function doImport(){
+  const text=document.getElementById('importTxt').value.trim();
+  if(!text){showToast('テキストを貼り付けてね！');return;}
+  const parsed=parseImportText(text);
+  if(!parsed){showToast('⚠️ 解析できませんでした\n日付と出発行を確認してね');return;}
+  const existing=schedHistory.findIndex(x=>x.dateVal===parsed.dateVal);
+  let shunLines=[parsed.dateLabel,''];
+  parsed.runs.forEach((run,ri)=>{
+    shunLines.push(run.departLabel);
+    run.stops.forEach(s=>{
+      if(s.min!=='')shunLines.push(s.min+'分');
+      shunLines.push(s.time+s.name+(s.type==='pick'?'迎え':'着'));
+    });
+    if(ri<parsed.runs.length-1)shunLines.push('');
+  });
+  const shunTxt=shunLines.join('\n');
+  const entry={
+    id:existing>=0?schedHistory[existing].id:++histCnt,
+    dateVal:parsed.dateVal,
+    dateLabel:parsed.dateLabel,
+    runs:parsed.runs,
+    shunTxt:shunTxt,
+    boyTxt:'',
+    savedAt:new Date().toISOString()
+  };
+  if(existing>=0)schedHistory[existing]=entry;
+  else schedHistory.unshift(entry);
+  gasPost({action:'saveSchedule',payload:entry});
+  if(existing<0)saveCounters();
+  closeMo('moImport');
+  renderHistPage();
+  showToast('💾 インポートしました！');
 }
 
 // ========== 履歴ページ ==========
