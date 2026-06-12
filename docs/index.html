@@ -352,7 +352,7 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .swipe-wrap{position:relative;overflow:hidden;border-bottom:1px solid #f8f4f6}
 .swipe-wrap:last-child{border-bottom:none}
 .swipe-wrap .hist-item{border-bottom:none}
-.swipe-inner{transition:transform .25s cubic-bezier(.4,0,.2,1);will-change:transform;position:relative;z-index:1;background:#fff;touch-action:pan-y}
+.swipe-inner{transition:transform .3s cubic-bezier(0.25,0.46,0.45,0.94);will-change:transform;position:relative;z-index:1;background:#fff;touch-action:pan-y}
 .swipe-inner.swipe-no-trans{transition:none}
 .swipe-actions{position:absolute;right:0;top:0;bottom:0;display:flex;width:160px}
 .swipe-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:none;padding:0;cursor:pointer;font-size:12px;font-weight:700;color:#fff;font-family:inherit;letter-spacing:.3px;-webkit-tap-highlight-color:transparent}
@@ -1773,13 +1773,16 @@ var _activeSwipeClose=null;
 
 function initSwipe(innerEl, actionsWidth, tapAction){
   var startX,startY,dx=0,isHoriz=false,isVert=false,moved=false,opened=false;
+  var velX=0,lastX=0,lastT=0;
   function closeFn(){
+    innerEl.style.transition='transform .22s cubic-bezier(0.4,0,0.6,1)';
     innerEl.classList.remove('swipe-no-trans');
     innerEl.style.transform='';
     opened=false;
     if(_activeSwipeClose===closeFn)_activeSwipeClose=null;
   }
   function openFn(){
+    innerEl.style.transition='';
     innerEl.classList.remove('swipe-no-trans');
     innerEl.style.transform='translateX(-'+actionsWidth+'px)';
     opened=true;
@@ -1788,11 +1791,15 @@ function initSwipe(innerEl, actionsWidth, tapAction){
   innerEl.addEventListener('touchstart',function(ev){
     if(_activeSwipeClose&&_activeSwipeClose!==closeFn){_activeSwipeClose();_activeSwipeClose=null;}
     startX=ev.touches[0].clientX;startY=ev.touches[0].clientY;
-    dx=0;isHoriz=false;isVert=false;moved=false;
+    lastX=startX;lastT=Date.now();
+    dx=0;velX=0;isHoriz=false;isVert=false;moved=false;
   },{passive:true});
   innerEl.addEventListener('touchmove',function(ev){
     if(isVert)return;
     var cx=ev.touches[0].clientX,cy=ev.touches[0].clientY;
+    var now=Date.now(),dt=now-lastT;
+    if(dt>0)velX=(cx-lastX)/dt;
+    lastX=cx;lastT=now;
     var diffX=cx-startX,diffY=cy-startY;
     if(!isHoriz){
       if(Math.abs(diffY)>Math.abs(diffX)+3){isVert=true;return;}
@@ -1804,6 +1811,7 @@ function initSwipe(innerEl, actionsWidth, tapAction){
     var base=opened?-actionsWidth:0;
     var tx=Math.max(-actionsWidth,Math.min(0,base+dx));
     innerEl.classList.add('swipe-no-trans');
+    innerEl.style.transition='none';
     innerEl.style.transform='translateX('+tx+'px)';
   },{passive:false});
   innerEl.addEventListener('touchend',function(){
@@ -1812,8 +1820,11 @@ function initSwipe(innerEl, actionsWidth, tapAction){
       if(tapAction)tapAction();
       return;
     }
-    var base=opened?-actionsWidth:0;
-    if(base+dx<-actionsWidth*0.35)openFn();else closeFn();
+    var base=opened?-actionsWidth:0,fin=base+dx;
+    // フリック（速度）優先判定
+    if(velX>0.3)closeFn();
+    else if(velX<-0.3||fin<-actionsWidth*0.35)openFn();
+    else closeFn();
     moved=false;
   });
 }
