@@ -86,6 +86,8 @@ body.font-shun.dark-active .today-action-btn:active{background:#2e2e2e}
 body.font-shun.dark-active .hist-detail-run{border-bottom-color:#333}
 body.font-shun.dark-active .edit-time-row{border-bottom-color:#2e2e2e}
 body.font-shun.dark-active .hedit-dep-row{background:#1e2a36}
+body.font-shun.dark-active .revised-tag{background:#3d1515;color:#f87171}
+body.font-shun.dark-active .rev-acc{border-bottom-color:#2e2e2e}
 body.font-shun.dark-active .edit-time-inp{color:#e8f0f8}
 body.font-shun.dark-active .edit-time-name{color:#c8d8e8}
 body.font-shun.dark-active .card{background:#242424;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
@@ -368,6 +370,15 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .edit-time-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f8f4f6}
 .hedit-dep-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--pkp);border-radius:10px;margin-bottom:12px}
 .hedit-dep-label{font-size:13px;color:var(--tx);font-weight:600;flex:1}
+.revised-tag{font-size:10px;background:#fee2e2;color:#dc2626;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
+.rev-wrap{margin-top:12px}
+.rev-acc{border-bottom:1px solid #f5f0f3}
+.rev-acc:last-child{border-bottom:none}
+.rev-acc-title{display:flex;align-items:center;justify-content:space-between;padding:10px 0;cursor:pointer;font-size:13px;font-weight:700;color:var(--tx);-webkit-tap-highlight-color:transparent}
+.rev-acc-arr{transition:transform .2s;display:inline-block;color:var(--txs);font-size:16px}
+.rev-acc.open .rev-acc-arr{transform:rotate(90deg)}
+.rev-acc-body{display:none;padding:0 0 8px}
+.rev-acc.open .rev-acc-body{display:block}
 .edit-time-row:last-child{border-bottom:none}
 .edit-time-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .edit-time-inp{font-size:17px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);border:none;background:transparent !important;outline:none;width:54px;padding:0;margin-bottom:0;border-radius:0;-webkit-appearance:none;cursor:pointer;align-self:center}
@@ -1390,6 +1401,10 @@ function doSave(){
 
   if(_editingHistId!=null){
     const idx=schedHistory.findIndex(x=>x.id===_editingHistId);
+    const oldEntry=idx>=0?schedHistory[idx]:null;
+    const oldRev=oldEntry?{runs:oldEntry.runs,shunTxt:oldEntry.shunTxt,boyTxt:oldEntry.boyTxt,
+      savedAt:oldEntry.savedAt,dateVal:oldEntry.dateVal,dateLabel:oldEntry.dateLabel}:null;
+    const revisions=[...(oldRev?[oldRev]:[]),...(oldEntry?oldEntry.revisions||[]:[] )].slice(0,3);
     const entry={
       id:_editingHistId,
       dateVal:currentBuiltDate,
@@ -1397,6 +1412,8 @@ function doSave(){
       runs:JSON.parse(JSON.stringify(builtRuns)),
       shunTxt:savedShunTxt,
       boyTxt:savedBoyTxt,
+      revised:true,
+      revisions:revisions,
       savedAt:new Date().toISOString()
     };
     if(idx>=0) schedHistory[idx]=entry;
@@ -1465,6 +1482,7 @@ function parseImportText(text){
   const yr=new Date().getFullYear();
   const dateVal=`${yr}-${dm[1].padStart(2,'0')}-${dm[2].padStart(2,'0')}`;
   const dateLabel=lines[i];
+  const isRevised=lines[i].includes('訂正');
   i++;
   while(i<lines.length&&!lines[i])i++;
   const runs=[];
@@ -1491,7 +1509,7 @@ function parseImportText(text){
     }
     if(stops.length)runs.push({departTime,departLabel,stops});
   }
-  return runs.length?{dateVal,dateLabel,runs}:null;
+  return runs.length?{dateVal,dateLabel,runs,revised:isRevised}:null;
 }
 function doImport(){
   const text=document.getElementById('importTxt').value.trim();
@@ -1518,13 +1536,22 @@ function _doImportSave(parsed,existing){
   });
   const shunTxt=shunLines.join('\n');
   const isNew=existing<0;
+  const oldEntry=isNew?null:schedHistory[existing];
+  let revisions=oldEntry?oldEntry.revisions||[]:[];
+  if(!isNew&&parsed.revised&&oldEntry){
+    revisions=[{runs:oldEntry.runs,shunTxt:oldEntry.shunTxt,boyTxt:oldEntry.boyTxt,
+      savedAt:oldEntry.savedAt,dateVal:oldEntry.dateVal,dateLabel:oldEntry.dateLabel},
+      ...revisions].slice(0,3);
+  }
   const entry={
-    id:isNew?++histCnt:schedHistory[existing].id,
+    id:isNew?++histCnt:oldEntry.id,
     dateVal:parsed.dateVal,
     dateLabel:parsed.dateLabel,
     runs:parsed.runs,
     shunTxt:shunTxt,
     boyTxt:'',
+    revised:parsed.revised||false,
+    revisions:revisions,
     savedAt:new Date().toISOString()
   };
   if(!isNew)schedHistory[existing]=entry;
@@ -1723,7 +1750,7 @@ function renderHistPage(){
       html+=`<div class="swipe-wrap"><div class="hist-item swipe-inner" data-id="${e.id}">
         <div class="hist-item-hdr">
           <div>
-            <div class="hist-item-date">${fmtDLFull(e.dateVal)}</div>
+            <div class="hist-item-date">${fmtDLFull(e.dateVal)}${e.revised?'<span class="revised-tag">訂正</span>':''}</div>
             <div class="hist-item-sub">👩 ${girlNames||'データなし'}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
@@ -1760,11 +1787,39 @@ function quickCopyBoy(id){
   else{const ta=document.createElement('textarea');ta.value=e.boyTxt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('ボーイ用をコピーしました！📤');}
 }
 
+function buildRevHtml(rev){
+  let h='';
+  (rev.runs||[]).forEach(run=>{
+    h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl">🚗 ${run.departLabel}</div>`;
+    (run.stops||[]).forEach(s=>{
+      const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">店着</span>';
+      const dot=s.type==='pick'?'dot-pick':'dot-drop';
+      const minB=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
+      h+=`<div class="edit-time-row"><div class="tl-dot ${dot}"></div><span class="edit-time-inp" style="pointer-events:none">${s.time}</span><span class="edit-time-name">${s.name}</span>${badge}${minB}</div>`;
+    });
+    h+=`</div>`;
+  });
+  return h;
+}
+
 function openHistDetail(id){
   const e=schedHistory.find(x=>x.id==id);
   if(!e) return;
-  document.getElementById('moHistTitle').textContent=`📅 ${fmtDLFull(e.dateVal)}`;
+  document.getElementById('moHistTitle').innerHTML=`📅 ${fmtDLFull(e.dateVal)}${e.revised?'<span class="revised-tag">訂正</span>':''}`;
   let html=buildRunsHtml(e);
+  if(e.revisions&&e.revisions.length>0){
+    html+=`<div class="rev-wrap"><div style="font-size:11px;font-weight:700;color:var(--txs);letter-spacing:.5px;margin-bottom:6px;opacity:.7">🕒 修正履歴</div>`;
+    e.revisions.forEach((rev,i)=>{
+      html+=`<div class="rev-acc">
+        <div class="rev-acc-title" onclick="this.closest('.rev-acc').classList.toggle('open')">
+          <span>${i+1}回前（${rev.dateLabel||rev.dateVal}）</span>
+          <span class="rev-acc-arr">›</span>
+        </div>
+        <div class="rev-acc-body">${buildRevHtml(rev)}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
   html+=`<div class="today-action-bar" style="margin:14px -16px 0;border-radius:0 0 14px 14px;overflow:hidden">
     <div class="today-action-btn" onclick="shareHist(${e.id})">
       <span class="today-action-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>

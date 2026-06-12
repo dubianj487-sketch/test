@@ -173,7 +173,7 @@ function readScheduleHistory(ss) {
   const sheet = getOrCreateSheet(ss, 'schedHistory');
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
-  const values = sheet.getRange(2, 1, lastRow - 1, 7).getValues();
+  const values = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
   return values
     .filter(function(row) { return row[0] !== ''; })
     .map(function(row) {
@@ -184,7 +184,9 @@ function readScheduleHistory(ss) {
         runs:      JSON.parse(row[3] || '[]'),
         shunTxt:   String(row[4]),
         boyTxt:    String(row[5]),
-        savedAt:   String(row[6])
+        savedAt:   String(row[6]),
+        revised:   row[7] === true || String(row[7]) === 'true',
+        revisions: (function(v){ try{ return JSON.parse(v||'[]'); }catch(e){ return []; } })(row[8])
       };
     })
     .sort(function(a, b) { return b.dateVal.localeCompare(a.dateVal); });
@@ -192,7 +194,7 @@ function readScheduleHistory(ss) {
 
 function saveScheduleEntry(ss, entry) {
   const sheet = getOrCreateSheet(ss, 'schedHistory');
-  const keys = ['id','dateVal','dateLabel','runsJSON','shunTxt','boyTxt','savedAt'];
+  const keys = ['id','dateVal','dateLabel','runsJSON','shunTxt','boyTxt','savedAt','revised','revisionsJSON'];
   const lastRow = sheet.getLastRow();
 
   if (lastRow < 1) {
@@ -234,7 +236,9 @@ function saveScheduleEntry(ss, entry) {
     JSON.stringify(entry.runs),
     entry.shunTxt,
     entry.boyTxt,
-    entry.savedAt || new Date().toISOString()
+    entry.savedAt || new Date().toISOString(),
+    entry.revised || false,
+    JSON.stringify(entry.revisions || [])
   ];
 
   if (targetRow > 0) {
