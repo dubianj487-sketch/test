@@ -1845,6 +1845,7 @@ function initSwipe(innerEl, actionsWidth, tapAction){
   },{passive:false});
   innerEl.addEventListener('touchend',function(){
     if(!moved){
+      if(isVert)return;
       if(opened){closeFn();return;}
       if(tapAction)tapAction();
       return;
