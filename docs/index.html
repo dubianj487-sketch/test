@@ -753,10 +753,20 @@ function onMemoInput(){
       const res = await gasGet();
       if (!res.ok) return;
       {
-        if (Date.now() - _schedSavedAt > 20000) {
-          schedHistory = res.data.schedHistory || schedHistory;
-          schedHistory.forEach(function(e){ rebuildHistTexts(e); });
-          histCnt = (res.data.counters || {}).histCnt || histCnt;
+        {
+          const fetched = res.data.schedHistory || [];
+          fetched.forEach(function(e){ rebuildHistTexts(e); });
+          // ローカルの方がsavedAtが新しければ保持、そうでなければサーバー版を使う
+          const merged = fetched.map(function(fe){
+            const local = schedHistory.find(function(l){ return l.dateVal===fe.dateVal; });
+            return (local && local.savedAt > fe.savedAt) ? local : fe;
+          });
+          // ローカルにあってGASにまだない（保存中）エントリを追加
+          schedHistory.forEach(function(le){
+            if(!fetched.find(function(fe){ return fe.dateVal===le.dateVal; })) merged.push(le);
+          });
+          schedHistory = merged.sort(function(a,b){ return b.dateVal.localeCompare(a.dateVal); });
+          histCnt = Math.max((res.data.counters||{}).histCnt||0, histCnt);
           if (document.getElementById('pg-hist').classList.contains('active')) renderHistPage();
         }
       }
@@ -1299,7 +1309,6 @@ function copyOut(who){
 }
 
 var _overwriteAction=function(){};
-var _schedSavedAt=0;
 function callOverwriteAction(){_overwriteAction();}
 function openOverwriteMo(msg, action){
   document.getElementById('moOverwriteMsg').textContent=msg;
@@ -1336,7 +1345,7 @@ function doSave(){
   if(existing>=0) schedHistory[existing]=entry;
   else schedHistory.unshift(entry);
 
-  _schedSavedAt=Date.now();gasPost({action:'saveSchedule', payload:entry});
+  gasPost({action:'saveSchedule', payload:entry});
   if(isNew) saveCounters();
 
   resetSchedForm();

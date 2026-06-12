@@ -203,7 +203,11 @@ function saveScheduleEntry(ss, entry) {
   if (lastRow >= 2) {
     const dateVals = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
     for (let i = 0; i < dateVals.length; i++) {
-      if (String(dateVals[i][0]) === String(entry.dateVal)) {
+      const raw = dateVals[i][0];
+      const stored = raw instanceof Date
+        ? Utilities.formatDate(raw, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+        : String(raw).replace(/\//g, '-').slice(0, 10);
+      if (stored === String(entry.dateVal).slice(0, 10)) {
         targetRow = i + 2;
         break;
       }
