@@ -803,12 +803,14 @@ function onMemoInput(){
           fetched.forEach(function(e){ rebuildHistTexts(e); });
           // ローカルの方がsavedAtが新しければ保持、そうでなければサーバー版を使う
           const merged = fetched.map(function(fe){
-            const local = schedHistory.find(function(l){ return l.dateVal===fe.dateVal; });
-            return (local && local.savedAt > fe.savedAt) ? local : fe;
+            const local = schedHistory.find(function(l){ return l.id==fe.id; });
+            if(local && local.savedAt >= fe.savedAt) return local;
+            if(local && local.revised) fe.revised = true;
+            return fe;
           });
           // ローカルにあってGASにまだない（保存中）エントリを追加
           schedHistory.forEach(function(le){
-            if(!fetched.find(function(fe){ return fe.dateVal===le.dateVal; })) merged.push(le);
+            if(!fetched.find(function(fe){ return fe.id==le.id; })) merged.push(le);
           });
           schedHistory = merged.sort(function(a,b){ return b.dateVal.localeCompare(a.dateVal); });
           histCnt = Math.max((res.data.counters||{}).histCnt||0, histCnt);
