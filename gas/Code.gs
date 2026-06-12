@@ -201,15 +201,28 @@ function saveScheduleEntry(ss, entry) {
 
   let targetRow = -1;
   if (lastRow >= 2) {
-    const dateVals = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
-    for (let i = 0; i < dateVals.length; i++) {
-      const raw = dateVals[i][0];
-      const stored = raw instanceof Date
-        ? Utilities.formatDate(raw, Session.getScriptTimeZone(), 'yyyy-MM-dd')
-        : String(raw).replace(/\//g, '-').slice(0, 10);
-      if (stored === String(entry.dateVal).slice(0, 10)) {
-        targetRow = i + 2;
-        break;
+    // IDで検索（日付変更にも対応）
+    if (entry.id) {
+      const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+      for (let i = 0; i < ids.length; i++) {
+        if (Number(ids[i][0]) === Number(entry.id)) {
+          targetRow = i + 2;
+          break;
+        }
+      }
+    }
+    // IDで見つからない場合はdateValで検索（後方互換）
+    if (targetRow < 0) {
+      const dateVals = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
+      for (let i = 0; i < dateVals.length; i++) {
+        const raw = dateVals[i][0];
+        const stored = raw instanceof Date
+          ? Utilities.formatDate(raw, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+          : String(raw).replace(/\//g, '-').slice(0, 10);
+        if (stored === String(entry.dateVal).slice(0, 10)) {
+          targetRow = i + 2;
+          break;
+        }
       }
     }
   }
