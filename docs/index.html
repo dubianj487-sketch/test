@@ -769,7 +769,8 @@ function onMemoInput(){
       // 場所マスター: 新しいlocationsシートを使用、なければ旧データから移行
       let rawLocs = (res.data.locations || []).map(function(l){
         return {id:Number(l.id), name:l.name, nick:l.nick||'', addr:l.addr||'',
-                isShop: l.isShop===true||l.isShop==='TRUE'||l.isShop===1};
+                isShop: l.isShop===true||l.isShop==='TRUE'||l.isShop===1,
+                shopLabel: l.shopLabel||''};
       });
       if (!rawLocs.length) {
         const oldP = (res.data.places  || []).map(function(p){ return {name:p.name, nick:'',        addr:p.addr||'', isShop:true};  });
