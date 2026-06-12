@@ -518,19 +518,17 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 
 <div class="pg" id="pg-master">
   <div class="card">
-    <div class="ctitle">🚩 出発地マスター</div>
-    <div id="depMasterList"></div>
-    <button class="btn bo" onclick="openDepMo(null)">＋ 出発地を追加</button>
+    <div class="ctitle">📍 場所マスター</div>
+    <div id="locMasterList"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn bo" style="flex:1" onclick="openLocMo(null,'dep')">＋ 出発地</button>
+      <button class="btn bg" style="flex:1" onclick="openLocMo(null,'place')">＋ 送り先</button>
+    </div>
   </div>
   <div class="card">
     <div class="ctitle">👩 女の子マスター</div>
     <div id="girlMasterList"></div>
     <button class="btn bo" onclick="openGirlMo(null)">＋ 女の子を追加</button>
-  </div>
-  <div class="card">
-    <div class="ctitle">🏠 送り先マスター</div>
-    <div id="placeMasterList"></div>
-    <button class="btn bg" onclick="openPlaceMo(null)">＋ 送り先を追加</button>
   </div>
 </div>
 
@@ -549,15 +547,20 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   <button class="nb" id="nb-settings" onclick="openSettings()"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>設定</button>
 </div>
 
-<div class="mo" id="moDepLoc">
+<div class="mo" id="moLoc">
   <div class="mbox">
-    <div class="mtitle"><span id="moDepTitle">🚩 出発地を登録</span><button class="mclose" onclick="closeMo('moDepLoc')">✕</button></div>
-    <input type="hidden" id="edId">
-    <label>場所名</label><input type="text" id="dNameInp" placeholder="職場・家・〇〇など">
-    <label>通称（任意）</label><input type="text" id="dNickInp" placeholder="いつもの場所・北口など">
-    <label>住所（任意）</label><input type="text" id="dAddrInp" placeholder="大阪市〇〇区…">
-    <button class="btn bp" onclick="saveDepLoc()">💾 保存</button>
-    <button class="btn bd" id="delDepBtn" style="display:none" onclick="delDepLoc()">🗑️ 削除</button>
+    <div class="mtitle"><span id="moLocTitle">📍 場所を登録</span><button class="mclose" onclick="closeMo('moLoc')">✕</button></div>
+    <input type="hidden" id="elId">
+    <input type="hidden" id="elKind" value="dep">
+    <div class="dep-tabs" id="locTypeTabs">
+      <button class="dep-tab sel" id="ltDep" onclick="setLocKind('dep')">🚩 出発地</button>
+      <button class="dep-tab" id="ltPlace" onclick="setLocKind('place')">🏠 送り先</button>
+    </div>
+    <label>場所名</label><input type="text" id="lNameInp" placeholder="職場・家・Venus など">
+    <div id="lNickRow"><label>通称（任意）</label><input type="text" id="lNickInp" placeholder="いつもの場所・北口など"></div>
+    <label>住所（任意）</label><input type="text" id="lAddrInp" placeholder="大阪市〇〇区…">
+    <button class="btn bp" onclick="saveLocation()">💾 保存</button>
+    <button class="btn bd" id="delLocBtn" style="display:none" onclick="delLocation()">🗑️ 削除</button>
   </div>
 </div>
 
@@ -574,16 +577,6 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   </div>
 </div>
 
-<div class="mo" id="moPlace">
-  <div class="mbox">
-    <div class="mtitle"><span id="moPlaceTitle">🏠 送り先を登録</span><button class="mclose" onclick="closeMo('moPlace')">✕</button></div>
-    <input type="hidden" id="epId">
-    <label>場所名</label><input type="text" id="pNameInp" placeholder="Venus">
-    <label>住所</label><input type="text" id="pAddrInp" placeholder="大阪市中央区〇〇">
-    <button class="btn bp" onclick="savePlace()">💾 保存</button>
-    <button class="btn bd" id="delPlaceBtn" style="display:none" onclick="delPlace()">🗑️ 削除</button>
-  </div>
-</div>
 
 <div class="mo" id="moHistDetail">
   <div class="mbox">
@@ -1607,11 +1600,18 @@ function deleteHist(id){
 
 // ========== マスター管理 ==========
 function renderMasters(){
-  document.getElementById('depMasterList').innerHTML=depLocs.length?depLocs.map(d=>`
-    <div class="mcard dep">
-      <div class="mc-av d">🚩</div>
-      <div class="mc-info"><div class="mc-name">${d.name}${d.nick?` <span style="font-weight:normal;color:var(--txs);font-size:12px">（${d.nick}）</span>`:''}</div><div class="mc-sub">${d.addr||'住所なし'}</div></div>
-      <button class="btn bg sm" onclick="openDepMo(${d.id})">編集</button>
+  const allLocs=[
+    ...depLocs.map(d=>({...d,_kind:'dep'})),
+    ...places.map(p=>({...p,_kind:'place'}))
+  ];
+  document.getElementById('locMasterList').innerHTML=allLocs.length?allLocs.map(l=>`
+    <div class="mcard ${l._kind==='dep'?'dep':'place'}">
+      <div class="mc-av ${l._kind==='dep'?'d':'p'}">${l._kind==='dep'?'🚩':'🏠'}</div>
+      <div class="mc-info">
+        <div class="mc-name">${l.name}${l.nick?` <span style="font-weight:normal;color:var(--txs);font-size:12px">（${l.nick}）</span>`:''}<span style="font-size:10px;background:${l._kind==='dep'?'#e8f5e9':'#fff3e0'};color:${l._kind==='dep'?'#388e3c':'#e65100'};border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700">${l._kind==='dep'?'出発地':'送り先'}</span></div>
+        <div class="mc-sub">${l.addr||'住所なし'}</div>
+      </div>
+      <button class="btn bg sm" onclick="openLocMo(${l.id},'${l._kind}')">編集</button>
     </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
   document.getElementById('girlMasterList').innerHTML=girls.length?girls.map(g=>`
     <div class="mcard girl">
@@ -1619,38 +1619,63 @@ function renderMasters(){
       <div class="mc-info"><div class="mc-name">${g.name}${g.shop?` <span style="font-weight:normal;color:var(--txs);font-size:12px">／${g.shop}</span>`:''}</div><div class="mc-sub">${g.nick||''}${g.nick&&g.addr?' / ':''}${g.addr||''}</div></div>
       <button class="btn bg sm" onclick="openGirlMo(${g.id})">編集</button>
     </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
-  document.getElementById('placeMasterList').innerHTML=places.length?places.map(p=>`
-    <div class="mcard place">
-      <div class="mc-av p">🏠</div>
-      <div class="mc-info"><div class="mc-name">${p.name}</div><div class="mc-sub">${p.addr}</div></div>
-      <button class="btn bg sm" onclick="openPlaceMo(${p.id})">編集</button>
-    </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
 }
 
-function openDepMo(id){
-  ['dNameInp','dNickInp','dAddrInp'].forEach(x=>document.getElementById(x).value='');
-  document.getElementById('edId').value='';
-  document.getElementById('moDepTitle').textContent='🚩 出発地を登録';
-  document.getElementById('delDepBtn').style.display='none';
-  if(id){const d=depLocs.find(x=>x.id===id);if(d){document.getElementById('dNameInp').value=d.name;document.getElementById('dNickInp').value=d.nick||'';document.getElementById('dAddrInp').value=d.addr||'';document.getElementById('edId').value=d.id;document.getElementById('moDepTitle').textContent='🚩 編集';document.getElementById('delDepBtn').style.display='flex';}}
-  document.getElementById('moDepLoc').classList.add('open');
+function setLocKind(kind){
+  document.getElementById('elKind').value=kind;
+  document.getElementById('ltDep').classList.toggle('sel',kind==='dep');
+  document.getElementById('ltPlace').classList.toggle('sel',kind==='place');
+  document.getElementById('lNickRow').style.display=kind==='dep'?'':'none';
+  document.getElementById('moLocTitle').textContent=kind==='dep'?'🚩 出発地':'🏠 送り先';
 }
-function saveDepLoc(){
-  const name=document.getElementById('dNameInp').value.trim();
+function openLocMo(id,kind){
+  ['lNameInp','lNickInp','lAddrInp'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('elId').value='';
+  document.getElementById('delLocBtn').style.display='none';
+  const k=kind||'dep';
+  setLocKind(k);
+  const tabs=document.querySelectorAll('#locTypeTabs .dep-tab');
+  tabs.forEach(t=>{t.disabled=!!id;t.style.opacity=id?'0.5':'1';});
+  if(id){
+    if(k==='dep'){
+      const d=depLocs.find(x=>x.id===id);
+      if(d){document.getElementById('lNameInp').value=d.name;document.getElementById('lNickInp').value=d.nick||'';document.getElementById('lAddrInp').value=d.addr||'';document.getElementById('elId').value=d.id;document.getElementById('moLocTitle').textContent='🚩 編集';document.getElementById('delLocBtn').style.display='flex';}
+    }else{
+      const p=places.find(x=>x.id===id);
+      if(p){document.getElementById('lNameInp').value=p.name;document.getElementById('lAddrInp').value=p.addr||'';document.getElementById('elId').value=p.id;document.getElementById('moLocTitle').textContent='🏠 編集';document.getElementById('delLocBtn').style.display='flex';}
+    }
+  }
+  document.getElementById('moLoc').classList.add('open');
+}
+function saveLocation(){
+  const name=document.getElementById('lNameInp').value.trim();
   if(!name){showToast('名前を入れてね！');return;}
-  const nick=document.getElementById('dNickInp').value.trim();
-  const addr=document.getElementById('dAddrInp').value.trim();
-  const eid=parseInt(document.getElementById('edId').value);
-  if(eid){const d=depLocs.find(x=>x.id===eid);if(d){d.name=name;d.nick=nick;d.addr=addr;}}
-  else{depLocs.push({id:++dCnt,name,nick,addr});saveCounters();}
-  gasPost({action:'saveDepLocs', payload:depLocs});
-  closeMo('moDepLoc');renderMasters();refreshDepSel();showToast('保存しました！💾');
+  const nick=document.getElementById('lNickInp').value.trim();
+  const addr=document.getElementById('lAddrInp').value.trim();
+  const eid=parseInt(document.getElementById('elId').value)||0;
+  const kind=document.getElementById('elKind').value;
+  if(kind==='dep'){
+    if(eid){const d=depLocs.find(x=>x.id===eid);if(d){d.name=name;d.nick=nick;d.addr=addr;}}
+    else{depLocs.push({id:++dCnt,name,nick,addr});saveCounters();}
+    gasPost({action:'saveDepLocs',payload:depLocs});
+  }else{
+    if(eid){const p=places.find(x=>x.id===eid);if(p){p.name=name;p.addr=addr;}}
+    else{places.push({id:++pCnt,name,addr});saveCounters();}
+    gasPost({action:'savePlaces',payload:places});
+  }
+  closeMo('moLoc');renderMasters();refreshDepSel();showToast('保存しました！💾');
 }
-function delDepLoc(){
-  const eid=parseInt(document.getElementById('edId').value);
-  depLocs=depLocs.filter(x=>x.id!==eid);
-  gasPost({action:'saveDepLocs', payload:depLocs});
-  closeMo('moDepLoc');renderMasters();refreshDepSel();showToast('削除しました');
+function delLocation(){
+  const eid=parseInt(document.getElementById('elId').value)||0;
+  const kind=document.getElementById('elKind').value;
+  if(kind==='dep'){
+    depLocs=depLocs.filter(x=>x.id!==eid);
+    gasPost({action:'saveDepLocs',payload:depLocs});
+  }else{
+    places=places.filter(x=>x.id!==eid);
+    gasPost({action:'savePlaces',payload:places});
+  }
+  closeMo('moLoc');renderMasters();refreshDepSel();showToast('削除しました');
 }
 
 function openGirlMo(id){
@@ -1678,30 +1703,6 @@ function delGirl(){
   closeMo('moGirl');renderMasters();renderGirlInputs();showToast('削除しました');
 }
 
-function openPlaceMo(id){
-  ['pNameInp','pAddrInp'].forEach(x=>document.getElementById(x).value='');
-  document.getElementById('epId').value='';
-  document.getElementById('moPlaceTitle').textContent='🏠 登録';
-  document.getElementById('delPlaceBtn').style.display='none';
-  if(id){const p=places.find(x=>x.id===id);if(p){document.getElementById('pNameInp').value=p.name;document.getElementById('pAddrInp').value=p.addr;document.getElementById('epId').value=p.id;document.getElementById('moPlaceTitle').textContent='🏠 編集';document.getElementById('delPlaceBtn').style.display='flex';}}
-  document.getElementById('moPlace').classList.add('open');
-}
-function savePlace(){
-  const name=document.getElementById('pNameInp').value.trim();
-  if(!name){showToast('名前を入れてね！');return;}
-  const addr=document.getElementById('pAddrInp').value.trim();
-  const eid=parseInt(document.getElementById('epId').value);
-  if(eid){const p=places.find(x=>x.id===eid);if(p){p.name=name;p.addr=addr;}}
-  else{places.push({id:++pCnt,name,addr});saveCounters();}
-  gasPost({action:'savePlaces', payload:places});
-  closeMo('moPlace');renderMasters();showToast('保存しました！💾');
-}
-function delPlace(){
-  const eid=parseInt(document.getElementById('epId').value);
-  places=places.filter(x=>x.id!==eid);
-  gasPost({action:'savePlaces', payload:places});
-  closeMo('moPlace');renderMasters();showToast('削除しました');
-}
 
 function closeMo(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
