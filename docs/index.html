@@ -330,6 +330,8 @@ input:disabled{background:#f0f0f0;color:#bbb}
 #pg-hist{overflow:hidden !important;flex-direction:column;padding:0 0 52px}
 #pg-hist.active{display:flex !important}
 .hist-dots{display:flex;justify-content:center;gap:7px;padding:8px 0 4px;flex-shrink:0}
+.hist-dots-bar{position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:6px 14px 2px}
+.hist-import-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:11px;color:var(--txs);opacity:.6;cursor:pointer;padding:4px;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;display:flex;align-items:center;gap:3px;-webkit-tap-highlight-color:transparent}
 .hist-dot{width:6px;height:6px;border-radius:50%;background:rgba(180,100,140,.2);transition:all .2s;cursor:pointer}
 .hist-dot.active{background:#c4608a;width:18px;border-radius:3px}
 #histSlider{display:flex;flex:1;min-height:0;overflow-x:scroll;scroll-snap-type:x mandatory;scrollbar-width:none}
@@ -436,6 +438,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   .pg{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
   #histPageToday,#histPageMonths{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
   .bnav{padding-left:max(0px,calc(50% - 300px));padding-right:max(0px,calc(50% - 300px))}
+  .hist-import-btn{right:max(14px,calc(50% - 300px))}
   .memo-box{left:max(0px,calc(50% - 300px));right:max(0px,calc(50% - 300px))}
 }
 /* ===== セーフエリア下端 (常時適用: env()はセーフエリアがなければ0になる) ===== */
@@ -530,10 +533,12 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 </div>
 
 <div class="pg active" id="pg-hist">
-  <div class="hist-dots">
-    <span class="hist-dot active" id="dot-today" onclick="slideTo(0)"></span>
-    <span class="hist-dot" id="dot-months" onclick="slideTo(1)"></span>
-    <button onclick="document.getElementById('importTxt').value='';document.getElementById('moImport').classList.add('open')" style="background:none;border:none;font-size:11px;color:var(--txs);opacity:.6;cursor:pointer;padding:0 0 0 8px;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;display:inline-flex;align-items:center;gap:3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>インポート</button>
+  <div class="hist-dots-bar">
+    <div class="hist-dots">
+      <span class="hist-dot active" id="dot-today" onclick="slideTo(0)"></span>
+      <span class="hist-dot" id="dot-months" onclick="slideTo(1)"></span>
+    </div>
+    <button class="hist-import-btn" onclick="document.getElementById('importTxt').value='';document.getElementById('moImport').classList.add('open')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>インポート</button>
   </div>
   <div id="histSlider">
     <div id="histPageToday"></div>
