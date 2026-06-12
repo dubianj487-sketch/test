@@ -1332,7 +1332,7 @@ function renderResult(dateLabel){
     d.className='run-block';
     let html=`<div class="run-label">🚗 ${run.departLabel}</div>`;
     run.stops.forEach(s=>{
-      const badge=s.type==='pick'?'<span class="tl-badge badge-pick">迎え</span>':'<span class="tl-badge badge-drop">店着</span>';
+      const badge=s.type==='pick'?'<span class="tl-badge badge-pick">迎え</span>':'<span class="tl-badge badge-drop">到着</span>';
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
       html+=`<div class="tl-item">
         <div class="tl-dot ${dot}"></div>
@@ -1591,7 +1591,7 @@ function buildRunsHtml(e,showNow){
     run.stops.forEach((s,si)=>{
       const isPast=now?s.time<=now:false;
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
-      const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">店着</span>';
+      const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">到着</span>';
       const minB=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
       if(now&&!isPast&&!nowInserted){h+=`<div class="tl-now"><div class="tl-now-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="transform:rotate(135deg)"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div><span class="tl-now-lbl">いまここ</span></div>`;nowInserted=true;}
       h+=`<div class="edit-time-row${isPast?' past':''}"><div class="tl-dot ${dot}"></div><input class="edit-time-inp" type="time" value="${s.time}" onchange="updateHistStop(${e.id},${ri},${si},this.value)"><span class="edit-time-name">${s.name}</span>${badge}${minB}</div>`;
@@ -1798,7 +1798,7 @@ function buildRevHtml(rev){
   (rev.runs||[]).forEach(run=>{
     h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl">🚗 ${run.departLabel}</div>`;
     (run.stops||[]).forEach(s=>{
-      const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">店着</span>';
+      const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">到着</span>';
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
       const minB=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
       h+=`<div class="edit-time-row"><div class="tl-dot ${dot}"></div><span class="edit-time-inp" style="pointer-events:none">${s.time}</span><span class="edit-time-name">${s.name}</span>${badge}${minB}</div>`;
