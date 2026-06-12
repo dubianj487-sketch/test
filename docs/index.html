@@ -1331,7 +1331,8 @@ function renderResult(dateLabel){
   builtRuns.forEach(run=>{
     const d=document.createElement('div');
     d.className='run-block';
-    let html=`<div class="run-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div>`;
+    const _depTime=run.departTime||run.departLabel.slice(0,5);
+    let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="run-label" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div><span class="run-countdown" data-time="${_depTime}" style="font-size:12px;font-weight:700"></span></div>`;
     run.stops.forEach(s=>{
       const badge=s.type==='pick'?'<span class="tl-badge badge-pick">迎え</span>':'<span class="tl-badge badge-drop">到着</span>';
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
@@ -1346,6 +1347,42 @@ function renderResult(dateLabel){
     d.innerHTML=html;
     c.appendChild(d);
   });
+  startCountdownTimer();
+}
+
+let _countdownTimer=null;
+function updateRunCountdowns(){
+  document.querySelectorAll('.run-countdown').forEach(function(el){
+    const t=el.dataset.time;
+    if(!t) return;
+    const parts=t.split(':');
+    const now=new Date();
+    const diff=(parseInt(parts[0])*60+parseInt(parts[1]))-(now.getHours()*60+now.getMinutes());
+    if(diff>0){
+      const h=Math.floor(diff/60),m=diff%60;
+      el.textContent=h>0?(m>0?`あと${h}時間${m}分`:`あと${h}時間`):`あと${m}分`;
+      el.style.color=diff<=15?'#e65100':'var(--txs)';
+      el.style.opacity='1';
+    } else if(diff===0){
+      el.textContent='まもなく出発';
+      el.style.color='#e65100';
+      el.style.opacity='1';
+    } else {
+      el.textContent='出発済み';
+      el.style.color='var(--txs)';
+      el.style.opacity='0.4';
+    }
+  });
+}
+function startCountdownTimer(){
+  if(_countdownTimer) clearInterval(_countdownTimer);
+  updateRunCountdowns();
+  const now=new Date();
+  const msToNext=(60-now.getSeconds())*1000-now.getMilliseconds()+50;
+  setTimeout(function(){
+    updateRunCountdowns();
+    _countdownTimer=setInterval(updateRunCountdowns,60000);
+  },msToNext);
 }
 
 function buildOutputText(dateLabel){
