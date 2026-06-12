@@ -463,6 +463,10 @@ body.font-shun.dark-active #pg-hist{background:transparent}
       </div>
     </div>
     <div class="card">
+      <div class="ctitle">🏠 送り先</div>
+      <select id="storeLocSel" onchange="updateAutoDepDisplay()" style="margin-bottom:0"></select>
+    </div>
+    <div class="card">
       <div class="ctitle">👩 女の子の出勤情報</div>
       <div id="girlInputs"></div>
     </div>
@@ -520,10 +524,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   <div class="card">
     <div class="ctitle">📍 場所マスター</div>
     <div id="locMasterList"></div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="btn bo" style="flex:1" onclick="openLocMo(null,'dep')">＋ 出発地</button>
-      <button class="btn bg" style="flex:1" onclick="openLocMo(null,'place')">＋ 送り先</button>
-    </div>
+    <button class="btn bo" onclick="openLocMo(null)">＋ 場所を追加</button>
   </div>
   <div class="card">
     <div class="ctitle">👩 女の子マスター</div>
@@ -551,14 +552,13 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   <div class="mbox">
     <div class="mtitle"><span id="moLocTitle">📍 場所を登録</span><button class="mclose" onclick="closeMo('moLoc')">✕</button></div>
     <input type="hidden" id="elId">
-    <input type="hidden" id="elKind" value="dep">
-    <div class="dep-tabs" id="locTypeTabs">
-      <button class="dep-tab sel" id="ltDep" onclick="setLocKind('dep')">🚩 出発地</button>
-      <button class="dep-tab" id="ltPlace" onclick="setLocKind('place')">🏠 送り先</button>
-    </div>
-    <label>場所名</label><input type="text" id="lNameInp" placeholder="職場・家・Venus など">
-    <div id="lNickRow"><label>通称（任意）</label><input type="text" id="lNickInp" placeholder="いつもの場所・北口など"></div>
+    <label>場所名</label><input type="text" id="lNameInp" placeholder="自宅・職場・Venus など">
+    <label>通称（任意）</label><input type="text" id="lNickInp" placeholder="いつもの場所・北口など">
     <label>住所（任意）</label><input type="text" id="lAddrInp" placeholder="大阪市〇〇区…">
+    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700">
+      <input type="checkbox" id="lIsShop" style="width:18px;height:18px;accent-color:var(--pk);cursor:pointer">
+      <span>🏠 店舗として登録（送り先に選択できる）</span>
+    </label>
     <button class="btn bp" onclick="saveLocation()">💾 保存</button>
     <button class="btn bd" id="delLocBtn" style="display:none" onclick="delLocation()">🗑️ 削除</button>
   </div>
@@ -653,10 +653,9 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbymJJag2hZIXnudvejecWck
 
 // ========== 状態変数 ==========
 let memoText = '', memoTimer = null;
-let depLocs = [];
+let locations = [];
 let girls = [];
-let places = [];
-let dCnt = 20, gCnt = 20, pCnt = 20;
+let gCnt = 20;
 let schedHistory = [];
 let histCnt = 0;
 
@@ -686,7 +685,7 @@ function gasPost(data) {
 }
 
 function saveCounters() {
-  gasPost({action:'saveCounters', payload:{dCnt:dCnt,gCnt:gCnt,pCnt:pCnt,histCnt:histCnt}});
+  gasPost({action:'saveCounters', payload:{gCnt:gCnt,histCnt:histCnt}});
 }
 function onMemoInput(){
   clearTimeout(memoTimer);
@@ -702,19 +701,27 @@ function onMemoInput(){
     const res = await gasGet();
     if (res.ok) {
       girls        = res.data.girls        || [];
-      places       = res.data.places       || [];
-      depLocs      = res.data.depLocs      || [];
       schedHistory = res.data.schedHistory || [];
       schedHistory.forEach(function(e){ rebuildHistTexts(e); });
       const c      = res.data.counters     || {};
-      dCnt    = c.dCnt    || 20;
       gCnt    = c.gCnt    || 20;
-      pCnt    = c.pCnt    || 20;
       histCnt = c.histCnt || 0;
       memoText = res.data.memo || '';
       batteryData = res.data.battery || {};
       locationData = res.data.location || {};
       secretData = res.data.secret || {url:'',text:''};
+      // 場所マスター: 新しいlocationsシートを使用、なければ旧データから移行
+      let rawLocs = (res.data.locations || []).map(function(l){
+        return {id:Number(l.id), name:l.name, nick:l.nick||'', addr:l.addr||'',
+                isShop: l.isShop===true||l.isShop==='TRUE'||l.isShop===1};
+      });
+      if (!rawLocs.length) {
+        const oldP = (res.data.places  || []).map(function(p){ return {name:p.name, nick:'',        addr:p.addr||'', isShop:true};  });
+        const oldD = (res.data.depLocs || []).map(function(d){ return {name:d.name, nick:d.nick||'', addr:d.addr||'', isShop:false}; });
+        rawLocs = [...oldP, ...oldD].map(function(l,i){ return Object.assign({}, l, {id:i+1}); });
+        if (rawLocs.length) gasPost({action:'saveLocations', payload:rawLocs});
+      }
+      locations = rawLocs;
     }
   } catch(e) {
     console.error('GAS load failed:', e);
@@ -816,6 +823,7 @@ function initApp() {
   document.getElementById('dateInp').value = fmtDV(t);
   addGirlRow();
   refreshDepSel();
+  refreshStoreSel();
   renderMasters();
   updateAutoDepDisplay();
   switchPg('hist');
@@ -899,24 +907,41 @@ function setDepMode(m){
 function refreshDepSel(){
   const sel=document.getElementById('depLocSel');
   sel.innerHTML='<option value="">-- 選択 --</option>'+
-    depLocs.map(d=>`<option value="${d.id}">${d.name}${d.addr?' ('+d.addr+')':''}</option>`).join('');
+    locations.map(l=>`<option value="${l.id}">${l.name}${l.nick?' ('+l.nick+')':''}</option>`).join('');
+}
+function refreshStoreSel(){
+  const sel=document.getElementById('storeLocSel');
+  if(!sel) return;
+  const shops=locations.filter(l=>l.isShop);
+  sel.innerHTML='<option value="">-- 選択 --</option>'+
+    shops.map(l=>`<option value="${l.id}">${l.name}${l.addr?' — '+l.addr:''}</option>`).join('');
 }
 function onDepChange(){ updateAutoDepDisplay(); }
 
 function getDepName(){
   if(depMode==='manual') return document.getElementById('depManualName').value||'出発地';
-  const id=document.getElementById('depLocSel').value;
-  const d=depLocs.find(x=>x.id==id);
-  return d?d.name:'出発地';
+  const id=parseInt(document.getElementById('depLocSel').value)||0;
+  const l=locations.find(x=>x.id===id);
+  return l?l.name:'出発地';
 }
 function getDepAddr(){
   if(depMode==='manual'){
     const el=document.getElementById('depManualAddr');
     return el?el.value.trim():'';
   }
-  const id=document.getElementById('depLocSel').value;
-  const d=depLocs.find(x=>x.id==id);
-  return d?String(d.addr||'').trim():'';
+  const id=parseInt(document.getElementById('depLocSel').value)||0;
+  const l=locations.find(x=>x.id===id);
+  return l?String(l.addr||'').trim():'';
+}
+function getStoreName(){
+  const id=parseInt((document.getElementById('storeLocSel')||{}).value||'')||0;
+  const l=locations.find(x=>x.id===id);
+  return l?l.name:'Venus';
+}
+function getStoreAddr(){
+  const id=parseInt((document.getElementById('storeLocSel')||{}).value||'')||0;
+  const l=locations.find(x=>x.id===id);
+  return l?String(l.addr||'').trim():'';
 }
 
 function calcFirstRunDepartTime(){
@@ -980,8 +1005,6 @@ function getGirlName(row){
   const g=girls.find(x=>x.id==row.girlId);
   return g?g.name:'???';
 }
-function getStoreName(){return places.length?places[0].name:'Venus'}
-
 function getGroups(){
   const map={};
   girlRows.forEach(r=>{
@@ -1041,7 +1064,7 @@ function renderGroupMinInputs(){
   section.appendChild(header);
   const depName=getDepName();
   const depAddr=getDepAddr();
-  const storeAddr=String((places[0]||{}).addr||'').trim();
+  const storeAddr=getStoreAddr();
   const pendingCalcs=[];
   sortedTimes.forEach((shiftTime,gi)=>{
     const group=groups[shiftTime];
@@ -1082,7 +1105,7 @@ function renderGroupMinInputs(){
 function buildSegments(group, isFirstRun, startLabel, startAddr){
   const segs=[];
   const store=getStoreName();
-  const storeAddr=String((places[0]||{}).addr||'').trim();
+  const storeAddr=getStoreAddr();
   const ga=function(row){const g=girls.find(x=>x.id==row.girlId);return g?String(g.addr||'').trim():'';};
   segs.push({key:'start_to_0', from:startLabel, to:getGirlName(group[0]),
     fromAddr:startAddr||'', toAddr:ga(group[0])});
@@ -1600,18 +1623,15 @@ function deleteHist(id){
 
 // ========== マスター管理 ==========
 function renderMasters(){
-  const allLocs=[
-    ...depLocs.map(d=>({...d,_kind:'dep'})),
-    ...places.map(p=>({...p,_kind:'place'}))
-  ];
-  document.getElementById('locMasterList').innerHTML=allLocs.length?allLocs.map(l=>`
-    <div class="mcard ${l._kind==='dep'?'dep':'place'}">
-      <div class="mc-av ${l._kind==='dep'?'d':'p'}">${l._kind==='dep'?'🚩':'🏠'}</div>
+  document.getElementById('locMasterList').innerHTML=locations.length?locations.map(l=>`
+    <div class="mcard ${l.isShop?'place':'dep'}">
+      <div class="mc-av ${l.isShop?'p':'d'}">${l.isShop?'🏠':'📍'}</div>
       <div class="mc-info">
-        <div class="mc-name">${l.name}${l.nick?` <span style="font-weight:normal;color:var(--txs);font-size:12px">（${l.nick}）</span>`:''}<span style="font-size:10px;background:${l._kind==='dep'?'#e8f5e9':'#fff3e0'};color:${l._kind==='dep'?'#388e3c':'#e65100'};border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700">${l._kind==='dep'?'出発地':'送り先'}</span></div>
+        <div class="mc-name">${l.name}${l.nick?` <span style="font-weight:normal;color:var(--txs);font-size:12px">（${l.nick}）</span>`:''}${l.isShop?`<span style="font-size:10px;background:#fff3e0;color:#e65100;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700">店舗</span>`:''}
+        </div>
         <div class="mc-sub">${l.addr||'住所なし'}</div>
       </div>
-      <button class="btn bg sm" onclick="openLocMo(${l.id},'${l._kind}')">編集</button>
+      <button class="btn bg sm" onclick="openLocMo(${l.id})">編集</button>
     </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
   document.getElementById('girlMasterList').innerHTML=girls.length?girls.map(g=>`
     <div class="mcard girl">
@@ -1621,28 +1641,22 @@ function renderMasters(){
     </div>`).join(''):'<div class="empty-note">まだ登録なし</div>';
 }
 
-function setLocKind(kind){
-  document.getElementById('elKind').value=kind;
-  document.getElementById('ltDep').classList.toggle('sel',kind==='dep');
-  document.getElementById('ltPlace').classList.toggle('sel',kind==='place');
-  document.getElementById('lNickRow').style.display=kind==='dep'?'':'none';
-  document.getElementById('moLocTitle').textContent=kind==='dep'?'🚩 出発地':'🏠 送り先';
-}
-function openLocMo(id,kind){
+function openLocMo(id){
   ['lNameInp','lNickInp','lAddrInp'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('lIsShop').checked=false;
   document.getElementById('elId').value='';
   document.getElementById('delLocBtn').style.display='none';
-  const k=kind||'dep';
-  setLocKind(k);
-  const tabs=document.querySelectorAll('#locTypeTabs .dep-tab');
-  tabs.forEach(t=>{t.disabled=!!id;t.style.opacity=id?'0.5':'1';});
+  document.getElementById('moLocTitle').textContent='📍 場所を登録';
   if(id){
-    if(k==='dep'){
-      const d=depLocs.find(x=>x.id===id);
-      if(d){document.getElementById('lNameInp').value=d.name;document.getElementById('lNickInp').value=d.nick||'';document.getElementById('lAddrInp').value=d.addr||'';document.getElementById('elId').value=d.id;document.getElementById('moLocTitle').textContent='🚩 編集';document.getElementById('delLocBtn').style.display='flex';}
-    }else{
-      const p=places.find(x=>x.id===id);
-      if(p){document.getElementById('lNameInp').value=p.name;document.getElementById('lAddrInp').value=p.addr||'';document.getElementById('elId').value=p.id;document.getElementById('moLocTitle').textContent='🏠 編集';document.getElementById('delLocBtn').style.display='flex';}
+    const l=locations.find(x=>x.id===id);
+    if(l){
+      document.getElementById('lNameInp').value=l.name;
+      document.getElementById('lNickInp').value=l.nick||'';
+      document.getElementById('lAddrInp').value=l.addr||'';
+      document.getElementById('lIsShop').checked=!!l.isShop;
+      document.getElementById('elId').value=l.id;
+      document.getElementById('moLocTitle').textContent='📍 編集';
+      document.getElementById('delLocBtn').style.display='flex';
     }
   }
   document.getElementById('moLoc').classList.add('open');
@@ -1652,30 +1666,23 @@ function saveLocation(){
   if(!name){showToast('名前を入れてね！');return;}
   const nick=document.getElementById('lNickInp').value.trim();
   const addr=document.getElementById('lAddrInp').value.trim();
+  const isShop=document.getElementById('lIsShop').checked;
   const eid=parseInt(document.getElementById('elId').value)||0;
-  const kind=document.getElementById('elKind').value;
-  if(kind==='dep'){
-    if(eid){const d=depLocs.find(x=>x.id===eid);if(d){d.name=name;d.nick=nick;d.addr=addr;}}
-    else{depLocs.push({id:++dCnt,name,nick,addr});saveCounters();}
-    gasPost({action:'saveDepLocs',payload:depLocs});
+  if(eid){
+    const l=locations.find(x=>x.id===eid);
+    if(l){l.name=name;l.nick=nick;l.addr=addr;l.isShop=isShop;}
   }else{
-    if(eid){const p=places.find(x=>x.id===eid);if(p){p.name=name;p.addr=addr;}}
-    else{places.push({id:++pCnt,name,addr});saveCounters();}
-    gasPost({action:'savePlaces',payload:places});
+    const newId=locations.length?Math.max(...locations.map(x=>x.id))+1:1;
+    locations.push({id:newId,name,nick,addr,isShop});
   }
-  closeMo('moLoc');renderMasters();refreshDepSel();showToast('保存しました！💾');
+  gasPost({action:'saveLocations',payload:locations});
+  closeMo('moLoc');renderMasters();refreshDepSel();refreshStoreSel();showToast('保存しました！💾');
 }
 function delLocation(){
   const eid=parseInt(document.getElementById('elId').value)||0;
-  const kind=document.getElementById('elKind').value;
-  if(kind==='dep'){
-    depLocs=depLocs.filter(x=>x.id!==eid);
-    gasPost({action:'saveDepLocs',payload:depLocs});
-  }else{
-    places=places.filter(x=>x.id!==eid);
-    gasPost({action:'savePlaces',payload:places});
-  }
-  closeMo('moLoc');renderMasters();refreshDepSel();showToast('削除しました');
+  locations=locations.filter(x=>x.id!==eid);
+  gasPost({action:'saveLocations',payload:locations});
+  closeMo('moLoc');renderMasters();refreshDepSel();refreshStoreSel();showToast('削除しました');
 }
 
 function openGirlMo(id){
@@ -1989,11 +1996,10 @@ async function initMap() {
     if(lat && lng && !isNaN(lat) && !isNaN(lng)) pts.push([lng, lat]);
   });
 
-  // 登録してある場所（場所・女の子・出発地）
+  // 登録してある場所（場所マスター・女の子）
   var queue = [];
-  places.forEach(function(p){ var a=String(p.addr||'').trim(); if(a) queue.push({addr:a, emoji:'🏠', bg:'#e88fac', label:p.name}); });
+  locations.forEach(function(l){ var a=String(l.addr||'').trim(); if(a) queue.push({addr:a, emoji:l.isShop?'🏠':'📍', bg:l.isShop?'#e88fac':'#6a9e8a', label:l.name+(l.nick?'（'+l.nick+'）':'')}); });
   girls.forEach(function(g){ var a=String(g.addr||'').trim(); if(a) queue.push({addr:a, emoji:'👧', bg:'#c478a8', label:g.name+(g.nick?'（'+g.nick+'）':'')}); });
-  depLocs.forEach(function(d){ var a=String(d.addr||'').trim(); if(a) queue.push({addr:a, emoji:'🚩', bg:'#6a9e8a', label:d.name}); });
 
   var legend = document.getElementById('mapLegend');
   var oldSt = document.getElementById('mapGeoStatus');

@@ -34,6 +34,7 @@ function doGet(e) {
         girls:       readRows(ss, 'girls',       ['id','name','nick','addr','shop']),
         places:      readRows(ss, 'places',      ['id','name','addr']),
         depLocs:     readRows(ss, 'depLocs',     ['id','name','nick','addr']),
+        locations:   readRows(ss, 'locations',   ['id','name','nick','addr','isShop']),
         schedHistory: readScheduleHistory(ss),
         counters:    readCounters(ss),
         memo:        readMemo(ss),
@@ -45,10 +46,11 @@ function doGet(e) {
 
     const body = JSON.parse(e.parameter.data || '{}');
     switch(action) {
-      case 'saveGirls':    writeRows(ss, 'girls', ['id','name','nick','addr','shop'], body.payload); break;
-      case 'savePlaces':   writeRows(ss, 'places', ['id','name','addr'], body.payload); break;
-      case 'saveSecret':   writeSecret(ss, body.payload); break;
-      case 'saveDepLocs':  writeRows(ss, 'depLocs', ['id','name','nick','addr'], body.payload); break;
+      case 'saveGirls':     writeRows(ss, 'girls', ['id','name','nick','addr','shop'], body.payload); break;
+      case 'saveLocations': writeRows(ss, 'locations', ['id','name','nick','addr','isShop'], body.payload); break;
+      case 'savePlaces':    writeRows(ss, 'places', ['id','name','addr'], body.payload); break;
+      case 'saveSecret':    writeSecret(ss, body.payload); break;
+      case 'saveDepLocs':   writeRows(ss, 'depLocs', ['id','name','nick','addr'], body.payload); break;
       case 'saveSchedule':
       case 'updateSchedule': saveScheduleEntry(ss, body.payload); break;
       case 'deleteSchedule': deleteScheduleEntry(ss, body.id); break;
