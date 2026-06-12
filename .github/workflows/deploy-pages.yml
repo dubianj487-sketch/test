@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'docs/**'
+      - 'redesign/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -42,6 +43,9 @@ jobs:
 
       - name: Embed commit hash
         run: sed -i 's/DEPLOY_HASH_PLACEHOLDER/${{ github.sha }}/g' docs/index.html
+
+      - name: Copy redesign into docs
+        run: cp -r redesign docs/redesign
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
