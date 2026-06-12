@@ -784,7 +784,9 @@ function onMemoInput(){
           });
           schedHistory = merged.sort(function(a,b){ return b.dateVal.localeCompare(a.dateVal); });
           histCnt = Math.max((res.data.counters||{}).histCnt||0, histCnt);
-          if (document.getElementById('pg-hist').classList.contains('active')) renderHistPage();
+          if (document.getElementById('pg-hist').classList.contains('active')){
+            if(_swipeTouching) _renderPending=true; else renderHistPage();
+          }
         }
       }
       const newMemo = res.data.memo || '';
@@ -1799,7 +1801,9 @@ function swipeDeleteHist(id){
 }
 
 var _activeSwipeClose=null;
-var _swipeOpenId=null; // 再描画をまたいで開いているアイテムIDを保持
+var _swipeOpenId=null;    // 再描画をまたいで開いているアイテムIDを保持
+var _swipeTouching=false; // スワイプ操作中フラグ
+var _renderPending=false; // 操作中に発生したリフレッシュを保留するフラグ
 
 function initSwipe(innerEl, actionsWidth, tapAction, itemId){
   var startX,startY,dx=0,isHoriz=false,isVert=false,moved=false;
@@ -1831,6 +1835,7 @@ function initSwipe(innerEl, actionsWidth, tapAction, itemId){
     startX=ev.touches[0].clientX;startY=ev.touches[0].clientY;
     lastX=startX;lastT=Date.now();
     dx=0;velX=0;isHoriz=false;isVert=false;moved=false;
+    _swipeTouching=true;
   },{passive:true});
   innerEl.addEventListener('touchmove',function(ev){
     if(isVert)return;
@@ -1864,6 +1869,8 @@ function initSwipe(innerEl, actionsWidth, tapAction, itemId){
     else if(velX<-0.3||fin<-actionsWidth*0.35)openFn();
     else closeFn();
     moved=false;
+    _swipeTouching=false;
+    if(_renderPending){_renderPending=false;renderHistPage();}
   });
 }
 
