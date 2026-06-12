@@ -1799,15 +1799,23 @@ function swipeDeleteHist(id){
 }
 
 var _activeSwipeClose=null;
+var _swipeOpenId=null; // 再描画をまたいで開いているアイテムIDを保持
 
-function initSwipe(innerEl, actionsWidth, tapAction){
-  var startX,startY,dx=0,isHoriz=false,isVert=false,moved=false,opened=false;
+function initSwipe(innerEl, actionsWidth, tapAction, itemId){
+  var startX,startY,dx=0,isHoriz=false,isVert=false,moved=false;
   var velX=0,lastX=0,lastT=0;
+  var opened=(_swipeOpenId!==null&&_swipeOpenId===itemId);
+  if(opened){
+    innerEl.classList.add('swipe-no-trans');
+    innerEl.style.transform='translateX(-'+actionsWidth+'px)';
+    _activeSwipeClose=closeFn;
+  }
   function closeFn(){
     innerEl.style.transition='transform .22s cubic-bezier(0.4,0,0.6,1)';
     innerEl.classList.remove('swipe-no-trans');
     innerEl.style.transform='';
     opened=false;
+    _swipeOpenId=null;
     if(_activeSwipeClose===closeFn)_activeSwipeClose=null;
   }
   function openFn(){
@@ -1815,6 +1823,7 @@ function initSwipe(innerEl, actionsWidth, tapAction){
     innerEl.classList.remove('swipe-no-trans');
     innerEl.style.transform='translateX(-'+actionsWidth+'px)';
     opened=true;
+    _swipeOpenId=itemId;
     _activeSwipeClose=closeFn;
   }
   innerEl.addEventListener('touchstart',function(ev){
@@ -1851,7 +1860,6 @@ function initSwipe(innerEl, actionsWidth, tapAction){
       return;
     }
     var base=opened?-actionsWidth:0,fin=base+dx;
-    // フリック（速度）優先判定
     if(velX>0.3)closeFn();
     else if(velX<-0.3||fin<-actionsWidth*0.35)openFn();
     else closeFn();
@@ -1862,10 +1870,10 @@ function initSwipe(innerEl, actionsWidth, tapAction){
 function initSwipeItems(){
   document.querySelectorAll('#histContent .hist-item.swipe-inner').forEach(function(el){
     var id=parseInt(el.getAttribute('data-id'));
-    initSwipe(el,160,function(){openHistDetail(id);});
+    initSwipe(el,160,function(){openHistDetail(id);},String(id));
   });
   var ti=document.getElementById('today-swipe-inner');
-  if(ti)initSwipe(ti,160,null);
+  if(ti)initSwipe(ti,160,null,'today');
 }
 
 // ========== マスター管理 ==========
