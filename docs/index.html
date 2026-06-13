@@ -1065,14 +1065,14 @@ function getStoreDisplayName(){
   const id=parseInt((document.getElementById('storeLocSel')||{}).value||'')||0;
   const l=locations.find(x=>x.id===id);
   if(!l) return 'Venus';
-  return l.shopLabel||l.nick||l.name;
+  return l.nick||l.name;
 }
 function getDepDisplayName(){
   if(depMode==='manual') return document.getElementById('depManualName').value||'出発地';
   const id=parseInt(document.getElementById('depLocSel').value)||0;
   const l=locations.find(x=>x.id===id);
   if(!l) return '出発地';
-  return l.isShop?(l.shopLabel||l.nick||l.name):(l.nick||l.name);
+  return l.nick||l.name;
 }
 function getStoreAddr(){
   const id=parseInt((document.getElementById('storeLocSel')||{}).value||'')||0;
