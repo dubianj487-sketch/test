@@ -1024,7 +1024,7 @@ function setDepMode(m){
 function refreshDepSel(){
   const sel=document.getElementById('depLocSel');
   sel.innerHTML='<option value="">-- 選択 --</option>'+
-    locations.map(l=>`<option value="${l.id}">${l.nick||l.name}</option>`).join('');
+    locations.map(l=>`<option value="${l.id}">${l.isShop?(l.shopLabel||l.name):(l.nick||l.name)}</option>`).join('');
 }
 function refreshStoreSel(){
   const sel=document.getElementById('storeLocSel');
