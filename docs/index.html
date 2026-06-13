@@ -516,7 +516,9 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     </div>
     <div class="card">
       <div class="ctitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>女の子の出勤情報</div>
+      <button class="btn bo" style="width:100%;margin-bottom:10px" onclick="addGirlRow()">＋ 女の子を追加</button>
       <div id="girlInputs"></div>
+      <button class="btn bo" style="width:100%;margin-top:4px" onclick="sortAllByDistance()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>距離順に並べ替え</button>
     </div>
     <div class="card" id="groupMinCard" style="display:none">
       <div class="ctitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>区間ごとの移動時間</div>
@@ -1140,56 +1142,51 @@ function renderGirlInputs(){
   c.innerHTML='';
   const _svgPin=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
   const _svgUser=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-  // 出勤時間でグループ化
-  const timeGroups={};
-  girlRows.forEach(r=>{const k=r.shiftTime||'_notime';if(!timeGroups[k])timeGroups[k]=[];timeGroups[k].push(r);});
-  const sortedKeys=Object.keys(timeGroups).filter(k=>k!=='_notime').sort();
-  if(timeGroups['_notime'])sortedKeys.push('_notime');
-  sortedKeys.forEach(shiftTime=>{
-    const group=timeGroups[shiftTime];
-    if(shiftTime!=='_notime'){
-      const hdr=document.createElement('div');
-      hdr.className='gi-group-hdr';
-      hdr.innerHTML=`<span class="gi-group-lbl">${shiftTime} 出勤（${group.length}人）</span>`;
-      c.appendChild(hdr);
-    }
-    group.forEach((row,gi)=>{
-      const d=document.createElement('div');
-      d.className='gi-card';
-      d.dataset.uid=row.uid;
-      const gopts=girls.map(g=>`<option value="${g.id}" ${row.girlId==g.id?'selected':''}>${g.name}</option>`).join('');
-      const addrHtml=(row.girlId&&row.girlId!=='_c')?(()=>{const g=girls.find(x=>x.id==row.girlId);return g&&g.nick?`<div style="font-size:11px;color:#6b7280;background:var(--pkp);border-radius:8px;padding:5px 10px;margin-bottom:8px">${_svgPin}${g.nick}</div>`:''})():'';
-      d.innerHTML=`
-        <div class="gi-head">
-          <div style="display:flex;align-items:center;gap:6px">
-            <div class="gi-drag-handle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
-            <span class="gi-badge">${_svgUser}${gi+1}人目</span>
-          </div>
-          ${girlRows.length>1?`<button class="rm-btn" onclick="removeGirlRow(${row.uid})">✕</button>`:''}
+  // girlRows の順序そのままで描画（並べ替えなし）
+  // 出勤時間が前の行と変わったときだけグループヘッダーを表示
+  let _lastSt=null, _blockIdx=0;
+  girlRows.forEach((row)=>{
+    const st=row.shiftTime||'_notime';
+    if(st!==_lastSt){
+      if(st!=='_notime'){
+        const hdr=document.createElement('div');
+        hdr.className='gi-group-hdr';
+        hdr.innerHTML=`<span class="gi-group-lbl">${st} 出勤</span>`;
+        c.appendChild(hdr);
+      }
+      _lastSt=st;_blockIdx=0;
+    } else {_blockIdx++;}
+    const gi=_blockIdx;
+    const d=document.createElement('div');
+    d.className='gi-card';
+    d.dataset.uid=row.uid;
+    const gopts=girls.map(g=>`<option value="${g.id}" ${row.girlId==g.id?'selected':''}>${g.name}</option>`).join('');
+    const addrHtml=(row.girlId&&row.girlId!=='_c')?(()=>{const g=girls.find(x=>x.id==row.girlId);return g&&g.nick?`<div style="font-size:11px;color:#6b7280;background:var(--pkp);border-radius:8px;padding:5px 10px;margin-bottom:8px">${_svgPin}${g.nick}</div>`:''})():'';
+    d.innerHTML=`
+      <div class="gi-head">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="gi-drag-handle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+          <span class="gi-badge">${_svgUser}${gi+1}人目</span>
         </div>
-        <label>女の子</label>
-        <select onchange="onGirlSel(${row.uid},this.value)" style="margin-bottom:8px">
-          <option value="">-- 選択 --</option>
-          ${gopts}
-          <option value="_c" ${row.girlId==='_c'?'selected':''}>直接入力</option>
-        </select>
-        ${row.girlId==='_c'?`<input type="text" placeholder="名前" value="${row.customName}" oninput="onCustomName(${row.uid},this.value)" style="margin-bottom:8px">`:addrHtml}
-        <label>出勤時間</label>
-        <div class="shift-stepper">
-          <button class="shift-stepper-btn" onclick="stepShiftTime(${row.uid},-1)">－</button>
-          <div class="shift-stepper-time" id="stepper_${row.uid}">${row.shiftTime||'19:00'}</div>
-          <button class="shift-stepper-btn" onclick="stepShiftTime(${row.uid},+1)">＋</button>
-        </div>
-        <div class="shift-stepper-hint">30分単位で調整</div>
-      `;
-      c.appendChild(d);
-    });
+        ${girlRows.length>1?`<button class="rm-btn" onclick="removeGirlRow(${row.uid})">✕</button>`:''}
+      </div>
+      <label>女の子</label>
+      <select onchange="onGirlSel(${row.uid},this.value)" style="margin-bottom:8px">
+        <option value="">-- 選択 --</option>
+        ${gopts}
+        <option value="_c" ${row.girlId==='_c'?'selected':''}>直接入力</option>
+      </select>
+      ${row.girlId==='_c'?`<input type="text" placeholder="名前" value="${row.customName}" oninput="onCustomName(${row.uid},this.value)" style="margin-bottom:8px">`:addrHtml}
+      <label>出勤時間</label>
+      <div class="shift-stepper">
+        <button class="shift-stepper-btn" onclick="stepShiftTime(${row.uid},-1)">－</button>
+        <div class="shift-stepper-time" id="stepper_${row.uid}">${row.shiftTime||'19:00'}</div>
+        <button class="shift-stepper-btn" onclick="stepShiftTime(${row.uid},+1)">＋</button>
+      </div>
+      <div class="shift-stepper-hint">30分単位で調整</div>
+    `;
+    c.appendChild(d);
   });
-  const addWrap=document.createElement('div');
-  addWrap.style.cssText='margin-top:6px;display:flex;flex-direction:column;gap:8px';
-  addWrap.innerHTML=`<button class="btn bo" style="width:100%" onclick="addGirlRow()">＋ 女の子を追加</button>`+
-    `<button class="btn bo" style="width:100%" onclick="sortAllByDistance()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>距離順に並べ替え</button>`;
-  c.appendChild(addWrap);
   renderGroupMinInputs();
   if(window._initGirlDrag)window._initGirlDrag();
 }
