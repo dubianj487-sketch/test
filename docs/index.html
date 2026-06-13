@@ -26,8 +26,9 @@ html{-webkit-color-scheme:light dark;color-scheme:light dark}
   --sh:0 4px 20px rgba(200,100,140,.12);
   --gold:#e88fac;--teal:#c4608a;
 }
-body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#CE95B0 !important;background-color:#CE95B0 !important;height:100dvh;overflow:hidden;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation}
-html{background:#CE95B0 !important;background-color:#CE95B0 !important;overscroll-behavior:none;height:100dvh}
+body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#CE95B0 !important;background-color:#CE95B0 !important;min-height:100dvh;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation}
+html{background:#CE95B0 !important;background-color:#CE95B0 !important;overscroll-behavior:none;min-height:100dvh}
+body:has(.mo.open){overflow:hidden}
 /* ===== フォント切り替え ===== */
 body.font-shun{--app-font:-apple-system,BlinkMacSystemFont,'Helvetica Neue'}
 body.font-shun .auto-dep-time,body.font-shun .shift-stepper-time,
@@ -192,9 +193,9 @@ body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
 .nb .ni svg{width:18px;height:18px}
 .nb.active{color:var(--teal);border-top-color:var(--teal);font-weight:700}
 
-.pg{display:none;padding:max(14px,env(safe-area-inset-top)) 14px 56px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0;-webkit-overflow-scrolling:touch;background:#f4eef2}
+.pg{display:none;padding:max(14px,env(safe-area-inset-top)) 14px 56px;animation:fi .25s ease;background:#f4eef2;min-height:calc(100dvh - 56px)}
 .pg.active{display:block}
-#pg-map{padding:0;overflow:hidden;display:none;flex-direction:column;height:calc(100vh - 56px)}
+#pg-map{padding:0;overflow:hidden;display:none;flex-direction:column;height:calc(100dvh - 56px)}
 #pg-map.active{display:flex}
 #map-container{flex:1;min-height:0;width:100%;height:100%}
 .maplibregl-popup-content,.mapboxgl-popup-content{color:#111!important;background:#fff!important;border-radius:10px!important;padding:10px 14px!important;box-shadow:0 2px 12px rgba(0,0,0,.18)!important}
@@ -348,19 +349,14 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .month-acc.open .month-acc-arr{transform:rotate(180deg)}
 .month-acc-body{display:none;border-top:1px solid #f5f0f3;padding:0}
 .month-acc.open .month-acc-body{display:block}
-#pg-hist{overflow:hidden !important;flex-direction:column;padding:0 0 52px;position:relative}
-#pg-hist.active{display:flex !important}
-.hist-dots{display:flex;justify-content:center;gap:7px;padding:8px 0 4px;flex-shrink:0}
-.hist-dots-bar{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:6px 14px 8px;padding-top:max(10px,env(safe-area-inset-top));background:rgba(244,238,242,.82);-webkit-backdrop-filter:saturate(180%) blur(18px);backdrop-filter:saturate(180%) blur(18px)}
-body.font-shun .hist-dots-bar{background:rgba(220,232,244,.82)}
-body.font-shun.dark-active .hist-dots-bar{background:rgba(18,22,32,.82)}
-.hist-import-btn{position:absolute;right:14px;bottom:8px;background:none;border:none;font-size:11px;color:var(--txs);opacity:.6;cursor:pointer;padding:4px;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;display:flex;align-items:center;gap:3px;-webkit-tap-highlight-color:transparent}
-.hist-dot{width:6px;height:6px;border-radius:50%;background:rgba(180,100,140,.2);transition:all .2s;cursor:pointer}
-.hist-dot.active{background:#c4608a;width:18px;border-radius:3px}
-#histSlider{display:flex;flex:1;min-height:0;overflow-x:scroll;scroll-snap-type:x mandatory;scrollbar-width:none}
-#histSlider::-webkit-scrollbar{display:none}
-#hist-safe-top{height:env(safe-area-inset-top);flex-shrink:0}
-#histPageToday,#histPageMonths{min-width:100%;scroll-snap-align:start;overflow-y:scroll;overscroll-behavior:contain;padding:14px 14px 160px}
+#pg-hist{padding:calc(env(safe-area-inset-top) + 44px) 0 0;min-height:calc(100dvh - 56px)}
+#pg-hist.active{display:block !important}
+#hist-tab-bar{position:fixed;top:env(safe-area-inset-top);left:0;right:0;height:44px;display:flex;z-index:10;background:rgba(254,243,247,.88);-webkit-backdrop-filter:saturate(180%) blur(14px);backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--brd)}
+body.font-shun #hist-tab-bar{background:rgba(192,216,236,.88)}
+body.font-shun.dark-active #hist-tab-bar{background:rgba(5,4,10,.88)}
+.hist-tab-btn{flex:1;background:none;border:none;font-size:13px;font-weight:700;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;color:var(--txs);padding:0;cursor:pointer;border-bottom:2.5px solid transparent;transition:color .2s,border-color .2s;-webkit-tap-highlight-color:transparent}
+.hist-tab-btn.active{color:var(--pk);border-bottom-color:var(--pk)}
+#histPageToday,#histPageMonths{padding:14px 14px calc(120px + env(safe-area-inset-bottom))}
 .memo-box{background:#fff;border-radius:16px 16px 0 0;padding:0 14px 14px;position:fixed;bottom:56px;left:0;right:0;z-index:20;transition:transform 0.4s cubic-bezier(0.32,0.72,0,1);box-shadow:0 -2px 16px rgba(180,100,140,.1)}
 .memo-handle{display:flex;justify-content:center;padding:10px 0 6px;cursor:pointer;touch-action:none}
 .memo-handle-bar{width:36px;height:4px;border-radius:2px;background:rgba(180,100,140,.2)}
@@ -486,7 +482,6 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 .bnav{padding-bottom:env(safe-area-inset-bottom)}
 .memo-box{bottom:calc(56px + env(safe-area-inset-bottom))}
 .pg{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
-#pg-hist{padding:0 0 calc(52px + env(safe-area-inset-bottom))}
 #pg-secret{padding:14px 14px calc(52px + env(safe-area-inset-bottom))}
 #splash{position:fixed;inset:0;z-index:9999;background:#CE95B0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s ease;pointer-events:all}
 body.font-shun #splash{background:#d8eef8}
@@ -594,11 +589,12 @@ body.font-shun.dark-active #splash{background:#080810}
 </div>
 
 <div class="pg active" id="pg-hist">
-  <div id="hist-safe-top"></div>
-  <div id="histSlider">
-    <div id="histPageToday"></div>
-    <div id="histPageMonths"><div id="histContent" style="min-height:60vh"></div></div>
+  <div id="hist-tab-bar">
+    <button class="hist-tab-btn active" id="hTab0" onclick="switchHistTab(0)">今日</button>
+    <button class="hist-tab-btn" id="hTab1" onclick="switchHistTab(1)">月別</button>
   </div>
+  <div id="histPageToday"></div>
+  <div id="histPageMonths" style="display:none"><div id="histContent"></div></div>
   <div class="memo-box">
     <div class="memo-handle"><div class="memo-handle-bar"></div></div>
     <div class="memo-hdr"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>共有メモ</div>
@@ -922,9 +918,16 @@ function setPgHeight(){
     el.style.height='';
   });
 }
-function slideTo(idx){
-  var s=document.getElementById('histSlider');
-  s.scrollTo({left:idx*s.offsetWidth,behavior:'smooth'});
+var _histTab=0;
+function switchHistTab(idx){
+  _histTab=idx;
+  var today=document.getElementById('histPageToday');
+  var months=document.getElementById('histPageMonths');
+  var b0=document.getElementById('hTab0');
+  var b1=document.getElementById('hTab1');
+  if(idx===0){today.style.display='';months.style.display='none';if(b0)b0.classList.add('active');if(b1)b1.classList.remove('active');}
+  else{today.style.display='none';months.style.display='';if(b0)b0.classList.remove('active');if(b1)b1.classList.add('active');}
+  window.scrollTo(0,0);
 }
 var _memoIsOpen=false,_memoStartY=0,_memoStartTransY=0;
 function _memoClosedY(){return window.innerHeight;}
@@ -966,12 +969,18 @@ function initApp() {
     }
     setTimeout(tick,60000-Date.now()%60000);
   }setTimeout(tick,60000-Date.now()%60000);})();
-  var sl=document.getElementById('histSlider');
-  sl.addEventListener('scroll',function(){
-    var m=this.scrollLeft>this.offsetWidth*0.5;
-    document.getElementById('dot-today').classList.toggle('active',!m);
-    document.getElementById('dot-months').classList.toggle('active',m);
-  });
+  (function(){
+    var pg=document.getElementById('pg-hist'),sx=0,sy=0;
+    pg.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+    pg.addEventListener('touchend',function(e){
+      if(_swipeTouching)return;
+      var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+      if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){
+        if(dx<0&&_histTab===0)switchHistTab(1);
+        else if(dx>0&&_histTab===1)switchHistTab(0);
+      }
+    },{passive:true});
+  })();
   var handle=document.querySelector('.memo-handle');
   handle.addEventListener('touchstart',function(e){
     _memoStartY=e.touches[0].clientY;
@@ -1060,8 +1069,10 @@ function switchPg(p){
   document.getElementById('pg-'+p).classList.add('active');
   document.getElementById('nb-'+p).classList.add('active');
   document.body.classList.toggle('map-active', p==='map');
+  document.body.style.overflow=(p==='map')?'hidden':'';
   updateThemeColor();
-  if(p==='hist') renderHistPage();
+  window.scrollTo(0,0);
+  if(p==='hist'){renderHistPage();switchHistTab(_histTab);}
   if(p==='map') initMap(); else setPgHeight();
   if(p==='secret') renderSecretPage();
 }
@@ -2391,7 +2402,7 @@ function initSwipe(innerEl, actionsWidth, tapAction, itemId, rightSwipeAction){
 function initSwipeItems(){
   document.querySelectorAll('#histContent .hist-item.swipe-inner').forEach(function(el){
     var id=parseInt(el.getAttribute('data-id'));
-    initSwipe(el,160,function(){openHistDetail(id);},String(id),function(){slideTo(0);});
+    initSwipe(el,160,function(){openHistDetail(id);},String(id),function(){switchHistTab(0);});
   });
 }
 
