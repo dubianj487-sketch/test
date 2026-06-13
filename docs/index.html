@@ -899,7 +899,7 @@ function slideTo(idx){
   s.scrollTo({left:idx*s.offsetWidth,behavior:'smooth'});
 }
 var _memoIsOpen=false,_memoStartY=0,_memoStartTransY=0;
-function _memoClosedY(){var b=document.querySelector('.memo-box');return b.offsetHeight;}
+function _memoClosedY(){return window.innerHeight;}
 function openMemo(animate){
   _memoIsOpen=true;
   var b=document.querySelector('.memo-box');
@@ -2491,7 +2491,7 @@ function fabAction(type){
   closeFab();
   if(type==='sched')openSchedModal();
   else if(type==='import'){document.getElementById('importTxt').value='';document.getElementById('moImport').classList.add('open');}
-  else if(type==='memo')openMemo(true);
+  else if(type==='memo'){if(_memoIsOpen)closeMemoSheet(true);else openMemo(true);}
 }
 document.querySelectorAll('.mo').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
 
