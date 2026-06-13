@@ -499,7 +499,6 @@ body.font-shun.dark-active #splash{background:#080810}
 <body>
 <script>(function(){var t=localStorage.getItem('appTheme')||(localStorage.getItem('fontMode')==='shun'?'shun':'hee');var c=localStorage.getItem('colorMode')||'auto';if(t==='shun'){document.body.classList.add('font-shun');var dark=c==='dark'||(c==='auto'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(dark)document.body.classList.add('dark-active');}})();</script>
 <div id="splash">
-  <canvas id="smokeCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
   <canvas id="splashMoon" style="width:110px;height:110px;border-radius:50%;box-shadow:0 0 50px rgba(255,240,140,.45),0 0 100px rgba(255,220,80,.14),0 6px 24px rgba(0,0,0,.3)"></canvas>
   <div class="splash-title">SILDE</div>
   <div class="splash-spinner"></div>
@@ -865,7 +864,7 @@ function onMemoInput(){
   initApp();
   renderHistPage();
   const _sp=document.getElementById('splash');
-  if(_sp){_sp.classList.add('hide');setTimeout(function(){if(_moonRafId)cancelAnimationFrame(_moonRafId);if(window._smokeRafId)cancelAnimationFrame(window._smokeRafId);_sp.remove();},550);}
+  if(_sp){_sp.classList.add('hide');setTimeout(function(){if(_moonRafId)cancelAnimationFrame(_moonRafId);_sp.remove();},550);}
   document.getElementById('memoInp').value = memoText;
   var seenMemo = localStorage.getItem('memoSeen') || '';
   if (memoText && memoText !== seenMemo) openMemo(false);
@@ -2971,169 +2970,6 @@ async function initMap() {
 }
 
 // ===== スプラッシュ 3D月アニメーション (Three.js) =====
-// ===== スプラッシュ 煙パーティクル =====
-(function(){
-  var c=document.getElementById('smokeCanvas');
-  if(!c)return;
-  var W=window.innerWidth,H=window.innerHeight;
-  c.width=W;c.height=H;
-  var ctx=c.getContext('2d');
-  ctx.globalCompositeOperation='screen';
-
-  var ems=[
-    {x:W*.34,y:H*.91,sp:30},
-    {x:W*.5, y:H*.94,sp:18},
-    {x:W*.66,y:H*.91,sp:30}
-  ];
-
-  // ===== Blob: 不規則な形の大きな煙塊 =====
-  function Blob(){this.init(true);}
-  Blob.prototype.init=function(aged){
-    var em=ems[Math.floor(Math.random()*ems.length)];
-    this.x=em.x+(Math.random()-.5)*em.sp;
-    this.y=em.y;
-    this.r=18+Math.random()*22;
-    this.maxR=105+Math.random()*130;
-    this.grow=0.62+Math.random()*.88;
-    this.vx=(Math.random()-.5)*.42;
-    this.vy=-(0.13+Math.random()*.28);
-    this.life=0;
-    this.maxLife=255+Math.random()*205;
-    // 4周波数乱流
-    this.w =[0,0,0,0].map(function(){return Math.random()*6.28;});
-    this.ws=[.009,.018,.034,.062].map(function(s){return s*(0.75+Math.random()*.5);});
-    this.wa=[2.0,0.85,0.28,0.08];
-    this.rot=Math.random()*6.28;
-    this.rotV=(Math.random()-.5)*.0013;
-    this.sx=1.08+Math.random()*.55;
-    this.sy=0.60+Math.random()*.30;
-    // 不規則ブロブ（bezierポイントのランダム半径）
-    this.npts=10;
-    this.ro=[];
-    for(var i=0;i<this.npts;i++)this.ro.push(0.76+Math.random()*.48);
-    // 青みがかった白（ベイプ煙の特徴）
-    this.cr=236+Math.floor(Math.random()*19);
-    this.cg=241+Math.floor(Math.random()*14);
-    this.cb=252+Math.floor(Math.random()*3);
-    this.peak=0.40+Math.random()*.22;
-    if(aged){var pre=Math.floor(Math.random()*this.maxLife*.82);for(var i=0;i<pre;i++)this._s();}
-  };
-  Blob.prototype._s=function(){
-    this.life++;
-    var w=this.w,ws=this.ws,wa=this.wa;
-    for(var i=0;i<4;i++)w[i]+=ws[i];
-    this.x+=this.vx+Math.sin(w[0])*wa[0]+Math.sin(w[1])*wa[1]+Math.sin(w[2])*wa[2]+Math.sin(w[3])*wa[3];
-    this.y+=this.vy;
-    this.vy*=.9995;
-    this.r=Math.min(this.r+this.grow,this.maxR);
-    this.rot+=this.rotV;
-  };
-  Blob.prototype.update=function(){
-    this._s();
-    var t=this.life/this.maxLife;
-    if(t<.10)this.alpha=t/.10*this.peak;
-    else if(t>.55)this.alpha=(1-t)/.45*this.peak;
-    else this.alpha=this.peak;
-    return this.life<this.maxLife&&this.y>-this.r*2.5;
-  };
-  Blob.prototype.draw=function(){
-    ctx.save();
-    ctx.translate(this.x,this.y);
-    ctx.rotate(this.rot);
-    ctx.scale(this.sx,this.sy);
-    // quadratic bezierで不規則なブロブ形状
-    var n=this.npts,r=this.r,ro=this.ro;
-    ctx.beginPath();
-    for(var i=0;i<n;i++){
-      var a0=i/n*6.28,a1=(i+1)/n*6.28,am=(a0+a1)/2;
-      var r0=r*ro[i],r1=r*ro[(i+1)%n],rm=r*(ro[i]+ro[(i+1)%n])*.47;
-      if(i===0)ctx.moveTo(Math.cos(a0)*r0,Math.sin(a0)*r0);
-      ctx.quadraticCurveTo(Math.cos(am)*rm,Math.sin(am)*rm,Math.cos(a1)*r1,Math.sin(a1)*r1);
-    }
-    ctx.closePath();
-    var rr=this.r*1.18,g=ctx.createRadialGradient(0,0,0,0,0,rr);
-    var cr=this.cr,cg=this.cg,cb=this.cb,al=this.alpha;
-    g.addColorStop(0,  'rgba('+cr+','+cg+','+cb+','+al+')');
-    g.addColorStop(.28,'rgba('+cr+','+cg+','+cb+','+(al*.76)+')');
-    g.addColorStop(.58,'rgba('+cr+','+cg+','+cb+','+(al*.33)+')');
-    g.addColorStop(.85,'rgba('+cr+','+cg+','+cb+','+(al*.08)+')');
-    g.addColorStop(1,  'rgba('+cr+','+cg+','+cb+',0)');
-    ctx.fillStyle=g;
-    ctx.fill();
-    ctx.restore();
-  };
-
-  // ===== Wisp: 細い上昇するスジ（ベイプ特有のたなびき） =====
-  function Wisp(){this.init(true);}
-  Wisp.prototype.init=function(aged){
-    var em=ems[Math.floor(Math.random()*ems.length)];
-    this.x=em.x+(Math.random()-.5)*22;
-    this.y=em.y+(Math.random()-.5)*8;
-    this.r=5+Math.random()*10;
-    this.maxR=38+Math.random()*52;
-    this.grow=0.35+Math.random()*.50;
-    this.vx=(Math.random()-.5)*.32;
-    this.vy=-(0.30+Math.random()*.50);
-    this.life=0;
-    this.maxLife=145+Math.random()*120;
-    this.w=[Math.random()*6.28,Math.random()*6.28,Math.random()*6.28];
-    this.ws=[.025+Math.random()*.016,.048+Math.random()*.028,.088+Math.random()*.04];
-    this.wa=[2.6+Math.random()*1.8,.52+Math.random()*.52,.12+Math.random()*.1];
-    this.rot=Math.random()*6.28;
-    this.rotV=(Math.random()-.5)*.0026;
-    // 非常に細い楕円でスジを表現
-    this.sx=0.15+Math.random()*.13;
-    this.sy=1.0;
-    this.bright=252+Math.floor(Math.random()*3);
-    this.peak=0.55+Math.random()*.24;
-    if(aged){var pre=Math.floor(Math.random()*this.maxLife*.72);for(var i=0;i<pre;i++)this._s();}
-  };
-  Wisp.prototype._s=function(){
-    this.life++;
-    this.w[0]+=this.ws[0];this.w[1]+=this.ws[1];this.w[2]+=this.ws[2];
-    this.x+=this.vx+Math.sin(this.w[0])*this.wa[0]+Math.sin(this.w[1])*this.wa[1]+Math.sin(this.w[2])*this.wa[2];
-    this.y+=this.vy;
-    this.r=Math.min(this.r+this.grow,this.maxR);
-    this.rot+=this.rotV;
-  };
-  Wisp.prototype.update=function(){
-    this._s();
-    var t=this.life/this.maxLife;
-    if(t<.07)this.alpha=t/.07*this.peak;
-    else if(t>.42)this.alpha=(1-t)/.58*this.peak;
-    else this.alpha=this.peak;
-    return this.life<this.maxLife&&this.y>-this.r*3;
-  };
-  Wisp.prototype.draw=function(){
-    ctx.save();
-    ctx.translate(this.x,this.y);
-    ctx.rotate(this.rot);
-    ctx.scale(this.sx,this.sy);
-    var g=ctx.createRadialGradient(0,0,0,0,0,this.r);
-    var b=this.bright,a=this.alpha;
-    g.addColorStop(0,  'rgba('+b+','+b+','+b+','+a+')');
-    g.addColorStop(.38,'rgba('+b+','+b+','+b+','+(a*.62)+')');
-    g.addColorStop(.72,'rgba('+b+','+b+','+b+','+(a*.18)+')');
-    g.addColorStop(1,  'rgba('+b+','+b+','+b+',0)');
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.arc(0,0,this.r,0,6.28);ctx.fill();
-    ctx.restore();
-  };
-
-  var pool=[];
-  for(var i=0;i<110;i++)pool.push(new Blob());
-  for(var i=0;i<70;i++)pool.push(new Wisp());
-
-  function loop(){
-    ctx.clearRect(0,0,W,H);
-    for(var i=0;i<pool.length;i++){
-      if(!pool[i].update())pool[i].init(false);
-      pool[i].draw();
-    }
-    window._smokeRafId=requestAnimationFrame(loop);
-  }
-  loop();
-})();
 var _moonRafId=null;
 (function(){
   var c=document.getElementById('splashMoon');
