@@ -516,6 +516,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     <div class="card" id="groupMinCard" style="display:none">
       <div class="ctitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>区間ごとの移動時間</div>
       <div id="groupMinInner"></div>
+      <button class="btn bo" style="margin-top:4px" onclick="fillFromHistory()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M3 3h6l-6 18h6"/><path d="M15 3h6l-6 18h6"/></svg>過去データから一括入力</button>
     </div>
     <button class="btn bp" onclick="buildSchedule()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>スケジュール生成</button>
     <div id="resultSection" style="display:none">
@@ -1209,8 +1210,6 @@ function renderGroupMinInputs(){
   const storeAddr=getStoreAddr();
   const _svgCar=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>`;
   const _svgPin=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-  const _svgNav=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`;
-  const pendingCalcs=[];
   sortedTimes.forEach((shiftTime,gi)=>{
     const group=groups[shiftTime];
     const isFirst=gi===0;
@@ -1232,21 +1231,13 @@ function renderGroupMinInputs(){
             id="seginp_${refRow.uid}_${seg.key}"
             oninput="onSegMin(${refRow.uid},'${seg.key}',this.value)">
           <span>分</span>
-          <button class="bmap" id="bmapbtn_${refRow.uid}_${seg.key}"
-            data-from-addr="${encodeURIComponent(seg.fromAddr)}"
-            data-to-addr="${encodeURIComponent(seg.toAddr)}"
-            data-from-name="${encodeURIComponent(seg.from)}"
-            data-to-name="${encodeURIComponent(seg.to)}"
-            onclick="realMapCalc(${refRow.uid},'${seg.key}',this)">${_svgNav}自動</button>
         </div>
         ${sugHtml}
       `;
     });
     wrap.innerHTML=html;
     inner.appendChild(wrap);
-    pendingCalcs.push({uid:refRow.uid, segs});
   });
-  pendingCalcs.forEach(function(p){ autoCalcEmptySegs(p.uid, p.segs); });
 }
 
 function buildSegments(group, isFirstRun, startLabel, startAddr){
@@ -1271,49 +1262,33 @@ function onSegMin(refUid, key, val){
   updateAutoDepDisplay();
 }
 
-async function realMapCalc(refUid, key, btn, silent){
-  if(!btn) btn=document.getElementById(`bmapbtn_${refUid}_${key}`);
-  if(btn){btn.classList.add('calculating');btn.textContent='⏳';}
-  const fromAddr=btn?decodeURIComponent(btn.dataset.fromAddr||''):'';
-  const toAddr=btn?decodeURIComponent(btn.dataset.toAddr||''):'';
-  const fromName=btn?decodeURIComponent(btn.dataset.fromName||''):'?';
-  const toName=btn?decodeURIComponent(btn.dataset.toName||''):'?';
-  try{
-    if(!fromAddr||!toAddr){
-      if(!silent)showToast(`⚠️ 住所未登録\n${fromName}→${toName}`);
-      return;
-    }
-    const [fp,tp]=await Promise.all([_geocode(fromAddr),_geocode(toAddr)]);
-    if(!fp||!tp){
-      if(!silent)showToast(`⚠️ 座標取得失敗\n${fromName}→${toName}`);
-      return;
-    }
-    const res=await fetch(`https://router.project-osrm.org/route/v1/driving/${fp.lng},${fp.lat};${tp.lng},${tp.lat}?overview=false`);
-    const data=await res.json();
-    if(data.code==='Ok'&&data.routes.length){
-      const min=ceil5(Math.ceil(data.routes[0].duration/60));
-      onSegMin(refUid,key,String(min));
-      const inp=document.getElementById(`seginp_${refUid}_${key}`);
-      if(inp)inp.value=min;
-      if(!silent)showToast(`${fromName}→${toName}: ${min}分`);
-    }else{
-      if(!silent)showToast(`⚠️ ルート取得失敗\n${fromName}→${toName}`);
-    }
-  }catch(e){
-    if(!silent)showToast(`⚠️ 計算エラー\n${fromName}→${toName}`);
-  }finally{
-    if(btn){btn.classList.remove('calculating');btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>自動';}
-  }
-}
-
-function autoCalcEmptySegs(refUid, segs){
-  segs.forEach(function(seg){
-    const r=girlRows.find(x=>x.uid==refUid);
-    if(r&&!r.mins[seg.key]){
-      const btn=document.getElementById(`bmapbtn_${refUid}_${seg.key}`);
-      if(btn) realMapCalc(refUid,seg.key,btn,true);
-    }
+function fillFromHistory(){
+  const groups=getGroups();
+  const sortedTimes=Object.keys(groups).filter(k=>k!=='_notime').sort();
+  const depName=getDepName();
+  const depAddr=getDepAddr();
+  const storeAddr=getStoreAddr();
+  let filled=0;
+  sortedTimes.forEach((shiftTime,gi)=>{
+    const group=groups[shiftTime];
+    const isFirst=gi===0;
+    const startLabel=isFirst?depName:getStoreName();
+    const startAddr=isFirst?depAddr:storeAddr;
+    const segs=buildSegments(group,isFirst,startLabel,startAddr);
+    const refRow=group[0];
+    segs.forEach(seg=>{
+      const sug=getSuggestedMin(seg.from,seg.to,seg.key);
+      if(sug){
+        onSegMin(refRow.uid,seg.key,String(sug.min));
+        const inp=document.getElementById(`seginp_${refRow.uid}_${seg.key}`);
+        if(inp)inp.value=sug.min;
+        filled++;
+      }
+    });
   });
+  renderGroupMinInputs();
+  if(filled>0)showToast(`${filled}区間を入力しました`);
+  else showToast('参考データが見つかりません');
 }
 
 // ========== スケジュール生成 ==========
