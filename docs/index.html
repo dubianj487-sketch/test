@@ -469,9 +469,23 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 .pg{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
 #pg-hist{padding:0 0 calc(52px + env(safe-area-inset-bottom))}
 #pg-secret{padding:14px 14px calc(52px + env(safe-area-inset-bottom))}
+#splash{position:fixed;inset:0;z-index:9999;background:#CE95B0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s ease;pointer-events:all}
+body.font-shun #splash{background:#d8eef8}
+body.font-shun.dark-active #splash{background:#080810}
+#splash.hide{opacity:0;pointer-events:none}
+.splash-moon{font-size:52px;line-height:1;animation:splashPulse 1.6s ease-in-out infinite}
+@keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.splash-title{font-family:'Kaisei Opti',serif;font-size:38px;font-weight:700;color:#fff;letter-spacing:6px;text-shadow:0 2px 12px rgba(0,0,0,.15)}
+.splash-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:splashSpin .8s linear infinite;margin-top:8px}
+@keyframes splashSpin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
+<div id="splash">
+  <div class="splash-moon">🌙</div>
+  <div class="splash-title">SILDE</div>
+  <div class="splash-spinner"></div>
+</div>
 <canvas id="starfield"></canvas>
 
 
@@ -837,6 +851,8 @@ function onMemoInput(){
 
   initApp();
   renderHistPage();
+  const _sp=document.getElementById('splash');
+  if(_sp){_sp.classList.add('hide');setTimeout(function(){_sp.remove();},550);}
   document.getElementById('memoInp').value = memoText;
   var seenMemo = localStorage.getItem('memoSeen') || '';
   if (memoText && memoText !== seenMemo) openMemo(false);
