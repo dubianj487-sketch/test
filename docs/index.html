@@ -474,6 +474,8 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 body.font-shun #splash{background:#d8eef8}
 body.font-shun.dark-active #splash{background:#080810}
 #splash.hide{opacity:0;pointer-events:none}
+#splashMoon{display:block}body.font-shun #splashMoon{display:none}
+#splashTree{display:none}body:not(.font-shun) #splashTree{display:block}
 .splash-title{font-family:'Kaisei Opti',serif;font-size:38px;font-weight:700;color:#fff;letter-spacing:6px;text-shadow:0 2px 12px rgba(0,0,0,.15)}
 .splash-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:splashSpin .8s linear infinite;margin-top:8px}
 @keyframes splashSpin{to{transform:rotate(360deg)}}
@@ -483,6 +485,7 @@ body.font-shun.dark-active #splash{background:#080810}
 <script>(function(){var t=localStorage.getItem('appTheme')||(localStorage.getItem('fontMode')==='shun'?'shun':'hee');var c=localStorage.getItem('colorMode')||'auto';if(t==='shun'){document.body.classList.add('font-shun');var dark=c==='dark'||(c==='auto'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(dark)document.body.classList.add('dark-active');}})();</script>
 <div id="splash">
   <canvas id="splashMoon" style="width:110px;height:110px;border-radius:50%;box-shadow:0 0 50px rgba(255,240,140,.45),0 0 100px rgba(255,220,80,.14),0 6px 24px rgba(0,0,0,.3)"></canvas>
+  <canvas id="splashTree" style="width:130px;height:160px"></canvas>
   <div class="splash-title">SILDE</div>
   <div class="splash-spinner"></div>
 </div>
@@ -852,7 +855,7 @@ function onMemoInput(){
   initApp();
   renderHistPage();
   const _sp=document.getElementById('splash');
-  if(_sp){_sp.classList.add('hide');setTimeout(function(){if(_moonRafId)cancelAnimationFrame(_moonRafId);_sp.remove();},550);}
+  if(_sp){_sp.classList.add('hide');setTimeout(function(){if(_moonRafId)cancelAnimationFrame(_moonRafId);if(typeof _cherryRafId!=='undefined'&&_cherryRafId)cancelAnimationFrame(_cherryRafId);_sp.remove();},550);}
   document.getElementById('memoInp').value = memoText;
   var seenMemo = localStorage.getItem('memoSeen') || '';
   if (memoText && memoText !== seenMemo) openMemo(false);
@@ -2914,6 +2917,76 @@ var _moonRafId=null;
     moon.rotation.y+=0.006;
     renderer.render(scene,camera);
     _moonRafId=requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ===== スプラッシュ 桜の木アニメーション (かわいいテーマ用) =====
+var _cherryRafId=null;
+(function(){
+  var c=document.getElementById('splashTree');
+  if(!c||!window.THREE||document.body.classList.contains('font-shun'))return;
+  var W=130,H=160,dpr=Math.min(window.devicePixelRatio||1,2);
+  c.width=W*dpr;c.height=H*dpr;
+  var renderer=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  renderer.setSize(W*dpr,H*dpr,false);renderer.setPixelRatio(1);
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(48,W/H,0.1,200);
+  camera.position.set(0,2.8,9);camera.lookAt(0,4.2,0);
+  var sun=new THREE.DirectionalLight(0xffe8d0,1.9);sun.position.set(4,8,6);scene.add(sun);
+  scene.add(new THREE.AmbientLight(0xffd0e0,0.75));
+  var trunkM=new THREE.MeshStandardMaterial({color:0x4a2810,roughness:0.95,metalness:0});
+  var pink1=new THREE.MeshStandardMaterial({color:0xf9b8d0,roughness:0.6,metalness:0,transparent:true,opacity:0.95});
+  var pink2=new THREE.MeshStandardMaterial({color:0xf080a8,roughness:0.6,metalness:0,transparent:true,opacity:0.9});
+  var v=function(x,y,z){return new THREE.Vector3(x,y,z);};
+  function addBranch(from,to,r){
+    var dir=to.clone().sub(from);var len=dir.length();if(len<0.01)return;
+    var geo=new THREE.CylinderGeometry(r*0.6,r,len,7);
+    var mesh=new THREE.Mesh(geo,trunkM);
+    mesh.position.copy(from.clone().add(to).multiplyScalar(0.5));
+    var q=new THREE.Quaternion();q.setFromUnitVectors(v(0,1,0),dir.clone().normalize());
+    mesh.setRotationFromQuaternion(q);scene.add(mesh);
+  }
+  function addFlowers(center,size){
+    var n=7+Math.floor(Math.random()*5);
+    for(var i=0;i<n;i++){
+      var r=size*(0.38+Math.random()*0.48);
+      var mesh=new THREE.Mesh(new THREE.SphereGeometry(r,8,8),Math.random()>0.38?pink1:pink2);
+      mesh.position.set(center.x+(Math.random()-.5)*size*1.3,center.y+(Math.random()-.5)*size*.9,center.z+(Math.random()-.5)*size);
+      mesh.scale.set(1.25,.82,1.08);scene.add(mesh);
+    }
+  }
+  addBranch(v(0,0,0),v(0,3.8,0),0.22);
+  var mains=[[v(0,2.8,0),v(1.9,4.3,.5),.10],[v(0,3.0,0),v(-1.7,4.6,-.4),.10],
+    [v(0,3.2,0),v(.9,4.9,-1.3),.09],[v(0,3.0,0),v(-.5,4.7,1.5),.09],[v(0,3.4,0),v(.2,5.3,.3),.08]];
+  mains.forEach(function(m){
+    addBranch(m[0],m[1],m[2]);
+    var subs=[[.65,.95,.3],[-.55,1.05,-.45],[.1,1.15,.65]];
+    subs.forEach(function(s,si){
+      var se=v(m[1].x+s[0],m[1].y+s[1],m[1].z+s[2]);
+      addBranch(m[1],se,m[2]*.52);addFlowers(se,.48+Math.random()*.14);
+      if(si===0){var te=v(se.x+(Math.random()-.5)*.4,se.y+.55,se.z+(Math.random()-.5)*.4);addBranch(se,te,m[2]*.28);addFlowers(te,.34);}
+    });
+  });
+  addFlowers(v(0,3.8,0),.62);addFlowers(v(.3,4.3,.2),.5);addFlowers(v(-.2,4.1,-.1),.5);
+  var PC=80;
+  var pgeo=new THREE.BufferGeometry();
+  var ppos=new Float32Array(PC*3),pvx=new Float32Array(PC),pvy=new Float32Array(PC);
+  for(var i=0;i<PC;i++){ppos[i*3]=(Math.random()-.5)*12;ppos[i*3+1]=Math.random()*15;ppos[i*3+2]=(Math.random()-.5)*7;pvx[i]=(Math.random()-.5)*.028;pvy[i]=-(0.016+Math.random()*.024);}
+  pgeo.setAttribute('position',new THREE.BufferAttribute(ppos,3));
+  var pts=new THREE.Points(pgeo,new THREE.PointsMaterial({color:0xffaac4,size:0.13,transparent:true,opacity:0.82,sizeAttenuation:true}));
+  scene.add(pts);
+  var clock=new THREE.Clock();var pa=pgeo.attributes.position;
+  function draw(){
+    _cherryRafId=requestAnimationFrame(draw);
+    var t=clock.getElapsedTime();
+    scene.rotation.z=Math.sin(t*.4)*.022;
+    for(var i=0;i<PC;i++){
+      pa.array[i*3]+=pvx[i]+Math.sin(t*.6+i)*.004;
+      pa.array[i*3+1]+=pvy[i];
+      if(pa.array[i*3+1]<-3){pa.array[i*3]=(Math.random()-.5)*12;pa.array[i*3+1]=13;pa.array[i*3+2]=(Math.random()-.5)*7;}
+    }
+    pa.needsUpdate=true;renderer.render(scene,camera);
   }
   draw();
 })();
