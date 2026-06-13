@@ -1158,28 +1158,33 @@ function renderGirlInputs(){
 function _depNameFromLabel(lbl){
   return (lbl||'').replace(/^\d{1,2}:\d{2}\s*/,'').replace(/出発$/,'').trim();
 }
-function getSuggestedMin(fromName,toName){
-  const counts={};
-  const seen=new Set();
+function getSuggestedMin(fromName,toName,segKey){
+  const isStoreDest=segKey&&segKey.endsWith('_to_store');
+  const isFirstSeg=segKey==='start_to_0';
+  const counts={},countsFb={};
   schedHistory.forEach(function(entry){
     (entry.runs||[]).forEach(function(run){
       (run.stops||[]).forEach(function(stop,i){
         const m=parseInt(stop.min);
-        const from=i===0?_depNameFromLabel(run.departLabel):run.stops[i-1].name;
-        seen.add(from+'→'+stop.name+'(min='+stop.min+')');
         if(!m||m<=0)return;
-        if(from===fromName&&stop.name===toName)counts[m]=(counts[m]||0)+1;
+        const from=i===0?_depNameFromLabel(run.departLabel):run.stops[i-1].name;
+        const fromOk=from===fromName;
+        const toOk=stop.name===toName||(isStoreDest&&stop.type==='drop');
+        if(fromOk&&toOk){counts[m]=(counts[m]||0)+1;return;}
+        // フォールバック: 最初の区間は出発地が変わっていることがあるのでtoだけで参考値を取る
+        if(isFirstSeg&&i===0&&stop.name===toName)countsFb[m]=(countsFb[m]||0)+1;
+        // フォールバック: 店への区間は店名が変わっていることがあるのでfrom+dropで参考値を取る
+        if(isStoreDest&&fromOk&&stop.type==='drop')countsFb[m]=(countsFb[m]||0)+1;
       });
     });
   });
-  const es=Object.entries(counts);
-  if(!es.length){
-    console.log('[sug] no match: from='+fromName+' to='+toName);
-    console.log('[sug] history pairs:',Array.from(seen).join(' | '));
-    return null;
+  function best(c,approx){
+    const es=Object.entries(c);
+    if(!es.length)return null;
+    es.sort(function(a,b){return b[1]-a[1]||Number(a[0])-Number(b[0]);});
+    return {min:Number(es[0][0]),count:es[0][1],approx:approx};
   }
-  es.sort(function(a,b){return b[1]-a[1]||Number(a[0])-Number(b[0]);});
-  return {min:Number(es[0][0]),count:es[0][1]};
+  return best(counts,false)||best(countsFb,true);
 }
 
 function renderGroupMinInputs(){
@@ -1209,8 +1214,8 @@ function renderGroupMinInputs(){
     let html=`<div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:10px">${_svgCar}${shiftTime} 出勤グループ（${group.length}人）</div>`;
     segs.forEach(seg=>{
       const stored=refRow.mins[seg.key]||'';
-      const sug=getSuggestedMin(seg.from,seg.to);
-      const sugHtml=sug?`<div style="font-size:11px;color:var(--txs);margin:-4px 0 10px;padding-left:2px">参考: <strong style="color:var(--teal)">${sug.min}分</strong>（過去${sug.count}回）</div>`:'';
+      const sug=getSuggestedMin(seg.from,seg.to,seg.key);
+      const sugHtml=sug?`<div style="font-size:11px;color:var(--txs);margin:-4px 0 10px;padding-left:2px">参考${sug.approx?'（目安）':''}: <strong style="color:var(--teal)">${sug.min}分</strong>（過去${sug.count}回）</div>`:'';
       html+=`
         <div style="font-size:13px;color:#6b7280;margin-bottom:3px">${_svgPin}${seg.from} → ${seg.to}</div>
         <div class="min-row">
