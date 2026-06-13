@@ -359,7 +359,7 @@ body.font-shun.dark-active .hist-dots-bar{background:rgba(18,22,32,.82)}
 .hist-dot.active{background:#c4608a;width:18px;border-radius:3px}
 #histSlider{display:flex;flex:1;min-height:0;overflow-x:scroll;scroll-snap-type:x mandatory;scrollbar-width:none}
 #histSlider::-webkit-scrollbar{display:none}
-#histPageToday,#histPageMonths{min-width:100%;scroll-snap-align:start;overflow-y:scroll;overscroll-behavior:contain;padding:calc(env(safe-area-inset-top) + 48px) 14px 160px}
+#histPageToday,#histPageMonths{min-width:100%;scroll-snap-align:start;overflow-y:scroll;overscroll-behavior:contain;padding:max(14px,env(safe-area-inset-top)) 14px 160px}
 .memo-box{background:#fff;border-radius:16px 16px 0 0;padding:0 14px 14px;position:fixed;bottom:56px;left:0;right:0;z-index:20;transition:transform 0.4s cubic-bezier(0.32,0.72,0,1);box-shadow:0 -2px 16px rgba(180,100,140,.1)}
 .memo-handle{display:flex;justify-content:center;padding:10px 0 6px;cursor:pointer;touch-action:none}
 .memo-handle-bar{width:36px;height:4px;border-radius:2px;background:rgba(180,100,140,.2)}
@@ -593,13 +593,6 @@ body.font-shun.dark-active #splash{background:#080810}
 </div>
 
 <div class="pg active" id="pg-hist">
-  <div class="hist-dots-bar">
-    <div class="hist-dots">
-      <span class="hist-dot active" id="dot-today" onclick="slideTo(0)"></span>
-      <span class="hist-dot" id="dot-months" onclick="slideTo(1)"></span>
-    </div>
-    <button class="hist-import-btn" onclick="document.getElementById('importTxt').value='';document.getElementById('moImport').classList.add('open')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>インポート</button>
-  </div>
   <div id="histSlider">
     <div id="histPageToday"></div>
     <div id="histPageMonths"><div id="histContent" style="min-height:60vh"></div></div>
