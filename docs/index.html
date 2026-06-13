@@ -1061,6 +1061,19 @@ function getStoreName(){
   const l=locations.find(x=>x.id===id);
   return l?l.name:'Venus';
 }
+function getStoreDisplayName(){
+  const id=parseInt((document.getElementById('storeLocSel')||{}).value||'')||0;
+  const l=locations.find(x=>x.id===id);
+  if(!l) return 'Venus';
+  return l.shopLabel||l.nick||l.name;
+}
+function getDepDisplayName(){
+  if(depMode==='manual') return document.getElementById('depManualName').value||'出発地';
+  const id=parseInt(document.getElementById('depLocSel').value)||0;
+  const l=locations.find(x=>x.id===id);
+  if(!l) return '出発地';
+  return l.isShop?(l.shopLabel||l.nick||l.name):(l.nick||l.name);
+}
 function getStoreAddr(){
   const id=parseInt((document.getElementById('storeLocSel')||{}).value||'')||0;
   const l=locations.find(x=>x.id===id);
@@ -1394,10 +1407,13 @@ function buildSchedule(){
   currentBuiltDate=dateVal;
   currentBuiltDateLabel=dateLabel;
 
+  const storeDisplayName=getStoreDisplayName();
+  const depDisplayName=getDepDisplayName();
   sortedTimes.forEach((shiftTime,gi)=>{
     const group=groups[shiftTime];
     const isFirst=gi===0;
     const startLabel=isFirst?depName:store;
+    const startDisplayLabel=isFirst?depDisplayName:storeDisplayName;
     const segs=buildSegments(group,isFirst,startLabel);
     const refRow=group[0];
     const storeArrival=subMin(shiftTime,10);
@@ -1416,13 +1432,14 @@ function buildSchedule(){
       departTime=times[0];
     }
     const departLabel=`${departTime}${startLabel}出発`;
+    const departNick=`${departTime}${startDisplayLabel}出発`;
     const stops=[];
     group.forEach((row,i)=>{
       const minKey=i===0?'start_to_0':`${i-1}_to_${i}`;
       stops.push({time:times[i+1], name:getGirlName(row), type:'pick', min:refRow.mins[minKey]});
     });
-    stops.push({time:storeArrival, name:store, type:'drop', min:refRow.mins[`${group.length-1}_to_store`]});
-    builtRuns.push({departTime, departLabel, stops});
+    stops.push({time:storeArrival, name:store, nick:storeDisplayName, type:'drop', min:refRow.mins[`${group.length-1}_to_store`]});
+    builtRuns.push({departTime, departLabel, departNick, stops});
   });
 
   renderResult(dateLabel);
@@ -1503,11 +1520,12 @@ function startCountdownTimer(){
 function buildOutputText(dateLabel){
   let shun=[dateLabel,''], boy=[dateLabel,''];
   builtRuns.forEach((run,ri)=>{
-    shun.push(run.departLabel);
+    shun.push(run.departNick||run.departLabel);
     run.stops.forEach(s=>{
+      const dispName=s.nick||s.name;
       shun.push(`${s.min}分`);
-      shun.push(`${s.time}${s.name}${s.type==='pick'?'迎え':'着'}`);
-      boy.push(`${s.time}${s.name}${s.type==='pick'?'迎え':'着'}`);
+      shun.push(`${s.time}${dispName}${s.type==='pick'?'迎':'着'}`);
+      boy.push(`${s.time}${dispName}${s.type==='pick'?'迎':'着'}`);
     });
     if(ri<builtRuns.length-1){shun.push('');boy.push('');}
   });
