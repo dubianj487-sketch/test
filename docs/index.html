@@ -1628,11 +1628,19 @@ function setDebugTime(v){
 function buildRunsHtml(e,showNow){
   const now=showNow?nowHHMM():null;
   let h='';
+  // 現在時刻より後の出発便のうち最初の1件だけcountdownを表示する
+  let countdownRunIdx=-1;
+  if(now){
+    for(let i=0;i<e.runs.length;i++){
+      const dt=e.runs[i].departTime||e.runs[i].departLabel.slice(0,5);
+      if(dt>now){countdownRunIdx=i;break;}
+    }
+  }
+  let nowInserted=false; // 全run通じて1回だけ「いまここ」を挿入
   e.runs.forEach((run,ri)=>{
-    const _ct=showNow?`<span class="run-countdown" data-time="${run.departTime||run.departLabel.slice(0,5)}" style="font-size:12px;font-weight:700"></span>`:'';
+    const _ct=(showNow&&ri===countdownRunIdx)?`<span class="run-countdown" data-time="${run.departTime||run.departLabel.slice(0,5)}" style="font-size:12px;font-weight:700"></span>`:'';
     h+=`<div class="hist-detail-run"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div>${_ct}</div>`;
     const allPast=now?run.stops.every(s=>s.time<=now):false;
-    let nowInserted=false;
     run.stops.forEach((s,si)=>{
       const isPast=now?s.time<=now:false;
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
