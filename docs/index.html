@@ -480,6 +480,7 @@ body.font-shun.dark-active #splash{background:#080810}
 </style>
 </head>
 <body>
+<script>(function(){var t=localStorage.getItem('appTheme')||(localStorage.getItem('fontMode')==='shun'?'shun':'hee');var c=localStorage.getItem('colorMode')||'auto';if(t==='shun'){document.body.classList.add('font-shun');var dark=c==='dark'||(c==='auto'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(dark)document.body.classList.add('dark-active');}})();</script>
 <div id="splash">
   <canvas id="splashMoon" style="width:110px;height:110px;border-radius:50%;box-shadow:0 0 50px rgba(255,240,140,.45),0 0 100px rgba(255,220,80,.14),0 6px 24px rgba(0,0,0,.3)"></canvas>
   <div class="splash-title">SILDE</div>
