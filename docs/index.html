@@ -325,7 +325,21 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .battery-bolt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1;pointer-events:none;z-index:1}
 .battery-charge{font-size:10px;color:var(--txs)}
 
-.month-acc{background:#fff;border-radius:16px;margin-bottom:10px;box-shadow:0 2px 12px rgba(180,100,140,.1);overflow:hidden}
+/* ===== 収入カード ===== */
+.income-card{background:var(--card);border-radius:16px;padding:14px 16px;margin-top:10px;box-shadow:var(--sh)}
+.income-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.income-totals{display:flex;gap:20px}
+.income-total-item{}
+.income-total-lbl{font-size:10px;font-weight:700;color:var(--txs);margin-bottom:1px}
+.income-total-val{font-size:22px;font-weight:700;color:var(--tx);letter-spacing:-0.5px;line-height:1}
+.income-total-val span{font-size:13px;font-weight:500;margin-left:1px}
+.income-month-val{font-size:16px}
+.income-btns{display:flex;gap:8px}
+.income-btn{border:none;border-radius:12px;padding:10px 16px;font-size:13px;font-weight:700;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;cursor:pointer;transition:all .15s;background:var(--pkl);color:var(--teal);-webkit-tap-highlight-color:transparent}
+.income-btn.on{background:var(--teal);color:#fff;box-shadow:0 2px 8px rgba(196,96,138,.35)}
+.income-btn .income-btn-name{font-size:13px}
+.income-btn .income-btn-amt{font-size:11px;opacity:0.85;margin-top:1px}
+background:#fff;border-radius:16px;margin-bottom:10px;box-shadow:0 2px 12px rgba(180,100,140,.1);overflow:hidden}
 .month-acc-hdr{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:background .12s}
 .month-acc-hdr:active{background:#fdf5f8}
 .month-acc-title{font-size:17px;font-weight:700;color:var(--tx);font-family:'Kaisei Opti',serif}
@@ -1930,6 +1944,67 @@ function renderBatteryCard(){
   });
   return `<div class="battery-card" id="batteryWrap">${cols.join('<div style="width:1px;background:var(--lav);align-self:stretch"></div>')}</div>`;
 }
+
+// ===== 収入カード =====
+function _incomeKey(dateStr){return 'income_'+dateStr;}
+function _getIncomeRec(dateStr){
+  try{return JSON.parse(localStorage.getItem(_incomeKey(dateStr))||'null');}catch(e){return null;}
+}
+function _setIncomeRec(dateStr,rec){localStorage.setItem(_incomeKey(dateStr),JSON.stringify(rec));}
+function _calcIncomeToday(dateStr){
+  var r=_getIncomeRec(dateStr);if(!r)return 0;
+  return (r.venus?4000:0)+(r.king?2000:0);
+}
+function _calcIncomeMonth(yearMonth){
+  var total=0;
+  for(var k in localStorage){
+    if(k.startsWith('income_'+yearMonth)){
+      try{var r=JSON.parse(localStorage.getItem(k));if(r)total+=(r.venus?4000:0)+(r.king?2000:0);}catch(e){}
+    }
+  }
+  return total;
+}
+function toggleIncome(store){
+  var d=todayVal();
+  var r=_getIncomeRec(d)||{venus:false,king:false};
+  r[store]=!r[store];
+  _setIncomeRec(d,r);
+  var wrap=document.getElementById('incomeWrap');
+  if(wrap)wrap.outerHTML=renderIncomeCard();
+}
+function renderIncomeCard(){
+  var d=todayVal();
+  var ym=d.slice(0,7);
+  var r=_getIncomeRec(d)||{venus:false,king:false};
+  var todayAmt=_calcIncomeToday(d);
+  var monthAmt=_calcIncomeMonth(ym);
+  var fmt=function(n){return n.toLocaleString();};
+  return `<div class="income-card" id="incomeWrap">
+    <div class="income-top">
+      <div class="income-totals">
+        <div class="income-total-item">
+          <div class="income-total-lbl">今日</div>
+          <div class="income-total-val">${fmt(todayAmt)}<span>円</span></div>
+        </div>
+        <div class="income-total-item">
+          <div class="income-total-lbl">今月</div>
+          <div class="income-total-val income-month-val">${fmt(monthAmt)}<span>円</span></div>
+        </div>
+      </div>
+      <div class="income-btns">
+        <button class="income-btn${r.venus?' on':''}" onclick="toggleIncome('venus')">
+          <div class="income-btn-name">Venus</div>
+          <div class="income-btn-amt">4,000円</div>
+        </button>
+        <button class="income-btn${r.king?' on':''}" onclick="toggleIncome('king')">
+          <div class="income-btn-name">KING</div>
+          <div class="income-btn-amt">2,000円</div>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderHistPage(){
   const c=document.getElementById('histContent');
   const tp=document.getElementById('histPageToday');
@@ -1976,6 +2051,7 @@ function renderHistPage(){
   }
   todayHtml+=`</div>`;
   todayHtml+=renderBatteryCard();
+  todayHtml+=renderIncomeCard();
   todayHtml+=`<div class="debug-time-row"><span class="debug-time-lbl">🕐 テスト時刻</span><input class="debug-time-inp" id="debugTimeInp" type="datetime-local" onchange="setDebugDatetime(this.value)"><button class="debug-time-clr" onclick="setDebugDatetime('');document.getElementById('debugTimeInp').value=''">リセット</button></div>`;
   tp.innerHTML=todayHtml;
   if(_debugDate&&_debugTime)document.getElementById('debugTimeInp').value=`${_debugDate}T${_debugTime}`;
