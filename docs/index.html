@@ -351,7 +351,7 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .month-acc.open .month-acc-body{display:block}
 #pg-hist{padding:calc(env(safe-area-inset-top) + 44px) 0 0;min-height:calc(100dvh - 56px)}
 #pg-hist.active{display:block !important}
-#hist-tab-bar{position:fixed;top:env(safe-area-inset-top);left:0;right:0;height:44px;display:flex;z-index:10;background:rgba(254,243,247,.88);-webkit-backdrop-filter:saturate(180%) blur(14px);backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--brd)}
+#hist-tab-bar{position:fixed;top:env(safe-area-inset-top);left:14px;right:14px;height:44px;display:flex;z-index:10;background:rgba(254,243,247,.88);-webkit-backdrop-filter:saturate(180%) blur(14px);backdrop-filter:saturate(180%) blur(14px);border:1px solid var(--brd);border-radius:0 0 12px 12px}
 body.font-shun #hist-tab-bar{background:rgba(192,216,236,.88)}
 body.font-shun.dark-active #hist-tab-bar{background:rgba(5,4,10,.88)}
 .hist-tab-btn{flex:1;background:none;border:none;font-size:13px;font-weight:700;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;color:var(--txs);padding:0;cursor:pointer;border-bottom:2.5px solid transparent;transition:color .2s,border-color .2s;-webkit-tap-highlight-color:transparent}
@@ -477,7 +477,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   .bnav{padding-left:max(0px,calc(50% - 300px));padding-right:max(0px,calc(50% - 300px))}
   .hist-import-btn{right:max(14px,calc(50% - 300px))}
   .memo-box{left:max(0px,calc(50% - 300px));right:max(0px,calc(50% - 300px))}
-  #hist-tab-bar{left:max(0px,calc(50% - 300px));right:max(0px,calc(50% - 300px))}
+  #hist-tab-bar{left:max(14px,calc(50% - 300px));right:max(14px,calc(50% - 300px))}
 }
 /* ===== セーフエリア下端 (常時適用: env()はセーフエリアがなければ0になる) ===== */
 .bnav{padding-bottom:env(safe-area-inset-bottom)}
