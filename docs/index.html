@@ -494,11 +494,22 @@ body.font-shun.dark-active #splash{background:#080810}
 .splash-title{font-family:'Kaisei Opti',serif;font-size:38px;font-weight:700;color:#fff;letter-spacing:6px;text-shadow:0 2px 12px rgba(0,0,0,.15)}
 .splash-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:splashSpin .8s linear infinite;margin-top:8px}
 @keyframes splashSpin{to{transform:rotate(360deg)}}
+.sm{position:absolute;border-radius:50%;pointer-events:none}
+@keyframes smA{0%{opacity:0;transform:translate(0,30px) scale(.8)}20%{opacity:.52}80%{opacity:.26}100%{opacity:0;transform:translate(14px,-95px) scale(1.75)}}
+@keyframes smB{0%{opacity:0;transform:translate(0,22px) scale(1)}25%{opacity:.42}75%{opacity:.2}100%{opacity:0;transform:translate(-20px,-80px) scale(1.55)}}
+@keyframes smC{0%{opacity:0;transform:translate(0,28px) scale(.85)}18%{opacity:.58}72%{opacity:.3}100%{opacity:0;transform:translate(26px,-105px) scale(1.9)}}
+@keyframes smD{0%{opacity:0;transform:translate(0,18px) scale(.9)}28%{opacity:.38}68%{opacity:.17}100%{opacity:0;transform:translate(-14px,-70px) scale(1.45)}}
+@keyframes smE{0%{opacity:0;transform:translate(0,35px) scale(.78)}22%{opacity:.48}78%{opacity:.23}100%{opacity:0;transform:translate(9px,-85px) scale(1.8)}}
 </style>
 </head>
 <body>
 <script>(function(){var t=localStorage.getItem('appTheme')||(localStorage.getItem('fontMode')==='shun'?'shun':'hee');var c=localStorage.getItem('colorMode')||'auto';if(t==='shun'){document.body.classList.add('font-shun');var dark=c==='dark'||(c==='auto'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(dark)document.body.classList.add('dark-active');}})();</script>
 <div id="splash">
+  <div class="sm" style="width:240px;height:200px;top:52%;left:2%;background:radial-gradient(ellipse,rgba(255,255,255,.62) 0%,transparent 65%);filter:blur(40px);animation:smA 7s ease-in-out 0s infinite"></div>
+  <div class="sm" style="width:280px;height:230px;top:48%;right:-2%;background:radial-gradient(ellipse,rgba(255,255,255,.52) 0%,transparent 60%);filter:blur(50px);animation:smB 8.5s ease-in-out 1.8s infinite"></div>
+  <div class="sm" style="width:175px;height:155px;top:65%;left:36%;background:radial-gradient(ellipse,rgba(255,255,255,.68) 0%,transparent 65%);filter:blur(28px);animation:smC 6.2s ease-in-out 3.4s infinite"></div>
+  <div class="sm" style="width:200px;height:175px;top:42%;left:12%;background:radial-gradient(ellipse,rgba(255,255,255,.46) 0%,transparent 62%);filter:blur(36px);animation:smD 9.2s ease-in-out 0.9s infinite"></div>
+  <div class="sm" style="width:155px;height:135px;top:60%;right:8%;background:radial-gradient(ellipse,rgba(255,255,255,.56) 0%,transparent 60%);filter:blur(26px);animation:smE 7.5s ease-in-out 5s infinite"></div>
   <canvas id="splashMoon" style="width:110px;height:110px;border-radius:50%;box-shadow:0 0 50px rgba(255,240,140,.45),0 0 100px rgba(255,220,80,.14),0 6px 24px rgba(0,0,0,.3)"></canvas>
   <div class="splash-title">SILDE</div>
   <div class="splash-spinner"></div>
