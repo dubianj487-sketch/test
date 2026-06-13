@@ -244,6 +244,9 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .rm-btn{background:none;border:none;font-size:17px;color:#c0a8c8;cursor:pointer;padding:0}
 .gi-group-hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 6px;margin-bottom:2px}
 .gi-group-lbl{font-size:11px;font-weight:700;color:var(--pk);letter-spacing:.5px}
+.gi-drag-handle{cursor:grab;padding:4px 4px 4px 0;color:#c0a8c8;display:flex;align-items:center;-webkit-tap-highlight-color:transparent;touch-action:none}
+.gi-drag-handle:active{cursor:grabbing}
+.gi-drag-placeholder{background:var(--lav);border-radius:14px;margin-bottom:8px;opacity:.5}
 
 .shift-stepper{display:flex;align-items:center;margin-bottom:6px;background:var(--pkp);border-radius:11px;overflow:hidden}
 .shift-stepper-btn{width:44px;height:44px;border:none;background:none;cursor:pointer;font-size:20px;font-weight:700;color:var(--pk);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .12s}
@@ -1147,18 +1150,21 @@ function renderGirlInputs(){
     if(shiftTime!=='_notime'){
       const hdr=document.createElement('div');
       hdr.className='gi-group-hdr';
-      hdr.innerHTML=`<span class="gi-group-lbl">${shiftTime} 出勤（${group.length}人）</span>`+
-        (group.length>=2?`<button class="btn bo" style="margin:0;padding:4px 10px;font-size:11px" onclick="sortGroupByDistance('${shiftTime}')">距離順</button>`:'');
+      hdr.innerHTML=`<span class="gi-group-lbl">${shiftTime} 出勤（${group.length}人）</span>`;
       c.appendChild(hdr);
     }
     group.forEach((row,gi)=>{
       const d=document.createElement('div');
       d.className='gi-card';
+      d.dataset.uid=row.uid;
       const gopts=girls.map(g=>`<option value="${g.id}" ${row.girlId==g.id?'selected':''}>${g.name}</option>`).join('');
       const addrHtml=(row.girlId&&row.girlId!=='_c')?(()=>{const g=girls.find(x=>x.id==row.girlId);return g&&g.nick?`<div style="font-size:11px;color:#6b7280;background:var(--pkp);border-radius:8px;padding:5px 10px;margin-bottom:8px">${_svgPin}${g.nick}</div>`:''})():'';
       d.innerHTML=`
         <div class="gi-head">
-          <span class="gi-badge">${_svgUser}${gi+1}人目</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="gi-drag-handle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+            <span class="gi-badge">${_svgUser}${gi+1}人目</span>
+          </div>
           ${girlRows.length>1?`<button class="rm-btn" onclick="removeGirlRow(${row.uid})">✕</button>`:''}
         </div>
         <label>女の子</label>
@@ -1180,10 +1186,12 @@ function renderGirlInputs(){
     });
   });
   const addWrap=document.createElement('div');
-  addWrap.style.cssText='margin-top:6px';
-  addWrap.innerHTML=`<button class="btn bo" style="width:100%" onclick="addGirlRow()">＋ 女の子を追加</button>`;
+  addWrap.style.cssText='margin-top:6px;display:flex;flex-direction:column;gap:8px';
+  addWrap.innerHTML=`<button class="btn bo" style="width:100%" onclick="addGirlRow()">＋ 女の子を追加</button>`+
+    `<button class="btn bo" style="width:100%" onclick="sortAllByDistance()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>距離順に並べ替え</button>`;
   c.appendChild(addWrap);
   renderGroupMinInputs();
+  if(window._initGirlDrag)window._initGirlDrag();
 }
 
 function _depNameFromLabel(lbl){
@@ -1315,6 +1323,16 @@ async function sortGroupByDistance(shiftTime){
   renderGroupMinInputs();
   showToast('距離順に並べ替えました');
 }
+async function sortAllByDistance(){
+  const storeAddr=getStoreAddr();
+  if(!storeAddr){showToast('店舗住所が未登録です');return;}
+  showToast('距離を計算中…');
+  const times=Object.keys(getGroups()).filter(k=>k!=='_notime').sort();
+  for(const t of times)await _sortGroupByDistSilent(t);
+  renderGirlInputs();
+  renderGroupMinInputs();
+  showToast('距離順に並べ替えました');
+}
 function fillFromHistory(){
   const groups=getGroups();
   const sortedTimes=Object.keys(groups).filter(k=>k!=='_notime').sort();
@@ -1345,11 +1363,7 @@ function fillFromHistory(){
 }
 
 // ========== スケジュール生成 ==========
-async function buildSchedule(){
-  // 出勤グループごとに距離順ソート（住所未登録の場合はスキップ）
-  const preTimes=Object.keys(getGroups()).filter(k=>k!=='_notime').sort();
-  for(const t of preTimes)await _sortGroupByDistSilent(t);
-  renderGirlInputs();
+function buildSchedule(){
   const groups=getGroups();
   const sortedTimes=Object.keys(groups).filter(k=>k!=='_notime').sort();
   if(!sortedTimes.length){showToast('出勤時間を入れてね！');return;}
@@ -2333,6 +2347,68 @@ function delGirl(){
   closeMo('moGirl');renderMasters();renderGirlInputs();showToast('削除しました');
 }
 
+
+// ========== 女の子カード ドラッグ並べ替え ==========
+(function(){
+  var _d=null;
+  function start(e){
+    var handle=e.currentTarget;
+    var card=handle.closest('.gi-card');
+    if(!card)return;
+    var uid=parseInt(card.dataset.uid);
+    var rect=card.getBoundingClientRect();
+    var touch=e.touches[0];
+    var ph=document.createElement('div');
+    ph.className='gi-drag-placeholder';
+    ph.style.height=rect.height+'px';
+    card.parentNode.insertBefore(ph,card);
+    card.style.cssText='position:fixed;left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;z-index:999;opacity:.9;box-shadow:0 8px 24px rgba(0,0,0,.2);pointer-events:none;margin:0;transition:none';
+    _d={uid,card,ph,startClientY:touch.clientY,startTop:rect.top,cont:card.parentNode};
+    document.addEventListener('touchmove',move,{passive:false});
+    document.addEventListener('touchend',end,{passive:true});
+    e.preventDefault();
+  }
+  function move(e){
+    if(!_d)return;
+    var t=e.touches[0];
+    var dy=t.clientY-_d.startClientY;
+    _d.card.style.top=(_d.startTop+dy)+'px';
+    var midY=t.clientY;
+    var cards=[..._d.cont.querySelectorAll('.gi-card')].filter(c=>c!==_d.card);
+    for(var i=0;i<cards.length;i++){
+      var r=cards[i].getBoundingClientRect();
+      if(midY<r.bottom){
+        if(midY<r.top+r.height/2)_d.cont.insertBefore(_d.ph,cards[i]);
+        else _d.cont.insertBefore(_d.ph,cards[i].nextSibling);
+        break;
+      }
+    }
+    e.preventDefault();
+  }
+  function end(){
+    if(!_d)return;
+    document.removeEventListener('touchmove',move);
+    document.removeEventListener('touchend',end);
+    var els=[..._d.cont.children];
+    var newOrder=[];
+    els.forEach(function(el){
+      if(el===_d.ph){newOrder.push(_d.uid);}
+      else if(el.classList.contains('gi-card')){var u=parseInt(el.dataset.uid);if(!isNaN(u)&&u!==_d.uid)newOrder.push(u);}
+    });
+    _d.ph.remove();
+    _d.card.style.cssText='';
+    var reordered=newOrder.map(function(uid){return girlRows.find(function(r){return r.uid===uid;});}).filter(Boolean);
+    if(reordered.length===girlRows.length)girlRows.splice(0,girlRows.length,...reordered);
+    _d=null;
+    renderGirlInputs();
+  }
+  window._initGirlDrag=function(){
+    document.querySelectorAll('#girlInputs .gi-drag-handle').forEach(function(h){
+      h.removeEventListener('touchstart',start);
+      h.addEventListener('touchstart',start,{passive:false});
+    });
+  };
+})();
 
 function closeMo(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
