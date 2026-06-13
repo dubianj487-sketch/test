@@ -84,6 +84,7 @@ body.font-shun.dark-active .today-action-bar{border-top-color:#333}
 body.font-shun.dark-active .today-action-sep{background:#333}
 body.font-shun.dark-active .today-action-btn:active{background:#2e2e2e}
 body.font-shun.dark-active .hist-detail-run{border-bottom-color:#333}
+body.font-shun.dark-active .run-done-hdr-badge{background:rgba(180,210,240,.08);color:rgba(180,210,240,.5)}
 
 body.font-shun.dark-active .hedit-dep-row{background:#1e2a36}
 body.font-shun.dark-active .revised-tag{background:#3d1515;color:#f87171}
@@ -369,6 +370,13 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .hist-detail-run{padding:12px 16px 2px;border-bottom:1px solid #f5f0f3}
 .hist-detail-run:last-of-type{border-bottom:none}
 .hist-detail-run-lbl{font-size:10px;font-weight:700;color:var(--txs);letter-spacing:.8px;margin-bottom:8px;opacity:.5}
+.run-acc-hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.run-acc-hdr:active{opacity:.7}
+.run-acc .run-acc-body{display:none}
+.run-acc.run-open .run-acc-body{display:block}
+.run-acc-arr{font-size:8px;color:var(--txs);opacity:.45;transition:transform .2s;flex-shrink:0;margin-left:5px}
+.run-acc.run-open .run-acc-arr{transform:rotate(90deg)}
+.run-done-hdr-badge{font-size:10px;font-weight:700;color:var(--txs);background:var(--pul);padding:2px 8px;border-radius:20px;opacity:.7}
 .edit-time-row{display:flex;align-items:center;gap:10px;padding:9px 0}
 .hedit-dep-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--pkp);border-radius:10px;margin-bottom:12px}
 .hedit-dep-label{font-size:13px;color:var(--tx);font-weight:600;flex:1}
@@ -1664,8 +1672,14 @@ function setDebugTime(v){
 }
 function buildRunsHtml(e,showNow){
   const now=showNow?nowHHMM():null;
-  let h='';
-  // 現在時刻より後の出発便のうち最初の1件だけcountdownを表示する
+  // 最初の未完了便を「アクティブ便」としてデフォルト開く
+  let activeRunIdx=-1;
+  if(now){
+    for(let i=0;i<e.runs.length;i++){
+      if(!e.runs[i].stops.every(s=>s.time<=now)){activeRunIdx=i;break;}
+    }
+  }
+  // カウントダウンは最初の未来出発便のみ
   let countdownRunIdx=-1;
   if(now){
     for(let i=0;i<e.runs.length;i++){
@@ -1673,20 +1687,35 @@ function buildRunsHtml(e,showNow){
       if(dt>now){countdownRunIdx=i;break;}
     }
   }
-  let nowInserted=false; // 全run通じて1回だけ「いまここ」を挿入
+  let nowInserted=false;
+  let h='';
   e.runs.forEach((run,ri)=>{
-    const _ct=(showNow&&ri===countdownRunIdx)?`<span class="run-countdown" data-time="${run.departTime||run.departLabel.slice(0,5)}" style="font-size:12px;font-weight:700"></span>`:'';
-    h+=`<div class="hist-detail-run"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div>${_ct}</div>`;
     const allPast=now?run.stops.every(s=>s.time<=now):false;
+    // アクティブ便だけデフォルト開く、複数便なく1便だけのときも開く
+    const isOpen=!showNow||ri===activeRunIdx||(activeRunIdx<0&&ri===e.runs.length-1)||e.runs.length===1;
+    const _ct=(showNow&&ri===countdownRunIdx)?`<span class="run-countdown" data-time="${run.departTime||run.departLabel.slice(0,5)}" style="font-size:12px;font-weight:700"></span>`:'';
+    const _doneBadge=allPast?`<span class="run-done-hdr-badge">✓ 完了</span>`:'';
+    const _arr=showNow&&e.runs.length>1?`<span class="run-acc-arr">▶</span>`:'';
+    // stops HTML
+    let stopsHtml='';
     run.stops.forEach((s,si)=>{
       const isPast=now?s.time<=now:false;
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
       const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">到着</span>';
       const minB=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
-      if(now&&!isPast&&!nowInserted){h+=`<div class="tl-now"><div class="tl-now-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="transform:rotate(135deg)"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div><span class="tl-now-lbl">いまここ</span></div>`;nowInserted=true;}
-      h+=`<div class="edit-time-row${isPast?' past':''}"><div class="tl-dot ${dot}"></div><input class="edit-time-inp" type="time" value="${s.time}" onchange="updateHistStop(${e.id},${ri},${si},this.value)"><span class="edit-time-name">${s.name}</span>${badge}${minB}</div>`;
+      if(now&&!isPast&&!nowInserted){stopsHtml+=`<div class="tl-now"><div class="tl-now-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="transform:rotate(135deg)"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div><span class="tl-now-lbl">いまここ</span></div>`;nowInserted=true;}
+      stopsHtml+=`<div class="edit-time-row${isPast?' past':''}"><div class="tl-dot ${dot}"></div><input class="edit-time-inp" type="time" value="${s.time}" onchange="updateHistStop(${e.id},${ri},${si},this.value)"><span class="edit-time-name">${s.name}</span>${badge}${minB}</div>`;
     });
-    if(allPast)h+=`<div class="today-done">✓ 完了</div>`;
+    if(allPast)stopsHtml+=`<div class="today-done">✓ 完了</div>`;
+    const useAcc=showNow&&e.runs.length>1;
+    const runId=useAcc?`runacc_${e.id}_${ri}`:'';
+    h+=`<div class="hist-detail-run${useAcc?` run-acc${isOpen?' run-open':''}`:''}${runId?` id="${runId}"`:''}">`;
+    if(useAcc){
+      h+=`<div class="run-acc-hdr" onclick="toggleRunAcc('${runId}')"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div><div style="display:flex;align-items:center;gap:6px">${_ct}${_doneBadge}${_arr}</div></div>`;
+      h+=`<div class="run-acc-body">${stopsHtml}</div>`;
+    }else{
+      h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div>${_ct}</div>${stopsHtml}`;
+    }
     h+=`</div>`;
   });
   return h;
@@ -2058,6 +2087,11 @@ function deleteHist(id){
   closeMo('moHistDetail');
   renderHistPage();
   showToast('削除しました 🗑️');
+}
+
+function toggleRunAcc(id){
+  const el=document.getElementById(id);
+  if(el)el.classList.toggle('run-open');
 }
 
 function swipeDeleteHist(id){
