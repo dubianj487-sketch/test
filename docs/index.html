@@ -506,6 +506,10 @@ body.font-shun.dark-active #pg-hist{background:transparent}
       <div class="ctitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>女の子の出勤情報</div>
       <div id="girlInputs"></div>
     </div>
+    <div class="card" id="groupMinCard" style="display:none">
+      <div class="ctitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>区間ごとの移動時間</div>
+      <div id="groupMinInner"></div>
+    </div>
     <button class="btn bp" onclick="buildSchedule()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>スケジュール生成</button>
     <div id="resultSection" style="display:none">
       <div class="card">
@@ -1121,17 +1125,18 @@ function renderGirlInputs(){
     const d=document.createElement('div');
     d.className='gi-card';
     const gopts=girls.map(g=>`<option value="${g.id}" ${row.girlId==g.id?'selected':''}>${g.name}</option>`).join('');
-    const addrHtml=(row.girlId&&row.girlId!=='_c')?(()=>{const g=girls.find(x=>x.id==row.girlId);return g?`<div style="font-size:11px;color:#6b7280;background:var(--pkp);border-radius:8px;padding:5px 10px;margin-bottom:8px">📍 ${g.nick}</div>`:''})():'';
+    const _svgPin=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+    const addrHtml=(row.girlId&&row.girlId!=='_c')?(()=>{const g=girls.find(x=>x.id==row.girlId);return g?`<div style="font-size:11px;color:#6b7280;background:var(--pkp);border-radius:8px;padding:5px 10px;margin-bottom:8px">${_svgPin}${g.nick}</div>`:''})():'';
     d.innerHTML=`
       <div class="gi-head">
-        <span class="gi-badge">👩 ${i+1}人目</span>
+        <span class="gi-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${i+1}人目</span>
         ${girlRows.length>1?`<button class="rm-btn" onclick="removeGirlRow(${row.uid})">✕</button>`:''}
       </div>
       <label>女の子</label>
       <select onchange="onGirlSel(${row.uid},this.value)" style="margin-bottom:8px">
         <option value="">-- 選択 --</option>
         ${gopts}
-        <option value="_c" ${row.girlId==='_c'?'selected':''}>✏️ 直接入力</option>
+        <option value="_c" ${row.girlId==='_c'?'selected':''}>直接入力</option>
       </select>
       ${row.girlId==='_c'?`<input type="text" placeholder="名前" value="${row.customName}" oninput="onCustomName(${row.uid},this.value)" style="margin-bottom:8px">`:addrHtml}
       <label>出勤時間</label>
@@ -1149,21 +1154,19 @@ function renderGirlInputs(){
 }
 
 function renderGroupMinInputs(){
-  const existing=document.getElementById('groupMinSection');
-  if(existing) existing.remove();
-  const c=document.getElementById('girlInputs');
+  const card=document.getElementById('groupMinCard');
+  const inner=document.getElementById('groupMinInner');
+  inner.innerHTML='';
   const groups=getGroups();
   const sortedTimes=Object.keys(groups).filter(k=>k!=='_notime').sort();
-  if(!sortedTimes.length) return;
-  const section=document.createElement('div');
-  section.id='groupMinSection';
-  const header=document.createElement('div');
-  header.style.cssText='font-size:16px;font-weight:700;color:var(--teal);margin:14px 0 8px;';
-  header.textContent='🗺 区間ごとの移動時間';
-  section.appendChild(header);
+  if(!sortedTimes.length){card.style.display='none';return;}
+  card.style.display='';
   const depName=getDepName();
   const depAddr=getDepAddr();
   const storeAddr=getStoreAddr();
+  const _svgCar=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>`;
+  const _svgPin=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+  const _svgNav=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`;
   const pendingCalcs=[];
   sortedTimes.forEach((shiftTime,gi)=>{
     const group=groups[shiftTime];
@@ -1174,11 +1177,11 @@ function renderGroupMinInputs(){
     const refRow=group[0];
     const wrap=document.createElement('div');
     wrap.style.cssText='background:var(--pkp);border-radius:14px;padding:12px 14px;margin-bottom:10px';
-    let html=`<div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:10px">🚗 ${shiftTime} 出勤グループ（${group.length}人）</div>`;
+    let html=`<div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:10px">${_svgCar}${shiftTime} 出勤グループ（${group.length}人）</div>`;
     segs.forEach(seg=>{
       const stored=refRow.mins[seg.key]||'';
       html+=`
-        <div style="font-size:13px;color:#6b7280;margin-bottom:3px">📍 ${seg.from} → ${seg.to}</div>
+        <div style="font-size:13px;color:#6b7280;margin-bottom:3px">${_svgPin}${seg.from} → ${seg.to}</div>
         <div class="min-row">
           <input type="number" min="1" max="90" placeholder="分" value="${stored}"
             id="seginp_${refRow.uid}_${seg.key}"
@@ -1189,15 +1192,14 @@ function renderGroupMinInputs(){
             data-to-addr="${encodeURIComponent(seg.toAddr)}"
             data-from-name="${encodeURIComponent(seg.from)}"
             data-to-name="${encodeURIComponent(seg.to)}"
-            onclick="realMapCalc(${refRow.uid},'${seg.key}',this)">🗺 自動</button>
+            onclick="realMapCalc(${refRow.uid},'${seg.key}',this)">${_svgNav}自動</button>
         </div>
       `;
     });
     wrap.innerHTML=html;
-    section.appendChild(wrap);
+    inner.appendChild(wrap);
     pendingCalcs.push({uid:refRow.uid, segs});
   });
-  c.appendChild(section);
   pendingCalcs.forEach(function(p){ autoCalcEmptySegs(p.uid, p.segs); });
 }
 
@@ -1247,14 +1249,14 @@ async function realMapCalc(refUid, key, btn, silent){
       onSegMin(refUid,key,String(min));
       const inp=document.getElementById(`seginp_${refUid}_${key}`);
       if(inp)inp.value=min;
-      if(!silent)showToast(`🗺 ${fromName}→${toName}: ${min}分`);
+      if(!silent)showToast(`${fromName}→${toName}: ${min}分`);
     }else{
       if(!silent)showToast(`⚠️ ルート取得失敗\n${fromName}→${toName}`);
     }
   }catch(e){
     if(!silent)showToast(`⚠️ 計算エラー\n${fromName}→${toName}`);
   }finally{
-    if(btn){btn.classList.remove('calculating');btn.textContent='🗺 自動';}
+    if(btn){btn.classList.remove('calculating');btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>自動';}
   }
 }
 
