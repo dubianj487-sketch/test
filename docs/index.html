@@ -638,6 +638,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
     <label>所属店舗（任意）</label><select id="gShopSel"></select>
     <label>迎え場所（通称）</label><input type="text" id="gNickInp" placeholder="さなさんマンション前">
     <label>住所</label><input type="text" id="gAddrInp" placeholder="大阪市北区〇〇 1-2-3">
+    <label>マップURL（任意）</label><input type="url" id="gMapUrlInp" placeholder="https://maps.google.com/...">
     <button class="btn bp" onclick="saveGirl()">💾 保存</button>
     <button class="btn bd" id="delGirlBtn" style="display:none" onclick="delGirl()">🗑️ 削除</button>
   </div>
@@ -1700,8 +1701,8 @@ function buildRunsHtml(e,showNow){
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
       const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">到着</span>';
       const minB=s.min?`<span style="font-size:10px;color:var(--txs);background:var(--pul);padding:2px 7px;border-radius:20px;flex-shrink:0">${s.min}分</span>`:'';
-      const _mapAddr=(()=>{if(s.type!=='pick')return '';const g=girls.find(x=>x.name===s.name);return g?(g.addr||g.nick||''):''})();
-      const _mapBtn=_mapAddr?`<a href="https://maps.google.com/?q=${encodeURIComponent(_mapAddr)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:var(--pkp);color:var(--pk);flex-shrink:0;text-decoration:none;-webkit-tap-highlight-color:transparent"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></a>`:'';{stopsHtml+=`<div class="tl-now"><div class="tl-now-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="transform:rotate(135deg)"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div><span class="tl-now-lbl">いまここ</span></div>`;nowInserted=true;}
+      const _mapUrl=(()=>{if(s.type!=='pick')return '';const g=girls.find(x=>x.name===s.name);return g?(g.mapUrl||''):''})();
+      const _mapBtn=_mapUrl?`<a href="${_mapUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:var(--pkp);color:var(--pk);flex-shrink:0;text-decoration:none;-webkit-tap-highlight-color:transparent"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></a>`:'';{stopsHtml+=`<div class="tl-now"><div class="tl-now-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="transform:rotate(135deg)"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div><span class="tl-now-lbl">いまここ</span></div>`;nowInserted=true;}
       stopsHtml+=`<div class="edit-time-row${isPast?' past':''}"><div class="tl-dot ${dot}"></div><input class="edit-time-inp" type="time" value="${s.time}" onchange="updateHistStop(${e.id},${ri},${si},this.value)"><span class="edit-time-name">${s.name}</span>${_mapBtn}${badge}${minB}</div>`;
     });
     if(allPast)stopsHtml+=`<div class="today-done">✓ 完了</div>`;
@@ -2271,23 +2272,23 @@ function refreshGirlShopSel(){
   sel.innerHTML='<option value="">-- なし --</option>'+shops.map(l=>`<option value="${l.id}">${l.shopLabel||l.name}${!l.shopLabel&&l.nick?' ('+l.nick+')':''}</option>`).join('');
 }
 function openGirlMo(id){
-  ['gNameInp','gNickInp','gAddrInp'].forEach(x=>document.getElementById(x).value='');
+  ['gNameInp','gNickInp','gAddrInp','gMapUrlInp'].forEach(x=>document.getElementById(x).value='');
   refreshGirlShopSel();
   document.getElementById('gShopSel').value='';
   document.getElementById('egId').value='';
   document.getElementById('moGirlTitle').textContent='👩 登録';
   document.getElementById('delGirlBtn').style.display='none';
-  if(id){const g=girls.find(x=>x.id===id);if(g){document.getElementById('gNameInp').value=g.name;document.getElementById('gShopSel').value=g.shopId||'';document.getElementById('gNickInp').value=g.nick||'';document.getElementById('gAddrInp').value=g.addr||'';document.getElementById('egId').value=g.id;document.getElementById('moGirlTitle').textContent='👩 編集';document.getElementById('delGirlBtn').style.display='flex';}}
+  if(id){const g=girls.find(x=>x.id===id);if(g){document.getElementById('gNameInp').value=g.name;document.getElementById('gShopSel').value=g.shopId||'';document.getElementById('gNickInp').value=g.nick||'';document.getElementById('gAddrInp').value=g.addr||'';document.getElementById('gMapUrlInp').value=g.mapUrl||'';document.getElementById('egId').value=g.id;document.getElementById('moGirlTitle').textContent='👩 編集';document.getElementById('delGirlBtn').style.display='flex';}}
   document.getElementById('moGirl').classList.add('open');
 }
 function saveGirl(){
   const name=document.getElementById('gNameInp').value.trim();
   if(!name){showToast('名前を入れてね！');return;}
   const shopId=parseInt(document.getElementById('gShopSel').value)||0;
-  const nick=document.getElementById('gNickInp').value.trim(),addr=document.getElementById('gAddrInp').value.trim();
+  const nick=document.getElementById('gNickInp').value.trim(),addr=document.getElementById('gAddrInp').value.trim(),mapUrl=document.getElementById('gMapUrlInp').value.trim();
   const eid=parseInt(document.getElementById('egId').value);
-  if(eid){const g=girls.find(x=>x.id===eid);if(g){g.name=name;g.shopId=shopId||undefined;g.nick=nick;g.addr=addr;delete g.shop;}}
-  else{girls.push({id:++gCnt,name,shopId:shopId||undefined,nick,addr});saveCounters();}
+  if(eid){const g=girls.find(x=>x.id===eid);if(g){g.name=name;g.shopId=shopId||undefined;g.nick=nick;g.addr=addr;g.mapUrl=mapUrl||undefined;delete g.shop;}}
+  else{girls.push({id:++gCnt,name,shopId:shopId||undefined,nick,addr,mapUrl:mapUrl||undefined});saveCounters();}
   gasPost({action:'saveGirls', payload:girls});
   closeMo('moGirl');renderMasters();renderGirlInputs();showToast('保存しました！💾');
 }
