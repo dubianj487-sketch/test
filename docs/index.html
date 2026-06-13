@@ -473,8 +473,6 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 body.font-shun #splash{background:#d8eef8}
 body.font-shun.dark-active #splash{background:#080810}
 #splash.hide{opacity:0;pointer-events:none}
-.splash-moon{font-size:52px;line-height:1;animation:splashPulse 1.6s ease-in-out infinite}
-@keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 .splash-title{font-family:'Kaisei Opti',serif;font-size:38px;font-weight:700;color:#fff;letter-spacing:6px;text-shadow:0 2px 12px rgba(0,0,0,.15)}
 .splash-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:splashSpin .8s linear infinite;margin-top:8px}
 @keyframes splashSpin{to{transform:rotate(360deg)}}
@@ -482,7 +480,7 @@ body.font-shun.dark-active #splash{background:#080810}
 </head>
 <body>
 <div id="splash">
-  <div class="splash-moon">🌙</div>
+  <canvas id="splashMoon" width="90" height="90" style="border-radius:50%;box-shadow:0 0 40px rgba(255,240,140,.4),0 0 80px rgba(255,220,80,.12),0 4px 20px rgba(0,0,0,.25)"></canvas>
   <div class="splash-title">SILDE</div>
   <div class="splash-spinner"></div>
 </div>
@@ -852,7 +850,7 @@ function onMemoInput(){
   initApp();
   renderHistPage();
   const _sp=document.getElementById('splash');
-  if(_sp){_sp.classList.add('hide');setTimeout(function(){_sp.remove();},550);}
+  if(_sp){_sp.classList.add('hide');setTimeout(function(){if(_moonRafId)cancelAnimationFrame(_moonRafId);_sp.remove();},550);}
   document.getElementById('memoInp').value = memoText;
   var seenMemo = localStorage.getItem('memoSeen') || '';
   if (memoText && memoText !== seenMemo) openMemo(false);
@@ -2876,6 +2874,49 @@ async function initMap() {
   if (_mapPoll) clearInterval(_mapPoll);
   _mapPoll = setInterval(_pollLive, 5000);
 }
+
+// ===== スプラッシュ 3D月アニメーション =====
+var _moonRafId=null;
+(function(){
+  var c=document.getElementById('splashMoon');
+  if(!c)return;
+  var ctx=c.getContext('2d');
+  var W=90,H=90,R=44;
+  // オフスクリーンに表面テクスチャを3枚分描画（シームレスループ用）
+  var sc=document.createElement('canvas');
+  sc.width=W*3;sc.height=H;
+  var sx=sc.getContext('2d');
+  [0,1,2].forEach(function(t){
+    var ox=t*W;
+    var bg=sx.createLinearGradient(ox,0,ox+W,H);
+    bg.addColorStop(0,'#ddd090');bg.addColorStop(0.5,'#c8ba72');bg.addColorStop(1,'#ddd090');
+    sx.fillStyle=bg;sx.fillRect(ox,0,W,H);
+    [{x:18,y:20,r:7},{x:62,y:14,r:5},{x:36,y:64,r:9},{x:70,y:56,r:6},{x:10,y:70,r:4},{x:50,y:36,r:5},{x:80,y:28,r:4}].forEach(function(cr){
+      var cg=sx.createRadialGradient(ox+cr.x-2,cr.y-2,1,ox+cr.x,cr.y,cr.r);
+      cg.addColorStop(0,'rgba(55,38,8,.8)');
+      cg.addColorStop(0.65,'rgba(75,55,20,.5)');
+      cg.addColorStop(1,'rgba(180,160,85,.1)');
+      sx.fillStyle=cg;sx.beginPath();sx.arc(ox+cr.x,cr.y,cr.r,0,Math.PI*2);sx.fill();
+    });
+  });
+  var off=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.save();
+    ctx.beginPath();ctx.arc(W/2,H/2,R,0,Math.PI*2);ctx.clip();
+    ctx.drawImage(sc,-off,0);
+    // 3Dシェーディング
+    var sh=ctx.createRadialGradient(28,26,3,W/2,H/2,R);
+    sh.addColorStop(0,'rgba(255,255,210,.22)');
+    sh.addColorStop(0.42,'rgba(0,0,0,0)');
+    sh.addColorStop(1,'rgba(0,0,0,.52)');
+    ctx.fillStyle=sh;ctx.fillRect(0,0,W,H);
+    ctx.restore();
+    off=(off+0.55)%W;
+    _moonRafId=requestAnimationFrame(draw);
+  }
+  draw();
+})();
 </script>
 </body>
 </html>
