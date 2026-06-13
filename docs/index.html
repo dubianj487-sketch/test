@@ -1682,21 +1682,13 @@ function buildRunsHtml(e,showNow){
       if(!e.runs[i].stops.every(s=>s.time<=now)){activeRunIdx=i;break;}
     }
   }
-  // カウントダウンは最初の未来出発便のみ
-  let countdownRunIdx=-1;
-  if(now){
-    for(let i=0;i<e.runs.length;i++){
-      const dt=e.runs[i].departTime||e.runs[i].departLabel.slice(0,5);
-      if(dt>now){countdownRunIdx=i;break;}
-    }
-  }
   let nowInserted=false;
   let h='';
   e.runs.forEach((run,ri)=>{
     const allPast=now?run.stops.every(s=>s.time<=now):false;
     // アクティブ便だけデフォルト開く、複数便なく1便だけのときも開く
     const isOpen=!showNow||ri===activeRunIdx||(activeRunIdx<0&&ri===e.runs.length-1)||e.runs.length===1;
-    const _ct=(showNow&&ri===countdownRunIdx)?`<span class="run-countdown" data-time="${run.departTime||run.departLabel.slice(0,5)}" style="font-size:12px;font-weight:700"></span>`:'';
+    const _ct=(showNow&&ri===activeRunIdx)?`<span class="run-countdown" data-time="${run.departTime||run.departLabel.slice(0,5)}" style="font-size:12px;font-weight:700"></span>`:'';
     const _doneBadge=allPast?`<span class="run-done-hdr-badge">✓ 完了</span>`:'';
     const _arr=showNow&&e.runs.length>1?`<span class="run-acc-arr">▶</span>`:'';
     // stops HTML
