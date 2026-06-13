@@ -412,9 +412,21 @@ input:disabled{background:#f0f0f0;color:#bbb}
 
 .empty-hist{text-align:center;padding:40px 14px;color:#ccc}
 .empty-hist .ei{font-size:44px;margin-bottom:8px}
-.fab{position:fixed;bottom:72px;right:16px;z-index:190;width:56px;height:56px;background:var(--pk);border:none;border-radius:50%;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(200,100,140,.4);transition:transform .15s,box-shadow .15s}
+.fab-wrap{position:fixed;bottom:72px;right:16px;z-index:190;display:flex;flex-direction:column;align-items:flex-end;gap:14px}
+.fab-menu{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.fab-item{display:flex;align-items:center;gap:10px;transform:translateY(16px) scale(.8);opacity:0;transition:transform .2s,opacity .2s;pointer-events:none}
+.fab-wrap.open .fab-item{transform:translateY(0) scale(1);opacity:1;pointer-events:auto}
+.fab-wrap.open .fab-item:nth-child(1){transition-delay:.07s}
+.fab-wrap.open .fab-item:nth-child(2){transition-delay:.04s}
+.fab-wrap.open .fab-item:nth-child(3){transition-delay:.01s}
+.fab-lbl{background:rgba(30,10,20,.78);color:#fff;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;white-space:nowrap;backdrop-filter:blur(4px)}
+.fab-mini{width:46px;height:46px;border-radius:50%;background:var(--pk);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(200,100,140,.4);flex-shrink:0}
+.fab-mini:active{transform:scale(.93)}
+.fab{width:56px;height:56px;background:var(--pk);border:none;border-radius:50%;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(200,100,140,.4);transition:transform .15s,box-shadow .15s;flex-shrink:0}
 .fab:hover,.fab:focus{transform:scale(1.08);box-shadow:0 6px 18px rgba(200,100,140,.5)}
 .fab:active{transform:scale(.95);box-shadow:0 2px 8px rgba(200,100,140,.3)}
+.fab-plus-icon{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.fab-wrap.open .fab-plus-icon{transform:rotate(45deg)}
 
 
 .empty-hist p{font-size:13px}
@@ -594,10 +606,29 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 
 <div class="pg" id="pg-secret"></div>
 
-<!-- FAB -->
-<button class="fab" onclick="openSchedModal()" aria-label="スケジュール作成">
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-</button>
+<!-- FAB overlay -->
+<div id="fabOverlay" onclick="closeFab()" style="display:none;position:fixed;inset:0;z-index:189"></div>
+
+<!-- FAB Speed Dial -->
+<div class="fab-wrap" id="fabWrap">
+  <div class="fab-menu">
+    <div class="fab-item">
+      <span class="fab-lbl">共有メモ</span>
+      <button class="fab-mini" onclick="fabAction('memo')" aria-label="共有メモ"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+    </div>
+    <div class="fab-item">
+      <span class="fab-lbl">インポート</span>
+      <button class="fab-mini" onclick="fabAction('import')" aria-label="インポート"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+    </div>
+    <div class="fab-item">
+      <span class="fab-lbl">スケジュール作成</span>
+      <button class="fab-mini" onclick="fabAction('sched')" aria-label="スケジュール作成"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg></button>
+    </div>
+  </div>
+  <button class="fab" onclick="toggleFab()" aria-label="メニュー">
+    <svg class="fab-plus-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+</div>
 
 <div class="bnav">
   <button class="nb active" id="nb-hist" onclick="switchPg('hist')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>スケジュール</button>
@@ -2441,6 +2472,22 @@ function delGirl(){
 })();
 
 function closeMo(id){document.getElementById(id).classList.remove('open');}
+function toggleFab(){
+  const w=document.getElementById('fabWrap');
+  const ov=document.getElementById('fabOverlay');
+  if(w.classList.contains('open')){closeFab();}
+  else{w.classList.add('open');ov.style.display='block';}
+}
+function closeFab(){
+  document.getElementById('fabWrap').classList.remove('open');
+  document.getElementById('fabOverlay').style.display='none';
+}
+function fabAction(type){
+  closeFab();
+  if(type==='sched')openSchedModal();
+  else if(type==='import'){document.getElementById('importTxt').value='';document.getElementById('moImport').classList.add('open');}
+  else if(type==='memo')openMemo(true);
+}
 document.querySelectorAll('.mo').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
 
 // ========== トースト ==========
