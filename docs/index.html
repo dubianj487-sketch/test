@@ -2893,32 +2893,13 @@ var _moonRafId=null;
   var camera=new THREE.PerspectiveCamera(42,1,0.1,100);
   camera.position.z=2.6;
 
-  // プロシージャル月テクスチャ
-  var tc=document.createElement('canvas');tc.width=512;tc.height=256;
-  var tx=tc.getContext('2d');
-  // ベース色
-  var bg=tx.createLinearGradient(0,0,512,256);
-  bg.addColorStop(0,'#dbd296');bg.addColorStop(0.5,'#c8ba72');bg.addColorStop(1,'#dbd296');
-  tx.fillStyle=bg;tx.fillRect(0,0,512,256);
-  // クレーター
-  var craters=[
-    {x:80,y:60,r:22},{x:200,y:40,r:16},{x:140,y:130,r:28},{x:340,y:80,r:18},
-    {x:420,y:160,r:24},{x:60,y:190,r:14},{x:280,y:180,r:20},{x:460,y:60,r:12},
-    {x:380,y:210,r:16},{x:170,y:210,r:12},{x:310,y:130,r:10},{x:100,y:110,r:10},
-    {x:450,y:110,r:8},{x:240,y:90,r:8}
-  ];
-  craters.forEach(function(cr){
-    var g=tx.createRadialGradient(cr.x-cr.r*.3,cr.y-cr.r*.3,cr.r*.1,cr.x,cr.y,cr.r);
-    g.addColorStop(0,'rgba(50,35,8,.82)');
-    g.addColorStop(0.6,'rgba(70,52,18,.55)');
-    g.addColorStop(0.85,'rgba(160,145,85,.2)');
-    g.addColorStop(1,'rgba(220,210,140,.05)');
-    tx.fillStyle=g;tx.beginPath();tx.arc(cr.x,cr.y,cr.r,0,Math.PI*2);tx.fill();
-  });
-  var texture=new THREE.CanvasTexture(tc);
-
   var geo=new THREE.SphereGeometry(1,64,64);
-  var mat=new THREE.MeshStandardMaterial({map:texture,roughness:0.92,metalness:0.04});
+  var mat=new THREE.MeshStandardMaterial({color:0x888880,roughness:0.95,metalness:0.02});
+  var loader=new THREE.TextureLoader();
+  loader.load(
+    'https://raw.githubusercontent.com/mrdoob/three.js/r150/examples/textures/planets/moon_1024.jpg',
+    function(tex){mat.map=tex;mat.color.set(0xffffff);mat.needsUpdate=true;}
+  );
   var moon=new THREE.Mesh(geo,mat);
   scene.add(moon);
 
