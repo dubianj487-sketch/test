@@ -1411,16 +1411,19 @@ function updateRunCountdowns(){
     if(diff>0){
       const h=Math.floor(diff/60),m=diff%60;
       el.textContent=h>0?(m>0?`あと${h}時間${m}分`:`あと${h}時間`):`あと${m}分`;
-      el.style.color=diff<=15?'#e65100':'var(--txs)';
+      if(diff<=10) el.style.color='#e65100';
+      else if(diff<=30) el.style.color='#ca8a04';
+      else if(diff<=60) el.style.color='#d97706';
+      else el.style.color='var(--txs)';
       el.style.opacity='1';
     } else if(diff===0){
       el.textContent='まもなく出発';
       el.style.color='#e65100';
       el.style.opacity='1';
     } else {
-      el.textContent='出発済み';
-      el.style.color='var(--txs)';
-      el.style.opacity='0.4';
+      el.textContent='進行中';
+      el.style.color='var(--pk)';
+      el.style.opacity='1';
     }
   });
 }
