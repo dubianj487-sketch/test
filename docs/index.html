@@ -1165,7 +1165,8 @@ function renderGirlInputs(){
     const d=document.createElement('div');
     d.className='gi-card';
     d.dataset.uid=row.uid;
-    const gopts=girls.map(g=>`<option value="${g.id}" ${row.girlId==g.id?'selected':''}>${g.name}</option>`).join('');
+    const _usedIds=new Set(girlRows.filter(r=>r.uid!==row.uid&&r.girlId&&r.girlId!=='_c').map(r=>Number(r.girlId)));
+    const gopts=girls.filter(g=>!_usedIds.has(g.id)).map(g=>`<option value="${g.id}" ${row.girlId==g.id?'selected':''}>${g.name}</option>`).join('');
     const addrHtml=(row.girlId&&row.girlId!=='_c')?(()=>{const g=girls.find(x=>x.id==row.girlId);return g&&g.nick?`<div style="font-size:11px;color:#6b7280;background:var(--pkp);border-radius:8px;padding:5px 10px;margin-bottom:8px">${_svgPin}${g.nick}</div>`:''})():'';
     d.innerHTML=`
       <div class="gi-head">
