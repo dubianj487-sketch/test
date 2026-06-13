@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SILDE — 機能一覧</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Opti:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Zen Maru Gothic',sans-serif;background:#f9eef4;color:#2a1218;min-height:100vh;padding:24px 16px 60px}
+h1{font-family:'Kaisei Opti',serif;font-size:28px;color:#CE95B0;text-align:center;letter-spacing:4px;margin-bottom:4px}
+.subtitle{text-align:center;font-size:13px;color:#9a6a80;margin-bottom:32px}
+.count{text-align:center;font-size:12px;color:#b080a0;margin-bottom:8px}
+.section{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(200,100,140,.10);margin-bottom:16px;overflow:hidden}
+.section-header{background:linear-gradient(90deg,#e88fac,#CE95B0);color:#fff;font-weight:700;font-size:14px;padding:10px 16px;letter-spacing:1px}
+ul{padding:10px 16px 14px;list-style:none}
+li{font-size:13px;padding:6px 0;border-bottom:1px solid #fce8f2;line-height:1.5;display:flex;gap:8px}
+li:last-child{border-bottom:none}
+li::before{content:'•';color:#CE95B0;font-size:16px;flex-shrink:0;line-height:1.4}
+.tag{display:inline-block;background:#fce8f2;color:#c0607a;font-size:10px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+.back{display:block;text-align:center;margin-top:24px;color:#CE95B0;font-size:14px;text-decoration:none;font-weight:700}
+.updated{text-align:center;font-size:11px;color:#c0a0b0;margin-top:8px}
+</style>
+</head>
+<body>
+<h1>🌸 SILDE</h1>
+<p class="subtitle">ドライバー向けスケジュール管理アプリ</p>
+<p class="count">実装機能一覧 — 2026年6月時点</p>
+
+<div class="section">
+  <div class="section-header">📅 スケジュール管理</div>
+  <ul>
+    <li>日付・出発地・女の子の情報からスケジュールを生成</li>
+    <li>出発時刻・迎え時刻・到着時刻を自動計算</li>
+    <li>生成したスケジュールを履歴として保存</li>
+    <li>保存済みスケジュールの時間・内容を修正</li>
+    <li>スケジュールを削除</li>
+    <li>しゅんくん用テキストを貼り付けて自動解析・インポート</li>
+    <li>同日スケジュール重複時に上書き確認</li>
+    <li>過去3世代までの修正履歴を記録・表示</li>
+    <li>スワイプで編集・削除ボタンを表示</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">👁 スケジュール表示・検索</div>
+  <ul>
+    <li>今日のスケジュールをカード表示</li>
+    <li>月ごとにアコーディオンで過去スケジュールを一覧</li>
+    <li>タップで詳細情報をモーダル表示</li>
+    <li>「今日」と「月別」を2ページスライド切り替え</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">⏱ 移動時間計算</div>
+  <ul>
+    <li>出発地→女の子、女の子間、最終→店舗の各区間で分数入力</li>
+    <li>過去の利用実績から自動推奨値を表示</li>
+    <li>参考値から移動時間を一括入力</li>
+    <li>到着時刻から必要な出発時刻を逆算</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">👧 女の子マスター</div>
+  <ul>
+    <li>名前・通称・所属店舗・住所・マップURLを登録</li>
+    <li>30分単位のステッパーで出勤時間を設定</li>
+    <li>ドラッグ操作でカードの順序を変更</li>
+    <li>1便に複数の女の子を追加</li>
+    <li>同じ出勤時間の女の子をグループ表示</li>
+    <li>距離順ボタンを押すとグループ内を距離順にソート</li>
+    <li>追加済みの女の子はドロップダウンに表示しない（重複防止）</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">📍 場所マスター（出発地・送り先）</div>
+  <ul>
+    <li>場所名・通称・住所を登録</li>
+    <li>場所を「店舗」として分類するフラグ</li>
+    <li>店舗専用のタグ表示名を設定</li>
+    <li>登録済み出発地から選択、または直接住所入力</li>
+    <li>場所の編集・削除</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">📋 テキスト出力・共有</div>
+  <ul>
+    <li>しゅんくん用フォーマットでテキスト生成</li>
+    <li>ボーイさん用フォーマットでテキスト生成</li>
+    <li>各テキストをクリップボードにコピー</li>
+    <li>Share APIまたはクリップボード経由で共有</li>
+    <li>コピー用テキストは通称名（nick）で表示</li>
+    <li>迎え→「迎」、到着→「着」で出力</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">⏳ リアルタイム進行管理</div>
+  <ul>
+    <li>出発時刻までのカウントダウンを表示</li>
+    <li>最初の未完了便を「進行中」で強調</li>
+    <li>全便終了で「✓ 完了」表示</li>
+    <li>各停留所で「いまここ」マーカー表示</li>
+    <li>テスト用に任意の日時を設定して動作確認</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">🗺 マップ</div>
+  <ul>
+    <li>MapLibre GL JSでOpenStreetMapを表示</li>
+    <li>登録された全場所・女の子をマーカー表示</li>
+    <li>しゅん・ひーちゃんの現在位置をリアルタイム表示</li>
+    <li>マーカータップでバッテリー・速度・モーション情報表示</li>
+    <li>全マーカーが画面に収まるよう自動ズーム</li>
+    <li>5秒ごとに位置情報を自動更新</li>
+    <li>Overland / OwnTracksアプリから位置送信に対応</li>
+    <li>女の子登録画面からGoogle Mapsを直接起動</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">🔋 バッテリー表示</div>
+  <ul>
+    <li>しゅん・ひーちゃんのバッテリー残量を表示</li>
+    <li>充電中は⚡、完了は◆でアイコン表示</li>
+    <li>最終更新を「○分前」で表示</li>
+    <li>残量を視覚的なゲージで表示</li>
+    <li>iOSショートカット連携で自動取得</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">📝 共有メモ</div>
+  <ul>
+    <li>複数端末間で共有するメモを入力・保存</li>
+    <li>スワイプで開閉するボトムシート</li>
+    <li>新着メモがあれば自動で引き出す、なければ完全に隠す</li>
+    <li>FABの共有メモボタンで開閉をトグル</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">🎨 テーマ・デザイン</div>
+  <ul>
+    <li>かわいいテーマ（ピンク系）</li>
+    <li>かっこいいテーマ（ブルー系、しゅんテーマ）</li>
+    <li>ダーク / ライト / 自動（OS連動）のカラーモード</li>
+    <li>ダークモード時に流れ星付き星空アニメーション</li>
+    <li>起動時に3D月スプラッシュ画面（NASA月テクスチャ）</li>
+    <li>テーマフラッシュ防止のインライン同期スクリプト</li>
+    <li>まるゴシック / システムフォントを切り替え</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">🔘 ナビゲーション・UI</div>
+  <ul>
+    <li>5タブ フッターナビゲーション</li>
+    <li>右下のTwitter風FABから3アクション（スケジュール作成・インポート・共有メモ）</li>
+    <li>スピードダイアルでアクションを扇形展開</li>
+    <li>トースト通知で操作結果を表示</li>
+    <li>カード型 / ガラス調デザイン</li>
+    <li>iOSのノッチ・Dynamic Island・ナビゲーションバーに対応（セーフエリア）</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">☁️ データ管理・バックエンド</div>
+  <ul>
+    <li>Google Apps Script経由でGoogle Sheetsに全データを保存</li>
+    <li>10秒ごとに自動同期（複数端末対応）</li>
+    <li>住所からジオコーディング（GAS + Google Maps API）</li>
+    <li>ジオコーディング結果をローカルキャッシュ</li>
+    <li>女の子・場所・スケジュール・メモ・バッテリー・位置情報を個別シートで管理</li>
+    <li>シークレットタブ（パスワード保護付きリンク管理）</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="section-header">📱 PWA</div>
+  <ul>
+    <li>iPhone / Androidのホーム画面にインストール可能</li>
+    <li>全画面表示（ブラウザUIなし）</li>
+    <li>基本機能はオフラインでも動作</li>
+    <li>ステータスバーをアプリカラーに統合</li>
+  </ul>
+</div>
+
+<a class="back" href="/">← アプリに戻る</a>
+<p class="updated">最終更新 2026年6月13日</p>
+</body>
+</html>
