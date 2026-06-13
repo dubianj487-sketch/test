@@ -884,7 +884,7 @@ function initApp() {
   window.addEventListener('resize',setPgHeight);
   var _tickLastDate=null;
   (function schedNowTimer(){function tick(){
-    if(!_debugTime&&document.getElementById('pg-hist').classList.contains('active')){
+    if(!_debugTime&&!_debugDate&&document.getElementById('pg-hist').classList.contains('active')){
       var today=todayVal();
       if(today!==_tickLastDate){
         // 日付が変わったときだけ全体再描画
@@ -982,7 +982,7 @@ function ceil5(min){return Math.ceil(Number(min)/5)*5;}
 function roundTime5(hhmm){const[h,m]=hhmm.split(':').map(Number);const t=Math.floor((h*60+m)/5)*5;return `${p2(Math.floor(t/60)%24)}:${p2(t%60)}`}
 function setToday(){document.getElementById('dateInp').value=fmtDV(new Date())}
 function setTomorrow(){const t=new Date();t.setDate(t.getDate()+1);document.getElementById('dateInp').value=fmtDV(t)}
-function todayVal(){return fmtDV(new Date())}
+function todayVal(){return _debugDate||fmtDV(new Date())}
 
 // ========== ページ切り替え ==========
 function updateThemeColor(){
@@ -1740,18 +1740,17 @@ function _doImportSave(parsed,existing){
 }
 
 // ========== 履歴ページ ==========
-let _debugTime=null;
+let _debugTime=null, _debugDate=null;
 function nowHHMM(){if(_debugTime)return _debugTime;const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
-function setDebugTime(v){
-  _debugTime=v||null;
-  const entry=schedHistory.find(x=>x.dateVal===todayVal());
-  if(!entry)return;
-  const tmp=document.createElement('div');
-  tmp.innerHTML=buildRunsHtml(entry,true);
-  const newRuns=[...tmp.querySelectorAll('.hist-detail-run')];
-  const oldRuns=[...document.querySelectorAll('#histPageToday .hist-detail-run')];
-  oldRuns.forEach((r,i)=>{if(newRuns[i])r.replaceWith(newRuns[i]);});
-  updateRunCountdowns();
+function setDebugDatetime(v){
+  if(v){
+    const [datePart,timePart]=v.split('T');
+    _debugDate=datePart||null;
+    _debugTime=timePart?timePart.slice(0,5):null;
+  } else {
+    _debugDate=null; _debugTime=null;
+  }
+  renderHistPage();
 }
 function buildRunsHtml(e,showNow){
   const now=showNow?nowHHMM():null;
@@ -1802,7 +1801,7 @@ function buildRunsHtml(e,showNow){
 // ========== シークレット ==========
 let _secretUnlocked=false;
 function isSecretAutoUnlock(){
-  if(_debugTime)return true;
+  if(_debugTime||_debugDate)return true;
   return Date.now()>=new Date('2026-06-10T00:00:00+09:00').getTime();
 }
 function renderSecretPage(){
@@ -1928,9 +1927,9 @@ function renderHistPage(){
   }
   todayHtml+=`</div>`;
   todayHtml+=renderBatteryCard();
-  todayHtml+=`<div class="debug-time-row"><span class="debug-time-lbl">🕐 テスト時刻</span><input class="debug-time-inp" id="debugTimeInp" type="time" onchange="setDebugTime(this.value)"><button class="debug-time-clr" onclick="setDebugTime('');document.getElementById('debugTimeInp').value=''">リセット</button></div>`;
+  todayHtml+=`<div class="debug-time-row"><span class="debug-time-lbl">🕐 テスト時刻</span><input class="debug-time-inp" id="debugTimeInp" type="datetime-local" onchange="setDebugDatetime(this.value)"><button class="debug-time-clr" onclick="setDebugDatetime('');document.getElementById('debugTimeInp').value=''">リセット</button></div>`;
   tp.innerHTML=todayHtml;
-  if(_debugTime)document.getElementById('debugTimeInp').value=_debugTime;
+  if(_debugDate&&_debugTime)document.getElementById('debugTimeInp').value=`${_debugDate}T${_debugTime}`;
   let html='';
   const monthMap={};
   others.forEach(e=>{
