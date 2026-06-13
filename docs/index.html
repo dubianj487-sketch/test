@@ -242,6 +242,8 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .gi-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .gi-badge{font-size:11px;font-weight:700;color:var(--teal);background:var(--pul);padding:3px 10px;border-radius:20px}
 .rm-btn{background:none;border:none;font-size:17px;color:#c0a8c8;cursor:pointer;padding:0}
+.gi-group-hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 6px;margin-bottom:2px}
+.gi-group-lbl{font-size:11px;font-weight:700;color:var(--pk);letter-spacing:.5px}
 
 .shift-stepper{display:flex;align-items:center;margin-bottom:6px;background:var(--pkp);border-radius:11px;overflow:hidden}
 .shift-stepper-btn{width:44px;height:44px;border:none;background:none;cursor:pointer;font-size:20px;font-weight:700;color:var(--pk);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .12s}
@@ -1133,35 +1135,54 @@ function getGroups(){
 function renderGirlInputs(){
   const c=document.getElementById('girlInputs');
   c.innerHTML='';
-  girlRows.forEach((row,i)=>{
-    const d=document.createElement('div');
-    d.className='gi-card';
-    const gopts=girls.map(g=>`<option value="${g.id}" ${row.girlId==g.id?'selected':''}>${g.name}</option>`).join('');
-    const _svgPin=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-    const addrHtml=(row.girlId&&row.girlId!=='_c')?(()=>{const g=girls.find(x=>x.id==row.girlId);return g?`<div style="font-size:11px;color:#6b7280;background:var(--pkp);border-radius:8px;padding:5px 10px;margin-bottom:8px">${_svgPin}${g.nick}</div>`:''})():'';
-    d.innerHTML=`
-      <div class="gi-head">
-        <span class="gi-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${i+1}人目</span>
-        ${girlRows.length>1?`<button class="rm-btn" onclick="removeGirlRow(${row.uid})">✕</button>`:''}
-      </div>
-      <label>女の子</label>
-      <select onchange="onGirlSel(${row.uid},this.value)" style="margin-bottom:8px">
-        <option value="">-- 選択 --</option>
-        ${gopts}
-        <option value="_c" ${row.girlId==='_c'?'selected':''}>直接入力</option>
-      </select>
-      ${row.girlId==='_c'?`<input type="text" placeholder="名前" value="${row.customName}" oninput="onCustomName(${row.uid},this.value)" style="margin-bottom:8px">`:addrHtml}
-      <label>出勤時間</label>
-      <div class="shift-stepper">
-        <button class="shift-stepper-btn" onclick="stepShiftTime(${row.uid},-1)">－</button>
-        <div class="shift-stepper-time" id="stepper_${row.uid}">${row.shiftTime||'19:00'}</div>
-        <button class="shift-stepper-btn" onclick="stepShiftTime(${row.uid},+1)">＋</button>
-      </div>
-      <div class="shift-stepper-hint">30分単位で調整</div>
-      ${i===girlRows.length-1?`<button class="btn bo" style="margin-top:6px;margin-bottom:0" onclick="addGirlRow()">＋ 女の子を追加</button>`:''}
-    `;
-    c.appendChild(d);
+  const _svgPin=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+  const _svgUser=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  // 出勤時間でグループ化
+  const timeGroups={};
+  girlRows.forEach(r=>{const k=r.shiftTime||'_notime';if(!timeGroups[k])timeGroups[k]=[];timeGroups[k].push(r);});
+  const sortedKeys=Object.keys(timeGroups).filter(k=>k!=='_notime').sort();
+  if(timeGroups['_notime'])sortedKeys.push('_notime');
+  sortedKeys.forEach(shiftTime=>{
+    const group=timeGroups[shiftTime];
+    if(shiftTime!=='_notime'){
+      const hdr=document.createElement('div');
+      hdr.className='gi-group-hdr';
+      hdr.innerHTML=`<span class="gi-group-lbl">${shiftTime} 出勤（${group.length}人）</span>`+
+        (group.length>=2?`<button class="btn bo" style="margin:0;padding:4px 10px;font-size:11px" onclick="sortGroupByDistance('${shiftTime}')">距離順</button>`:'');
+      c.appendChild(hdr);
+    }
+    group.forEach((row,gi)=>{
+      const d=document.createElement('div');
+      d.className='gi-card';
+      const gopts=girls.map(g=>`<option value="${g.id}" ${row.girlId==g.id?'selected':''}>${g.name}</option>`).join('');
+      const addrHtml=(row.girlId&&row.girlId!=='_c')?(()=>{const g=girls.find(x=>x.id==row.girlId);return g&&g.nick?`<div style="font-size:11px;color:#6b7280;background:var(--pkp);border-radius:8px;padding:5px 10px;margin-bottom:8px">${_svgPin}${g.nick}</div>`:''})():'';
+      d.innerHTML=`
+        <div class="gi-head">
+          <span class="gi-badge">${_svgUser}${gi+1}人目</span>
+          ${girlRows.length>1?`<button class="rm-btn" onclick="removeGirlRow(${row.uid})">✕</button>`:''}
+        </div>
+        <label>女の子</label>
+        <select onchange="onGirlSel(${row.uid},this.value)" style="margin-bottom:8px">
+          <option value="">-- 選択 --</option>
+          ${gopts}
+          <option value="_c" ${row.girlId==='_c'?'selected':''}>直接入力</option>
+        </select>
+        ${row.girlId==='_c'?`<input type="text" placeholder="名前" value="${row.customName}" oninput="onCustomName(${row.uid},this.value)" style="margin-bottom:8px">`:addrHtml}
+        <label>出勤時間</label>
+        <div class="shift-stepper">
+          <button class="shift-stepper-btn" onclick="stepShiftTime(${row.uid},-1)">－</button>
+          <div class="shift-stepper-time" id="stepper_${row.uid}">${row.shiftTime||'19:00'}</div>
+          <button class="shift-stepper-btn" onclick="stepShiftTime(${row.uid},+1)">＋</button>
+        </div>
+        <div class="shift-stepper-hint">30分単位で調整</div>
+      `;
+      c.appendChild(d);
+    });
   });
+  const addWrap=document.createElement('div');
+  addWrap.style.cssText='margin-top:6px';
+  addWrap.innerHTML=`<button class="btn bo" style="width:100%" onclick="addGirlRow()">＋ 女の子を追加</button>`;
+  c.appendChild(addWrap);
   renderGroupMinInputs();
 }
 
@@ -1262,6 +1283,38 @@ function onSegMin(refUid, key, val){
   updateAutoDepDisplay();
 }
 
+function _haversine(lat1,lng1,lat2,lng2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.asin(Math.sqrt(a));
+}
+async function _sortGroupByDistSilent(shiftTime){
+  const storeAddr=getStoreAddr();
+  if(!storeAddr)return;
+  const storeCoord=await _geocode(storeAddr);
+  if(!storeCoord)return;
+  const idxs=[],rows=[];
+  girlRows.forEach((r,i)=>{if((r.shiftTime||'_notime')===shiftTime){idxs.push(i);rows.push(r);}});
+  if(rows.length<2)return;
+  const withDist=await Promise.all(rows.map(async row=>{
+    const g=girls.find(x=>x.id==row.girlId);
+    const addr=g?(g.addr||''):'';
+    if(!addr)return {row,dist:0};
+    const coord=await _geocode(addr);
+    return {row,dist:coord?_haversine(storeCoord.lat,storeCoord.lng,coord.lat,coord.lng):0};
+  }));
+  withDist.sort((a,b)=>b.dist-a.dist);
+  withDist.forEach((x,i)=>{girlRows[idxs[i]]=x.row;});
+}
+async function sortGroupByDistance(shiftTime){
+  const storeAddr=getStoreAddr();
+  if(!storeAddr){showToast('店舗住所が未登録です');return;}
+  showToast('距離を計算中…');
+  await _sortGroupByDistSilent(shiftTime);
+  renderGirlInputs();
+  renderGroupMinInputs();
+  showToast('距離順に並べ替えました');
+}
 function fillFromHistory(){
   const groups=getGroups();
   const sortedTimes=Object.keys(groups).filter(k=>k!=='_notime').sort();
@@ -1292,7 +1345,11 @@ function fillFromHistory(){
 }
 
 // ========== スケジュール生成 ==========
-function buildSchedule(){
+async function buildSchedule(){
+  // 出勤グループごとに距離順ソート（住所未登録の場合はスキップ）
+  const preTimes=Object.keys(getGroups()).filter(k=>k!=='_notime').sort();
+  for(const t of preTimes)await _sortGroupByDistSilent(t);
+  renderGirlInputs();
   const groups=getGroups();
   const sortedTimes=Object.keys(groups).filter(k=>k!=='_notime').sort();
   if(!sortedTimes.length){showToast('出勤時間を入れてね！');return;}
