@@ -1152,6 +1152,27 @@ function renderGirlInputs(){
   renderGroupMinInputs();
 }
 
+function _depNameFromLabel(lbl){
+  return (lbl||'').replace(/^\d{1,2}:\d{2}\s*/,'').replace(/出発$/,'').trim();
+}
+function getSuggestedMin(fromName,toName){
+  const counts={};
+  schedHistory.forEach(function(entry){
+    (entry.runs||[]).forEach(function(run){
+      (run.stops||[]).forEach(function(stop,i){
+        const m=parseInt(stop.min);
+        if(!m||m<=0)return;
+        const from=i===0?_depNameFromLabel(run.departLabel):run.stops[i-1].name;
+        if(from===fromName&&stop.name===toName)counts[m]=(counts[m]||0)+1;
+      });
+    });
+  });
+  const es=Object.entries(counts);
+  if(!es.length)return null;
+  es.sort(function(a,b){return b[1]-a[1]||Number(a[0])-Number(b[0]);});
+  return {min:Number(es[0][0]),count:es[0][1]};
+}
+
 function renderGroupMinInputs(){
   const card=document.getElementById('groupMinCard');
   const inner=document.getElementById('groupMinInner');
@@ -1179,6 +1200,8 @@ function renderGroupMinInputs(){
     let html=`<div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:10px">${_svgCar}${shiftTime} 出勤グループ（${group.length}人）</div>`;
     segs.forEach(seg=>{
       const stored=refRow.mins[seg.key]||'';
+      const sug=getSuggestedMin(seg.from,seg.to);
+      const sugHtml=sug?`<div style="font-size:11px;color:var(--txs);margin:-4px 0 10px;padding-left:2px">参考: <strong style="color:var(--teal)">${sug.min}分</strong>（過去${sug.count}回）</div>`:'';
       html+=`
         <div style="font-size:13px;color:#6b7280;margin-bottom:3px">${_svgPin}${seg.from} → ${seg.to}</div>
         <div class="min-row">
@@ -1193,6 +1216,7 @@ function renderGroupMinInputs(){
             data-to-name="${encodeURIComponent(seg.to)}"
             onclick="realMapCalc(${refRow.uid},'${seg.key}',this)">${_svgNav}自動</button>
         </div>
+        ${sugHtml}
       `;
     });
     wrap.innerHTML=html;
