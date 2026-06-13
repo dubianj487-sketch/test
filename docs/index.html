@@ -1434,11 +1434,17 @@ function buildSchedule(){
 function renderResult(dateLabel){
   const c=document.getElementById('resultBlocks');
   c.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--txs);margin-bottom:10px">${dateLabel}</div>`;
-  builtRuns.forEach(run=>{
+  const _now=nowHHMM();
+  let _activeRunIdx=-1;
+  for(let i=0;i<builtRuns.length;i++){
+    if(!builtRuns[i].stops.every(s=>s.time<=_now)){_activeRunIdx=i;break;}
+  }
+  builtRuns.forEach((run,ri)=>{
     const d=document.createElement('div');
     d.className='run-block';
     const _depTime=run.departTime||run.departLabel.slice(0,5);
-    let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="run-label" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div><span class="run-countdown" data-time="${_depTime}" style="font-size:12px;font-weight:700"></span></div>`;
+    const _ct=ri===_activeRunIdx?`<span class="run-countdown" data-time="${_depTime}" style="font-size:12px;font-weight:700"></span>`:'';
+    let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="run-label" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div>${_ct}</div>`;
     run.stops.forEach(s=>{
       const badge=s.type==='pick'?'<span class="tl-badge badge-pick">迎え</span>':'<span class="tl-badge badge-drop">到着</span>';
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
