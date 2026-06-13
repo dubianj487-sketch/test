@@ -1331,6 +1331,11 @@ async function sortAllByDistance(){
   showToast('距離を計算中…');
   const times=Object.keys(getGroups()).filter(k=>k!=='_notime').sort();
   for(const t of times)await _sortGroupByDistSilent(t);
+  // グループ自体も出勤時間順に並べ直す（時間不明は末尾）
+  const notime=girlRows.filter(r=>!r.shiftTime||r.shiftTime==='_notime');
+  const timed=girlRows.filter(r=>r.shiftTime&&r.shiftTime!=='_notime');
+  timed.sort((a,b)=>a.shiftTime.localeCompare(b.shiftTime));
+  girlRows.splice(0,girlRows.length,...timed,...notime);
   _girlsGrouped=true;
   renderGirlInputs();
   renderGroupMinInputs();
