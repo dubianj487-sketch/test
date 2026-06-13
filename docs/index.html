@@ -738,6 +738,7 @@ let histCnt = 0;
 let depMode = 'saved';
 let girlRows = [];
 let rowUid = 0;
+let _girlsGrouped = false;
 let builtRuns = [];
 let outShunTxt='', outBoyTxt='', outTab='shun';
 let currentBuiltDate='', currentBuiltDateLabel='';
@@ -1109,6 +1110,7 @@ function stepShiftTime(uid, delta){
 function addGirlRow(){
   const uid=++rowUid;
   girlRows.push({uid, girlId:'', customName:'', shiftTime:'19:00', mins:{}});
+  _girlsGrouped=false;
   renderGirlInputs();
 }
 function removeGirlRow(uid){
@@ -1142,21 +1144,24 @@ function renderGirlInputs(){
   c.innerHTML='';
   const _svgPin=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
   const _svgUser=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-  // girlRows の順序そのままで描画（並べ替えなし）
-  // 出勤時間が前の行と変わったときだけグループヘッダーを表示
-  let _lastSt=null, _blockIdx=0;
+  let _lastSt=null, _blockIdx=0, _globalIdx=0;
   girlRows.forEach((row)=>{
     const st=row.shiftTime||'_notime';
-    if(st!==_lastSt){
-      if(st!=='_notime'){
-        const hdr=document.createElement('div');
-        hdr.className='gi-group-hdr';
-        hdr.innerHTML=`<span class="gi-group-lbl">${st} 出勤</span>`;
-        c.appendChild(hdr);
-      }
-      _lastSt=st;_blockIdx=0;
-    } else {_blockIdx++;}
-    const gi=_blockIdx;
+    let gi;
+    if(_girlsGrouped){
+      if(st!==_lastSt){
+        if(st!=='_notime'){
+          const hdr=document.createElement('div');
+          hdr.className='gi-group-hdr';
+          hdr.innerHTML=`<span class="gi-group-lbl">${st} 出勤</span>`;
+          c.appendChild(hdr);
+        }
+        _lastSt=st;_blockIdx=0;
+      } else {_blockIdx++;}
+      gi=_blockIdx;
+    } else {
+      gi=_globalIdx++;
+    }
     const d=document.createElement('div');
     d.className='gi-card';
     d.dataset.uid=row.uid;
@@ -1326,6 +1331,7 @@ async function sortAllByDistance(){
   showToast('距離を計算中…');
   const times=Object.keys(getGroups()).filter(k=>k!=='_notime').sort();
   for(const t of times)await _sortGroupByDistSilent(t);
+  _girlsGrouped=true;
   renderGirlInputs();
   renderGroupMinInputs();
   showToast('距離順に並べ替えました');
@@ -1588,7 +1594,7 @@ function doSave(){
 
 function resetSchedForm(){
   document.getElementById('dateInp').value=fmtDV(new Date());
-  girlRows=[];rowUid=0;
+  girlRows=[];rowUid=0;_girlsGrouped=false;
   addGirlRow();
   document.getElementById('depLocSel').value='';
   document.getElementById('depManualName').value='';
@@ -2397,6 +2403,7 @@ function delGirl(){
     var reordered=newOrder.map(function(uid){return girlRows.find(function(r){return r.uid===uid;});}).filter(Boolean);
     if(reordered.length===girlRows.length)girlRows.splice(0,girlRows.length,...reordered);
     _d=null;
+    _girlsGrouped=true;
     renderGirlInputs();
   }
   window._initGirlDrag=function(){
