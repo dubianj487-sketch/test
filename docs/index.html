@@ -2921,7 +2921,7 @@ var _moonRafId=null;
   draw();
 })();
 
-// ===== スプラッシュ 桜の木アニメーション (かわいいテーマ用) =====
+// ===== スプラッシュ リアル桜の木アニメーション (かわいいテーマ用) =====
 var _cherryRafId=null;
 (function(){
   var c=document.getElementById('splashTree');
@@ -2930,63 +2930,181 @@ var _cherryRafId=null;
   c.width=W*dpr;c.height=H*dpr;
   var renderer=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
   renderer.setSize(W*dpr,H*dpr,false);renderer.setPixelRatio(1);
+  renderer.outputColorSpace=THREE.SRGBColorSpace||renderer.outputColorSpace;
+  var V=function(x,y,z){return new THREE.Vector3(x,y,z);};
+  var rnd=function(){return Math.random();};
+
   var scene=new THREE.Scene();
-  var camera=new THREE.PerspectiveCamera(48,W/H,0.1,200);
-  camera.position.set(0,2.8,9);camera.lookAt(0,4.2,0);
-  var sun=new THREE.DirectionalLight(0xffe8d0,1.9);sun.position.set(4,8,6);scene.add(sun);
-  scene.add(new THREE.AmbientLight(0xffd0e0,0.75));
-  var trunkM=new THREE.MeshStandardMaterial({color:0x4a2810,roughness:0.95,metalness:0});
-  var pink1=new THREE.MeshStandardMaterial({color:0xf9b8d0,roughness:0.6,metalness:0,transparent:true,opacity:0.95});
-  var pink2=new THREE.MeshStandardMaterial({color:0xf080a8,roughness:0.6,metalness:0,transparent:true,opacity:0.9});
-  var v=function(x,y,z){return new THREE.Vector3(x,y,z);};
-  function addBranch(from,to,r){
-    var dir=to.clone().sub(from);var len=dir.length();if(len<0.01)return;
-    var geo=new THREE.CylinderGeometry(r*0.6,r,len,7);
-    var mesh=new THREE.Mesh(geo,trunkM);
-    mesh.position.copy(from.clone().add(to).multiplyScalar(0.5));
-    var q=new THREE.Quaternion();q.setFromUnitVectors(v(0,1,0),dir.clone().normalize());
-    mesh.setRotationFromQuaternion(q);scene.add(mesh);
+  var camera=new THREE.PerspectiveCamera(38,W/H,0.1,200);
+  camera.position.set(0,3.4,11.5);camera.lookAt(0,3.7,0);
+
+  // ---- ライティング (やわらかい春の光) ----
+  scene.add(new THREE.HemisphereLight(0xfff0f6,0x6b4a3a,0.95));
+  var key=new THREE.DirectionalLight(0xfff2dc,1.25);key.position.set(5,9,6);scene.add(key);
+  var rim=new THREE.DirectionalLight(0xffd6e6,0.55);rim.position.set(-6,4,-5);scene.add(rim);
+
+  // ---- 樹皮テクスチャ (canvas生成) ----
+  function barkTex(){
+    var w=64,h=256,cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    var x=cv.getContext('2d');
+    var g=x.createLinearGradient(0,0,w,0);
+    g.addColorStop(0,'#3d2a20');g.addColorStop(0.5,'#5a3f30');g.addColorStop(1,'#33231a');
+    x.fillStyle=g;x.fillRect(0,0,w,h);
+    for(var i=0;i<320;i++){
+      x.strokeStyle='rgba('+(30+rnd()*55|0)+','+(20+rnd()*35|0)+','+(15+rnd()*25|0)+','+(0.12+rnd()*0.3)+')';
+      x.lineWidth=0.4+rnd()*1.6;
+      var px=rnd()*w,py=rnd()*h,len=18+rnd()*70;
+      x.beginPath();x.moveTo(px,py);x.lineTo(px+(rnd()-0.5)*5,py+len);x.stroke();
+    }
+    // 横方向の皮目 (桜特有)
+    for(var j=0;j<26;j++){
+      x.strokeStyle='rgba('+(70+rnd()*40|0)+','+(40+rnd()*25|0)+','+(30+rnd()*20|0)+','+(0.18+rnd()*0.22)+')';
+      x.lineWidth=0.8+rnd()*1.4;
+      var ly=rnd()*h;x.beginPath();x.moveTo(0,ly);x.lineTo(w,ly+(rnd()-0.5)*4);x.stroke();
+    }
+    var t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,3);return t;
   }
-  function addFlowers(center,size){
-    var n=7+Math.floor(Math.random()*5);
-    for(var i=0;i<n;i++){
-      var r=size*(0.38+Math.random()*0.48);
-      var mesh=new THREE.Mesh(new THREE.SphereGeometry(r,8,8),Math.random()>0.38?pink1:pink2);
-      mesh.position.set(center.x+(Math.random()-.5)*size*1.3,center.y+(Math.random()-.5)*size*.9,center.z+(Math.random()-.5)*size);
-      mesh.scale.set(1.25,.82,1.08);scene.add(mesh);
+  // ---- 桜の花テクスチャ (5枚花弁) ----
+  function blossomTex(){
+    var s=128,cv=document.createElement('canvas');cv.width=cv.height=s;
+    var x=cv.getContext('2d'),cx=s/2,cy=s/2;
+    for(var p=0;p<5;p++){
+      var a=p*(Math.PI*2/5)-Math.PI/2;
+      x.save();x.translate(cx,cy);x.rotate(a);
+      var grad=x.createLinearGradient(0,0,0,-s*0.44);
+      grad.addColorStop(0,'rgba(255,232,242,1)');
+      grad.addColorStop(0.55,'rgba(255,206,226,1)');
+      grad.addColorStop(1,'rgba(250,170,202,1)');
+      x.fillStyle=grad;x.beginPath();x.moveTo(0,0);
+      x.bezierCurveTo(-s*0.17,-s*0.15,-s*0.15,-s*0.40,-s*0.045,-s*0.47);
+      x.quadraticCurveTo(0,-s*0.40,0,-s*0.38);
+      x.quadraticCurveTo(0,-s*0.40,s*0.045,-s*0.47);
+      x.bezierCurveTo(s*0.15,-s*0.40,s*0.17,-s*0.15,0,0);
+      x.closePath();x.fill();
+      x.restore();
+    }
+    var cg=x.createRadialGradient(cx,cy,0,cx,cy,s*0.16);
+    cg.addColorStop(0,'rgba(255,243,180,0.98)');
+    cg.addColorStop(0.5,'rgba(250,200,120,0.5)');
+    cg.addColorStop(1,'rgba(248,160,195,0)');
+    x.fillStyle=cg;x.beginPath();x.arc(cx,cy,s*0.18,0,7);x.fill();
+    return new THREE.CanvasTexture(cv);
+  }
+  // ---- 単一花弁テクスチャ (散る用) ----
+  function petalTex(){
+    var s=64,cv=document.createElement('canvas');cv.width=cv.height=s;
+    var x=cv.getContext('2d'),cx=s/2;
+    var grad=x.createLinearGradient(0,s*0.95,0,s*0.05);
+    grad.addColorStop(0,'rgba(255,225,238,1)');
+    grad.addColorStop(0.6,'rgba(255,196,220,1)');
+    grad.addColorStop(1,'rgba(248,164,198,1)');
+    x.fillStyle=grad;x.beginPath();x.moveTo(cx,s*0.95);
+    x.bezierCurveTo(s*0.06,s*0.62,s*0.10,s*0.16,cx-s*0.06,s*0.08);
+    x.quadraticCurveTo(cx,s*0.20,cx+s*0.06,s*0.08);
+    x.bezierCurveTo(s*0.90,s*0.16,s*0.94,s*0.62,cx,s*0.95);
+    x.closePath();x.fill();
+    return new THREE.CanvasTexture(cv);
+  }
+
+  var bark=barkTex(),btex=blossomTex(),ptex=petalTex();
+  var trunkM=new THREE.MeshStandardMaterial({map:bark,color:0x8a6450,roughness:1,metalness:0});
+
+  var treeGroup=new THREE.Group();scene.add(treeGroup);
+  var clusters=[]; // {pos, r} 花を咲かせる位置
+
+  // ---- 再帰的に枝を成長させる ----
+  function tilt(dir,ang,az){
+    var up=Math.abs(dir.y)>0.98?V(1,0,0):V(0,1,0);
+    var side=new THREE.Vector3().crossVectors(dir,up).normalize();
+    var fwd=new THREE.Vector3().crossVectors(side,dir).normalize();
+    return dir.clone().multiplyScalar(Math.cos(ang))
+      .add(side.multiplyScalar(Math.sin(ang)*Math.cos(az)))
+      .add(fwd.multiplyScalar(Math.sin(ang)*Math.sin(az))).normalize();
+  }
+  function grow(start,dir,len,rad,depth){
+    var pts=[start.clone()],p=start.clone(),d=dir.clone().normalize(),seg=4;
+    for(var i=0;i<seg;i++){
+      p=p.clone().add(d.clone().multiplyScalar(len/seg));
+      pts.push(p.clone());
+      d.add(V((rnd()-0.5)*0.16,(depth>3?0.04:-0.03),(rnd()-0.5)*0.16)).normalize();
+    }
+    var curve=new THREE.CatmullRomCurve3(pts);
+    var tube=new THREE.TubeGeometry(curve,seg*2,Math.max(rad,0.012),6,false);
+    treeGroup.add(new THREE.Mesh(tube,trunkM));
+    var end=pts[pts.length-1];
+    if(depth<=0){clusters.push({pos:end,r:0.55+rnd()*0.25});return;}
+    if(depth<=1){clusters.push({pos:end,r:0.5+rnd()*0.2});}
+    var n=depth>=3?(2+(rnd()<0.6?1:0)):(2+(rnd()<0.35?1:0));
+    for(var k=0;k<n;k++){
+      var ang=0.32+rnd()*0.42;
+      var az=(k/n)*Math.PI*2+rnd()*0.9;
+      var nd=tilt(d,ang,az);
+      nd.y+=0.18;nd.normalize(); // 上向きバイアスで傘状の樹冠
+      grow(end,nd,len*(0.70+rnd()*0.08),rad*0.66,depth-1);
     }
   }
-  addBranch(v(0,0,0),v(0,3.8,0),0.22);
-  var mains=[[v(0,2.8,0),v(1.9,4.3,.5),.10],[v(0,3.0,0),v(-1.7,4.6,-.4),.10],
-    [v(0,3.2,0),v(.9,4.9,-1.3),.09],[v(0,3.0,0),v(-.5,4.7,1.5),.09],[v(0,3.4,0),v(.2,5.3,.3),.08]];
-  mains.forEach(function(m){
-    addBranch(m[0],m[1],m[2]);
-    var subs=[[.65,.95,.3],[-.55,1.05,-.45],[.1,1.15,.65]];
-    subs.forEach(function(s,si){
-      var se=v(m[1].x+s[0],m[1].y+s[1],m[1].z+s[2]);
-      addBranch(m[1],se,m[2]*.52);addFlowers(se,.48+Math.random()*.14);
-      if(si===0){var te=v(se.x+(Math.random()-.5)*.4,se.y+.55,se.z+(Math.random()-.5)*.4);addBranch(se,te,m[2]*.28);addFlowers(te,.34);}
-    });
+  grow(V(0,0,0),V(0,1,0),2.0,0.20,5);
+
+  // ---- 花を咲かせる (テクスチャ付きビルボードを大量配置) ----
+  var total=0,perCluster=[];
+  clusters.forEach(function(cl){var k=10+Math.floor(rnd()*9);perCluster.push(k);total+=k;});
+  var bgeo=new THREE.PlaneGeometry(1,1);
+  var bmat=new THREE.MeshStandardMaterial({map:btex,transparent:true,alphaTest:0.22,side:THREE.DoubleSide,roughness:0.85,metalness:0,depthWrite:true});
+  var inst=new THREE.InstancedMesh(bgeo,bmat,total);
+  var dummy=new THREE.Object3D(),col=new THREE.Color(),idx=0;
+  clusters.forEach(function(cl,ci){
+    var k=perCluster[ci];
+    for(var i=0;i<k;i++){
+      var dir=V(rnd()-0.5,rnd()-0.5,rnd()-0.5).normalize().multiplyScalar(cl.r*(0.35+rnd()*0.75));
+      dummy.position.copy(cl.pos).add(dir);
+      dummy.rotation.set(rnd()*6.28,rnd()*6.28,rnd()*6.28);
+      var sc=0.42+rnd()*0.40;dummy.scale.set(sc,sc,sc);
+      dummy.updateMatrix();inst.setMatrixAt(idx,dummy.matrix);
+      col.setHSL(0.92+rnd()*0.05,0.45+rnd()*0.25,0.80+rnd()*0.13);
+      inst.setColorAt(idx,col);idx++;
+    }
   });
-  addFlowers(v(0,3.8,0),.62);addFlowers(v(.3,4.3,.2),.5);addFlowers(v(-.2,4.1,-.1),.5);
-  var PC=80;
-  var pgeo=new THREE.BufferGeometry();
-  var ppos=new Float32Array(PC*3),pvx=new Float32Array(PC),pvy=new Float32Array(PC);
-  for(var i=0;i<PC;i++){ppos[i*3]=(Math.random()-.5)*12;ppos[i*3+1]=Math.random()*15;ppos[i*3+2]=(Math.random()-.5)*7;pvx[i]=(Math.random()-.5)*.028;pvy[i]=-(0.016+Math.random()*.024);}
-  pgeo.setAttribute('position',new THREE.BufferAttribute(ppos,3));
-  var pts=new THREE.Points(pgeo,new THREE.PointsMaterial({color:0xffaac4,size:0.13,transparent:true,opacity:0.82,sizeAttenuation:true}));
-  scene.add(pts);
-  var clock=new THREE.Clock();var pa=pgeo.attributes.position;
+  inst.instanceMatrix.needsUpdate=true;if(inst.instanceColor)inst.instanceColor.needsUpdate=true;
+  treeGroup.add(inst);
+
+  // ---- 接地の柔らかい影 ----
+  var shCv=document.createElement('canvas');shCv.width=shCv.height=128;
+  var sx=shCv.getContext('2d'),sg=sx.createRadialGradient(64,64,2,64,64,62);
+  sg.addColorStop(0,'rgba(60,20,40,0.45)');sg.addColorStop(1,'rgba(60,20,40,0)');
+  sx.fillStyle=sg;sx.fillRect(0,0,128,128);
+  var shadow=new THREE.Mesh(new THREE.PlaneGeometry(5.5,5.5),
+    new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shCv),transparent:true,depthWrite:false}));
+  shadow.rotation.x=-Math.PI/2;shadow.position.y=0.02;scene.add(shadow);
+
+  // ---- 散る花弁 (ひらひら回転しながら落下) ----
+  var petals=[],PN=46;
+  var pmat=new THREE.MeshStandardMaterial({map:ptex,transparent:true,alphaTest:0.18,side:THREE.DoubleSide,roughness:0.9,metalness:0});
+  var pgeo=new THREE.PlaneGeometry(0.55,0.7);
+  for(var i=0;i<PN;i++){
+    var m=new THREE.Mesh(pgeo,pmat);
+    m.position.set((rnd()-0.5)*9,1+rnd()*8,(rnd()-0.5)*5);
+    var sc=0.5+rnd()*0.5;m.scale.set(sc,sc,sc);
+    m.rotation.set(rnd()*6.28,rnd()*6.28,rnd()*6.28);
+    m.userData={vy:0.55+rnd()*0.7,phase:rnd()*6.28,swayA:0.6+rnd()*0.8,swayF:0.7+rnd()*0.9,
+      spin:V((rnd()-0.5)*2.4,(rnd()-0.5)*2.4,(rnd()-0.5)*2.4)};
+    scene.add(m);petals.push(m);
+  }
+
+  var clock=new THREE.Clock();
   function draw(){
     _cherryRafId=requestAnimationFrame(draw);
-    var t=clock.getElapsedTime();
-    scene.rotation.z=Math.sin(t*.4)*.022;
-    for(var i=0;i<PC;i++){
-      pa.array[i*3]+=pvx[i]+Math.sin(t*.6+i)*.004;
-      pa.array[i*3+1]+=pvy[i];
-      if(pa.array[i*3+1]<-3){pa.array[i*3]=(Math.random()-.5)*12;pa.array[i*3+1]=13;pa.array[i*3+2]=(Math.random()-.5)*7;}
+    var dt=Math.min(clock.getDelta(),0.05),t=clock.elapsedTime;
+    treeGroup.rotation.y+=dt*0.32;          // ゆっくり回転
+    treeGroup.rotation.z=Math.sin(t*0.5)*0.018; // 風でそよぐ
+    for(var i=0;i<PN;i++){
+      var m=petals[i],u=m.userData;
+      m.position.y-=u.vy*dt;
+      m.position.x+=Math.sin(t*u.swayF+u.phase)*u.swayA*dt;
+      m.position.z+=Math.cos(t*u.swayF*0.8+u.phase)*u.swayA*0.6*dt;
+      m.rotation.x+=u.spin.x*dt;m.rotation.y+=u.spin.y*dt;m.rotation.z+=u.spin.z*dt;
+      if(m.position.y<-0.3){m.position.set((rnd()-0.5)*9,7+rnd()*3,(rnd()-0.5)*5);}
     }
-    pa.needsUpdate=true;renderer.render(scene,camera);
+    renderer.render(scene,camera);
   }
   draw();
 })();
