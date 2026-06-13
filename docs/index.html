@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Opti:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{color-scheme:light dark}
@@ -480,7 +481,7 @@ body.font-shun.dark-active #splash{background:#080810}
 </head>
 <body>
 <div id="splash">
-  <canvas id="splashMoon" width="90" height="90" style="border-radius:50%;box-shadow:0 0 40px rgba(255,240,140,.4),0 0 80px rgba(255,220,80,.12),0 4px 20px rgba(0,0,0,.25)"></canvas>
+  <canvas id="splashMoon" style="width:110px;height:110px;border-radius:50%;box-shadow:0 0 50px rgba(255,240,140,.45),0 0 100px rgba(255,220,80,.14),0 6px 24px rgba(0,0,0,.3)"></canvas>
   <div class="splash-title">SILDE</div>
   <div class="splash-spinner"></div>
 </div>
@@ -2875,44 +2876,61 @@ async function initMap() {
   _mapPoll = setInterval(_pollLive, 5000);
 }
 
-// ===== スプラッシュ 3D月アニメーション =====
+// ===== スプラッシュ 3D月アニメーション (Three.js) =====
 var _moonRafId=null;
 (function(){
   var c=document.getElementById('splashMoon');
-  if(!c)return;
-  var ctx=c.getContext('2d');
-  var W=90,H=90,R=44;
-  // オフスクリーンに表面テクスチャを3枚分描画（シームレスループ用）
-  var sc=document.createElement('canvas');
-  sc.width=W*3;sc.height=H;
-  var sx=sc.getContext('2d');
-  [0,1,2].forEach(function(t){
-    var ox=t*W;
-    var bg=sx.createLinearGradient(ox,0,ox+W,H);
-    bg.addColorStop(0,'#ddd090');bg.addColorStop(0.5,'#c8ba72');bg.addColorStop(1,'#ddd090');
-    sx.fillStyle=bg;sx.fillRect(ox,0,W,H);
-    [{x:18,y:20,r:7},{x:62,y:14,r:5},{x:36,y:64,r:9},{x:70,y:56,r:6},{x:10,y:70,r:4},{x:50,y:36,r:5},{x:80,y:28,r:4}].forEach(function(cr){
-      var cg=sx.createRadialGradient(ox+cr.x-2,cr.y-2,1,ox+cr.x,cr.y,cr.r);
-      cg.addColorStop(0,'rgba(55,38,8,.8)');
-      cg.addColorStop(0.65,'rgba(75,55,20,.5)');
-      cg.addColorStop(1,'rgba(180,160,85,.1)');
-      sx.fillStyle=cg;sx.beginPath();sx.arc(ox+cr.x,cr.y,cr.r,0,Math.PI*2);sx.fill();
-    });
+  if(!c||!window.THREE)return;
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+  var S=110;
+  c.width=S*dpr;c.height=S*dpr;
+
+  var renderer=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  renderer.setSize(S*dpr,S*dpr,false);
+  renderer.setPixelRatio(1);
+
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(42,1,0.1,100);
+  camera.position.z=2.6;
+
+  // プロシージャル月テクスチャ
+  var tc=document.createElement('canvas');tc.width=512;tc.height=256;
+  var tx=tc.getContext('2d');
+  // ベース色
+  var bg=tx.createLinearGradient(0,0,512,256);
+  bg.addColorStop(0,'#dbd296');bg.addColorStop(0.5,'#c8ba72');bg.addColorStop(1,'#dbd296');
+  tx.fillStyle=bg;tx.fillRect(0,0,512,256);
+  // クレーター
+  var craters=[
+    {x:80,y:60,r:22},{x:200,y:40,r:16},{x:140,y:130,r:28},{x:340,y:80,r:18},
+    {x:420,y:160,r:24},{x:60,y:190,r:14},{x:280,y:180,r:20},{x:460,y:60,r:12},
+    {x:380,y:210,r:16},{x:170,y:210,r:12},{x:310,y:130,r:10},{x:100,y:110,r:10},
+    {x:450,y:110,r:8},{x:240,y:90,r:8}
+  ];
+  craters.forEach(function(cr){
+    var g=tx.createRadialGradient(cr.x-cr.r*.3,cr.y-cr.r*.3,cr.r*.1,cr.x,cr.y,cr.r);
+    g.addColorStop(0,'rgba(50,35,8,.82)');
+    g.addColorStop(0.6,'rgba(70,52,18,.55)');
+    g.addColorStop(0.85,'rgba(160,145,85,.2)');
+    g.addColorStop(1,'rgba(220,210,140,.05)');
+    tx.fillStyle=g;tx.beginPath();tx.arc(cr.x,cr.y,cr.r,0,Math.PI*2);tx.fill();
   });
-  var off=0;
+  var texture=new THREE.CanvasTexture(tc);
+
+  var geo=new THREE.SphereGeometry(1,64,64);
+  var mat=new THREE.MeshStandardMaterial({map:texture,roughness:0.92,metalness:0.04});
+  var moon=new THREE.Mesh(geo,mat);
+  scene.add(moon);
+
+  // ライティング
+  var sun=new THREE.PointLight(0xfff5d0,2.2,20);
+  sun.position.set(4,2,4);
+  scene.add(sun);
+  scene.add(new THREE.AmbientLight(0x334466,0.35));
+
   function draw(){
-    ctx.clearRect(0,0,W,H);
-    ctx.save();
-    ctx.beginPath();ctx.arc(W/2,H/2,R,0,Math.PI*2);ctx.clip();
-    ctx.drawImage(sc,-off,0);
-    // 3Dシェーディング
-    var sh=ctx.createRadialGradient(28,26,3,W/2,H/2,R);
-    sh.addColorStop(0,'rgba(255,255,210,.22)');
-    sh.addColorStop(0.42,'rgba(0,0,0,0)');
-    sh.addColorStop(1,'rgba(0,0,0,.52)');
-    ctx.fillStyle=sh;ctx.fillRect(0,0,W,H);
-    ctx.restore();
-    off=(off+0.55)%W;
+    moon.rotation.y+=0.006;
+    renderer.render(scene,camera);
     _moonRafId=requestAnimationFrame(draw);
   }
   draw();
