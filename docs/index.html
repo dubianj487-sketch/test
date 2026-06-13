@@ -2209,10 +2209,11 @@ function renderMasters(){
     const shopLoc=g.shopId?locations.find(l=>l.id===g.shopId):null;
     const shopLabel=shopLoc?(shopLoc.shopLabel||(shopLoc.nick?`${shopLoc.name}（${shopLoc.nick}）`:`${shopLoc.name}`)):(g.shop||'');
     const shopTag=shopLabel?`<span style="font-size:10px;background:#fff3e0;color:#e65100;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700">${shopLabel}</span>`:'';
+    const _mcMapBtn=g.mapUrl?`<a href="${g.mapUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;background:var(--pkp);color:var(--pk);flex-shrink:0;text-decoration:none;-webkit-tap-highlight-color:transparent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></a>`:'';
     return `<div class="mcard girl">
       <div class="mc-av g">${_svgMcUser}</div>
       <div class="mc-info"><div class="mc-name">${g.name}${shopTag}</div><div class="mc-sub">${g.nick||''}${g.nick&&g.addr?' / ':''}${g.addr||''}</div></div>
-      <button class="btn bg sm" onclick="openGirlMo(${g.id})">編集</button>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">${_mcMapBtn}<button class="btn bg sm" onclick="openGirlMo(${g.id})">編集</button></div>
     </div>`;
   }).join(''):'<div class="empty-note">まだ登録なし</div>';
 }
