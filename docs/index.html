@@ -1160,19 +1160,22 @@ function _depNameFromLabel(lbl){
 }
 function getSuggestedMin(fromName,toName){
   const counts={};
+  const seen=new Set();
   schedHistory.forEach(function(entry){
     (entry.runs||[]).forEach(function(run){
       (run.stops||[]).forEach(function(stop,i){
         const m=parseInt(stop.min);
-        if(!m||m<=0)return;
         const from=i===0?_depNameFromLabel(run.departLabel):run.stops[i-1].name;
+        seen.add(from+'→'+stop.name+'(min='+stop.min+')');
+        if(!m||m<=0)return;
         if(from===fromName&&stop.name===toName)counts[m]=(counts[m]||0)+1;
       });
     });
   });
   const es=Object.entries(counts);
   if(!es.length){
-    console.log('[sug] no match: history='+schedHistory.length+' from='+fromName+' to='+toName);
+    console.log('[sug] no match: from='+fromName+' to='+toName);
+    console.log('[sug] history pairs:',Array.from(seen).join(' | '));
     return null;
   }
   es.sort(function(a,b){return b[1]-a[1]||Number(a[0])-Number(b[0]);});
