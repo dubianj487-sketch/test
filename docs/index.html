@@ -480,6 +480,15 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 .memo-box{bottom:calc(56px + env(safe-area-inset-bottom))}
 .pg{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
 #pg-secret{padding:14px 14px calc(52px + env(safe-area-inset-bottom))}
+/* ===== PWAスタンドアロン: セーフエリアがない端末でも最低16pxの余白 ===== */
+@media (display-mode: standalone) {
+  .bnav{padding-bottom:max(env(safe-area-inset-bottom),16px)}
+  .pg{padding-bottom:calc(56px + max(env(safe-area-inset-bottom),16px))}
+  .memo-box{bottom:calc(56px + max(env(safe-area-inset-bottom),16px))}
+  .fab-wrap{bottom:calc(72px + max(env(safe-area-inset-bottom),16px))}
+  #pg-secret{padding:14px 14px calc(52px + max(env(safe-area-inset-bottom),16px))}
+  #histPageToday,#histPageMonths{padding-bottom:calc(120px + max(env(safe-area-inset-bottom),16px))}
+}
 #splash{position:fixed;inset:0;z-index:9999;background:#CE95B0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s ease;pointer-events:all}
 body.font-shun #splash{background:#d8eef8}
 body.font-shun.dark-active #splash{background:#080810}
