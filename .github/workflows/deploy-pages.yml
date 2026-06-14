@@ -34,11 +34,10 @@ jobs:
           COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           echo "DEPLOY_START=$(date +%s)" >> $GITHUB_ENV
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          CONTENT=$(printf 'Web · %s\n%s' "$SHORT_SHA" "$COMMIT_MSG")
+          CONTENT=$(printf 'commit: %s' "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ開始", content: $c}')"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ開始・Web", content: $c}')"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -67,21 +66,18 @@ jobs:
         run: |
           PAGE_URL="${{ steps.deployment.outputs.page_url }}"
           EXPECTED="${{ github.sha }}"
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           for i in $(seq 1 60); do
             FOUND=$(curl -s "${PAGE_URL}index.html" | grep -oP '(?<=build-hash" content=")[a-f0-9]+' || true)
             if [ "$FOUND" = "$EXPECTED" ]; then
-              ELAPSED=$(( $(date +%s) - $DEPLOY_START ))
-              CONTENT=$(printf 'Web · %s\n%s' "$SHORT_SHA" "$COMMIT_MSG")
+              CONTENT=$(printf 'commit: %s' "$COMMIT_MSG")
               curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
                 -H "Content-Type: application/json" \
-                -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了", content: $c}')"
+                -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了・Web", content: $c}')"
               exit 0
             fi
             sleep 5
           done
-          ELAPSED=$(( $(date +%s) - $DEPLOY_START ))
-          CONTENT=$(printf 'Web · %s\n%s' "$SHORT_SHA" "$COMMIT_MSG")
+          CONTENT=$(printf 'commit: %s' "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了", content: $c}')"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了・Web", content: $c}')"
