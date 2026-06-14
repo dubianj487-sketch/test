@@ -89,6 +89,7 @@ body.font-shun.dark-active .run-done-hdr-badge{background:rgba(180,210,240,.08);
 body.font-shun.dark-active .hedit-dep-row{background:#1e2a36}
 body.font-shun.dark-active .revised-tag{background:#3d1515;color:#f87171}
 body.font-shun.dark-active .overtime-tag{background:#2a1500;color:#fb923c}
+body.font-shun.dark-active .raise-tag{background:#0d2137;color:#60a5fa}
 body.font-shun.dark-active .rev-calc-tag{background:linear-gradient(135deg,#1e2a3a,#1a2a4a);color:var(--pk)}
 body.font-shun.dark-active .rev-acc{border-bottom-color:#2e2e2e}
 body.font-shun.dark-active .edit-time-inp{color:#e8f0f8}
@@ -388,6 +389,7 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .hedit-dep-label{font-size:13px;color:var(--tx);font-weight:600;flex:1}
 .revised-tag{font-size:10px;background:#fee2e2;color:#dc2626;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
 .overtime-tag{font-size:10px;background:#fff3e0;color:#e65100;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
+.raise-tag{font-size:10px;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
 .rev-calc-tag{font-size:10px;background:linear-gradient(135deg,var(--pkp),var(--pul));color:var(--pk);border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
 .rev-wrap{margin-top:12px}
 .rev-acc{border-bottom:1px solid #f5f0f3}
@@ -2139,7 +2141,7 @@ function renderHistPage(){
       const sm=en>=s?en-s:en-s+1440;
       return sum+(sm-120);
     },0);
-    const baseAmt=(entries.length*2000).toLocaleString();
+    const baseAmt=entries.reduce((s,e)=>s+(e.dateVal>='2026-04-10'?2000:1000),0).toLocaleString();
     const absMin=Math.abs(netOt),otH=Math.floor(absMin/60),otM=absMin%60;
     const timeStr=otH?(otH+'時間'+(otM?otM+'分':'')):otM+'分';
     const otStr=(netOt>=0?'+':'-')+timeStr;
@@ -2169,7 +2171,7 @@ function renderHistPage(){
       html+=`<div class="hist-item" data-id="${e.id}" onclick="openHistDetail(${e.id})">
         <div class="hist-item-hdr">
           <div style="min-width:0;overflow:hidden">
-            <div class="hist-item-date">${fmtDLFull(e.dateVal)}${e.revised?'<span class="revised-tag">訂正</span>':''}${_shiftMin>120?'<span class="overtime-tag">2h超</span>':''}</div>
+            <div class="hist-item-date">${fmtDLFull(e.dateVal)}${e.revised?'<span class="revised-tag">訂正</span>':''}${e.dateVal==='2026-04-10'?'<span class="raise-tag">昇給</span>':''}${_shiftMin>120?'<span class="overtime-tag">2h超</span>':''}</div>
             <div class="hist-item-sub">${_svgUserSm} ${girlNames||'データなし'}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
