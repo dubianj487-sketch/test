@@ -35,7 +35,7 @@ jobs:
         run: |
           echo "DEPLOY_START=$(date +%s)" >> $GITHUB_ENV
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          CONTENT=$(printf 'Web · %s\n"%s"' "$SHORT_SHA" "$COMMIT_MSG")
+          CONTENT=$(printf 'Web · %s\n%s' "$SHORT_SHA" "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ開始", content: $c}')"
@@ -72,7 +72,7 @@ jobs:
             FOUND=$(curl -s "${PAGE_URL}index.html" | grep -oP '(?<=build-hash" content=")[a-f0-9]+' || true)
             if [ "$FOUND" = "$EXPECTED" ]; then
               ELAPSED=$(( $(date +%s) - $DEPLOY_START ))
-              CONTENT=$(printf 'Web · %s\n"%s"' "$SHORT_SHA" "$COMMIT_MSG")
+              CONTENT=$(printf 'Web · %s\n%s' "$SHORT_SHA" "$COMMIT_MSG")
               curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
                 -H "Content-Type: application/json" \
                 -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了", content: $c}')"
@@ -81,7 +81,7 @@ jobs:
             sleep 5
           done
           ELAPSED=$(( $(date +%s) - $DEPLOY_START ))
-          CONTENT=$(printf 'Web · %s\n"%s"' "$SHORT_SHA" "$COMMIT_MSG")
+          CONTENT=$(printf 'Web · %s\n%s' "$SHORT_SHA" "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了", content: $c}')"
