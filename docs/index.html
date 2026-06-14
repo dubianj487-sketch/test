@@ -25,9 +25,10 @@ html{-webkit-color-scheme:light dark;color-scheme:light dark}
   --night:#9b3a6a;--card:rgba(255,255,255,.97);
   --sh:0 4px 20px rgba(200,100,140,.12);
   --gold:#e88fac;--teal:#c4608a;
+  --bnav-fill:#fff;
 }
 body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#CE95B0 !important;background-color:#CE95B0 !important;min-height:100dvh;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation}
-html{background:#CE95B0 !important;background-color:#CE95B0 !important;overscroll-behavior:none;min-height:100dvh}
+html{background:var(--bnav-fill,#fff) !important;background-color:var(--bnav-fill,#fff) !important;overscroll-behavior:none;min-height:100dvh}
 body:has(.mo.open){overflow:hidden}
 /* ===== フォント切り替え ===== */
 body.font-shun{--app-font:-apple-system,BlinkMacSystemFont,'Helvetica Neue'}
@@ -56,7 +57,7 @@ body.font-shun{
   --gold:#5a8ab5;--teal:#2a5a8a;
   background:#d8eef8 !important;background-color:#d8eef8 !important
 }
-html:has(body.font-shun){background:#d8eef8 !important}
+html:has(body.font-shun){background:var(--bnav-fill,#fff) !important}
 body.font-shun .pg{background:#c0d8ec}
 body.font-shun .bp{background:#2a5a8a;box-shadow:0 4px 14px rgba(30,60,120,.3)}
 body.font-shun .bgr{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
@@ -76,7 +77,7 @@ body.font-shun.dark-active{
   --sh:0 4px 20px rgba(0,0,0,.3);--teal:#6aaad8;
   background:linear-gradient(170deg,#040507 0%,#07091a 20%,#0b0b20 42%,#0f0b22 60%,#0c0918 80%,#060408 100%) !important;background-color:#080810 !important
 }
-html:has(body.font-shun.dark-active){background:#060408 !important}
+html:has(body.font-shun.dark-active){--bnav-fill:#050410;background:var(--bnav-fill) !important}
 body.font-shun.dark-active .pg{background:#1a1a1a}
 body.font-shun.dark-active .bnav{background:rgba(5,4,10,0.92);border-top-color:rgba(90,138,181,.18)}
 body.font-shun.dark-active .today-card{background:#242424;box-shadow:0 2px 10px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04)}
@@ -187,6 +188,8 @@ body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
 .overland-url-row:active{opacity:.7}
 .overland-url-text{flex:1;font-size:10px;color:var(--txs);word-break:break-all;opacity:.7}
 
+/* フッターナビの色でセーフエリア下端を塗りつぶす — bnavのbackdrop-filterに拾わせる */
+body::after{content:'';position:fixed;bottom:0;left:0;right:0;height:env(safe-area-inset-bottom,0px);background:var(--bnav-fill,#fff);z-index:199;pointer-events:none}
 .bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);display:flex;border-top:0.5px solid rgba(200,149,176,.28)}
 .nb{flex:1;padding:6px 4px 4px;border:none;background:none;cursor:pointer;font-family:'Zen Maru Gothic',sans-serif;font-size:10px;color:#aaa8c0;display:flex;flex-direction:column;align-items:center;gap:2px;border-top:3px solid transparent;transition:all .2s}
 .nb .ni{width:18px;height:18px;display:flex;align-items:center;justify-content:center}
@@ -482,7 +485,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 #pg-secret{padding:14px 14px calc(52px + env(safe-area-inset-bottom))}
 /* ===== PWAスタンドアロン: セーフエリアがない端末でも最低16pxの余白 ===== */
 @media (display-mode: standalone) {
-  .bnav{background:rgba(255,255,255,0.3);padding-bottom:max(env(safe-area-inset-bottom),16px)}
+  .bnav{padding-bottom:max(env(safe-area-inset-bottom),16px)}
   .pg{padding-bottom:calc(56px + max(env(safe-area-inset-bottom),16px))}
   .memo-box{bottom:calc(56px + max(env(safe-area-inset-bottom),16px))}
   .fab-wrap{bottom:calc(72px + max(env(safe-area-inset-bottom),16px))}
