@@ -12,8 +12,6 @@
 <meta name="supported-color-schemes" content="light dark">
 <title>🌙 SILDE</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Opti:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
-<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -37,7 +35,7 @@ body.font-shun .tl-time,body.font-shun .today-banner-date,
 body.font-shun .today-banner::before,body.font-shun .hist-item-date,
 body.font-shun .hist-detail-date{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif!important}
 body.font-shun .nb,body.font-shun input,body.font-shun select,
-body.font-shun .btn,body.font-shun .bmap,body.font-shun .dep-tab,
+body.font-shun .btn,body.font-shun .dep-tab,
 body.font-shun .otab,body.font-shun .obox.boy{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif!important}
 body.font-shun.font-maru{--app-font:'Zen Maru Gothic'}
 body.font-shun.font-maru .auto-dep-time,body.font-shun.font-maru .shift-stepper-time,
@@ -45,7 +43,7 @@ body.font-shun.font-maru .tl-time,body.font-shun.font-maru .today-banner-date,
 body.font-shun.font-maru .today-banner::before,body.font-shun.font-maru .hist-item-date,
 body.font-shun.font-maru .hist-detail-date,
 body.font-shun.font-maru .nb,body.font-shun.font-maru input,body.font-shun.font-maru select,
-body.font-shun.font-maru .btn,body.font-shun.font-maru .bmap,body.font-shun.font-maru .dep-tab,
+body.font-shun.font-maru .btn,body.font-shun.font-maru .dep-tab,
 body.font-shun.font-maru .otab,body.font-shun.font-maru .obox.boy{font-family:'Zen Maru Gothic',sans-serif!important}
 /* ===== しゅんくんテーマ カラー (ライトモード) ===== */
 body.font-shun{
@@ -61,7 +59,6 @@ html:has(body.font-shun){background:#d8eef8 !important}
 body.font-shun .pg{background:#c0d8ec}
 body.font-shun .bp{background:#2a5a8a;box-shadow:0 4px 14px rgba(30,60,120,.3)}
 body.font-shun .bgr{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
-body.font-shun .bmap{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
 body.font-shun .bdk{background:#1e3050}
 body.font-shun .bsave{background:linear-gradient(135deg,#5a8ab5,#2a5a8a);box-shadow:0 4px 14px rgba(30,60,120,.3)}
 body.font-shun .today-banner{background:linear-gradient(135deg,#2a5a8a,#5a8ab5)}
@@ -142,9 +139,6 @@ body.font-shun.dark-active .battery-wrap::after{background:rgba(255,255,255,.3)}
 body.font-shun.dark-active .battery-name{color:rgba(180,210,240,.7)}
 body.font-shun.dark-active .battery-pct{color:#e8f0f8}
 body.font-shun.dark-active .battery-charge{color:rgba(180,210,240,.5)}
-body.font-shun.dark-active .map-legend{background:#1a1a1a;color:#c8d8e8;box-shadow:0 1px 4px rgba(0,0,0,.4)}
-body.map-active .bnav{background:rgba(250,246,250,0.65)!important;-webkit-backdrop-filter:blur(26px) saturate(1.9)!important;backdrop-filter:blur(26px) saturate(1.9)!important;border-top:1.5px solid rgba(255,255,255,0.5)!important;box-shadow:none!important}
-body.map-active.font-shun.dark-active .bnav{background:rgba(8,14,30,0.65)!important;border-top-color:rgba(90,140,200,0.18)!important}
 body.font-shun.dark-active .hist-item-sub{color:rgba(180,210,240,.45)}
 body.font-shun.dark-active .hist-item-arr{color:rgba(180,210,240,.3)}
 body.font-shun.dark-active .today-card-empty p{color:rgba(180,210,240,.45)}
@@ -198,14 +192,6 @@ body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
 
 .pg{display:none;padding:max(14px,env(safe-area-inset-top)) 14px 56px;animation:fi .25s ease;background:#f4eef2;min-height:calc(100dvh - 56px)}
 .pg.active{display:block}
-#pg-map{padding:0;overflow:hidden;display:none;flex-direction:column;height:calc(100dvh - 56px)}
-#pg-map.active{display:flex}
-#map-container{flex:1;min-height:0;width:100%;height:100%}
-.maplibregl-popup-content,.mapboxgl-popup-content{color:#111!important;background:#fff!important;border-radius:10px!important;padding:10px 14px!important;box-shadow:0 2px 12px rgba(0,0,0,.18)!important}
-.map-legend{padding:10px 14px 6px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.map-legend-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
-.map-marker{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.8)}
-
 @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 12px rgba(180,100,140,.1);overflow:hidden}
@@ -228,9 +214,6 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .bdk{background:var(--night);color:#fde8e8}
 .bsave{background:linear-gradient(135deg,#e88fac,#c4608a);color:#fff;box-shadow:0 2px 10px rgba(200,100,140,.25)}
 .sm{padding:8px 16px;font-size:13px;border-radius:9px;width:auto;margin-bottom:0}
-.bmap{background:var(--pk);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
-.bmap:active{opacity:.8}
-.bmap.calculating{background:var(--lav);animation:blink .8s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
 
 .dep-tabs{display:flex;gap:6px;margin:0 0 14px}
@@ -612,17 +595,6 @@ body.font-shun.dark-active #splash{background:#080810}
   </div>
 </div>
 
-<div class="pg" id="pg-map">
-  <div class="map-legend" id="mapLegend">
-    <span class="map-legend-item">🏠 場所</span>
-    <span class="map-legend-item">👧 女の子</span>
-    <span class="map-legend-item">🚩 出発地</span>
-    <span class="map-legend-item" id="locStatusShun" style="opacity:.4">🌙 しゅん</span>
-    <span class="map-legend-item" id="locStatusHee" style="opacity:.4">🌸 ひーちゃん</span>
-  </div>
-  <div id="map-container"></div>
-</div>
-
 <div class="pg" id="pg-master">
   <div class="card">
     <div class="ctitle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>場所マスター</div>
@@ -664,7 +636,6 @@ body.font-shun.dark-active #splash{background:#080810}
 
 <div class="bnav">
   <button class="nb active" id="nb-hist" onclick="switchPg('hist')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>スケジュール</button>
-  <button class="nb" id="nb-map" onclick="switchPg('map')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span>マップ</button>
   <button class="nb" id="nb-master" onclick="switchPg('master')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>行き先</button>
   <button class="nb" id="nb-secret" onclick="switchPg('secret')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>シークレット</button>
   <button class="nb" id="nb-settings" onclick="openSettings()"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>設定</button>
@@ -927,7 +898,7 @@ function onMemoInput(){
 })();
 
 function setPgHeight(){
-  document.querySelectorAll('.pg:not(#pg-map)').forEach(function(el){
+  document.querySelectorAll('.pg').forEach(function(el){
     el.style.height='';
   });
 }
@@ -1088,8 +1059,7 @@ function updateThemeColor(){
   var m=document.querySelector('meta[name="theme-color"]');
   if(!m) return;
   var b=document.body.classList;
-  if(b.contains('map-active')) m.content = b.contains('dark-active') ? '#1a2a40' : '#e8e4e0';
-  else if(b.contains('font-shun')) m.content = b.contains('dark-active') ? '#07091a' : '#d8eef8';
+  if(b.contains('font-shun')) m.content = b.contains('dark-active') ? '#07091a' : '#d8eef8';
   else m.content='#CE95B0';
 }
 function switchPg(p){
@@ -1097,14 +1067,12 @@ function switchPg(p){
   document.querySelectorAll('.nb').forEach(e=>e.classList.remove('active'));
   document.getElementById('pg-'+p).classList.add('active');
   document.getElementById('nb-'+p).classList.add('active');
-  document.body.classList.toggle('map-active', p==='map');
-  document.body.style.overflow=(p==='map')?'hidden':'';
   updateThemeColor();
   window.scrollTo(0,0);
   if(p==='hist'){renderHistPage();switchHistTab(_histTab);}
-  if(p==='map') initMap(); else setPgHeight();
+  else setPgHeight();
   if(p==='secret') renderSecretPage();
-  var _pgOrder={hist:0,map:1,master:2,secret:3,settings:4};
+  var _pgOrder={hist:0,master:1,secret:2,settings:3};
   if(window._setStarfieldBase)window._setStarfieldBase((_pgOrder[p]||0)*-25+(p==='hist'?_histTab*-20:0));
 }
 
@@ -2863,91 +2831,7 @@ function setAppFont(f){
 }
 (function(){ _applyAll(); })();
 
-// ========== マップ ==========
-var _map = null;
-var _placeMarkers = [];
-var _liveMarkers = {};
-var _mapPoll = null;
-
-var _MAP_USERS = [
-  {key:'shun', label:'しゅん',     emoji:'🌙', bg:'#2a5a8a'},
-  {key:'hee',  label:'ひーちゃん', emoji:'🌸', bg:'#c478a8'}
-];
-
-function _markerEl(emoji, bg){
-  var el = document.createElement('div');
-  el.className = 'map-marker';
-  el.style.background = bg;
-  el.textContent = emoji;
-  return el;
-}
-
-function _ago(isoStr){
-  if(!isoStr) return '';
-  var diff = Math.floor((Date.now() - new Date(isoStr).getTime())/1000);
-  if(diff < 60) return diff + '秒前';
-  if(diff < 3600) return Math.floor(diff/60) + '分前';
-  return Math.floor(diff/3600) + '時間前';
-}
-
-function _livePopupHtml(u, d){
-  var BS = ['','🔌 未接続','⚡ 充電中','🔋 満充電'];
-  var lines = ['<b>' + u.label + '</b>'];
-  var battStr = (d.batt != null) ? d.batt + '%' : '';
-  if(d.bs != null && BS[d.bs]) battStr += (battStr ? ' ' : '') + BS[d.bs];
-  lines.push('🔋 ' + (battStr || '–'));
-  lines.push('🚗 ' + (d.vel != null ? d.vel + ' km/h' : '–'));
-  if(d.motionactivities && d.motionactivities.length){
-    lines.push('🏃 ' + d.motionactivities.join(' · '));
-  }
-  lines.push('<small>' + _ago(d.at) + '</small>');
-  return lines.join('<br>');
-}
-
-// しゅん・ひーちゃんのマーカーを作成/更新
-function _renderLive(){
-  _MAP_USERS.forEach(function(u){
-    var d = locationData[u.key];
-    if(!d) return;
-    var lat = +d.lat, lng = +d.lng;
-    if(!lat || !lng || isNaN(lat) || isNaN(lng)) return;
-    var st = document.getElementById('locStatus' + u.key.charAt(0).toUpperCase() + u.key.slice(1));
-    if(st) st.style.opacity = '1';
-    var html = _livePopupHtml(u, d);
-    if(_liveMarkers[u.key]){
-      _liveMarkers[u.key].setLngLat([lng, lat]);
-      _liveMarkers[u.key].getPopup().setHTML(html);
-    } else if(_map){
-      var el = _markerEl(u.emoji, u.bg);
-      var popup = new maplibregl.Popup({offset:20, closeButton:false}).setHTML(html);
-      var marker = new maplibregl.Marker({element:el, anchor:'center'})
-        .setLngLat([lng, lat])
-        .setPopup(popup)
-        .addTo(_map);
-      el.addEventListener('click', function(e){
-        e.stopPropagation();
-        if(popup.isOpen()) popup.remove(); else popup.addTo(_map);
-      });
-      _liveMarkers[u.key] = marker;
-    }
-  });
-}
-
-// しゅん・ひーちゃんの最新位置を取得して反映
-function _pollLive(){
-  fetch(GAS_URL + '?action=location&_=' + Date.now())
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      if(data && data.ok && data.data){
-        Object.keys(data.data).forEach(function(k){
-          var d = data.data[k];
-          if(d && d.lat) locationData[k] = d;
-        });
-        _renderLive();
-      }
-    }).catch(function(){});
-}
-
+// ========== ジオコード（スケジュール作成で使用）==========
 function _geocacheKey(addr){ return 'geo2_' + addr; }
 
 function _parseLatLng(s) {
@@ -2987,90 +2871,6 @@ async function _geocode(addr) {
   return null;
 }
 
-async function initMap() {
-  var container = document.getElementById('map-container');
-  if (!container) return;
-
-  if (!_map) {
-    _map = new maplibregl.Map({
-      container: 'map-container',
-      style: 'https://api.maptiler.com/maps/streets-v2/style.json?key=xo1M5L6ZL4wO1wT74HBb',
-      center: [135.5023, 34.6937],
-      zoom: 11
-    });
-    await new Promise(function(resolve){ _map.on('load', resolve); });
-    _map.resize();
-  } else {
-    _map.resize();
-  }
-
-  // 場所マーカーをいったん消す
-  _placeMarkers.forEach(function(m){ m.remove(); });
-  _placeMarkers = [];
-
-  var pts = []; // [lng,lat] 全マーカー位置
-
-  // しゅん・ひーちゃん
-  _renderLive();
-  _MAP_USERS.forEach(function(u){
-    var d = locationData[u.key];
-    if(!d) return;
-    var lat = +d.lat, lng = +d.lng;
-    if(lat && lng && !isNaN(lat) && !isNaN(lng)) pts.push([lng, lat]);
-  });
-
-  // 登録してある場所（場所マスター・女の子）
-  var queue = [];
-  locations.forEach(function(l){ var a=String(l.addr||'').trim(); if(a) queue.push({addr:a, emoji:l.isShop?'🏠':'📍', bg:l.isShop?'#e88fac':'#6a9e8a', label:l.name+(l.nick?'（'+l.nick+'）':'')}); });
-  girls.forEach(function(g){ var a=String(g.addr||'').trim(); if(a) queue.push({addr:a, emoji:'👧', bg:'#c478a8', label:g.name+(g.nick?'（'+g.nick+'）':'')}); });
-
-  var legend = document.getElementById('mapLegend');
-  var oldSt = document.getElementById('mapGeoStatus');
-  if (oldSt) oldSt.remove();
-  var needGeo = queue.filter(function(q){ return !_parseLatLng(q.addr) && !localStorage.getItem(_geocacheKey(q.addr)); });
-  if (needGeo.length > 0) {
-    var stEl = document.createElement('span');
-    stEl.id = 'mapGeoStatus';
-    stEl.style.cssText = 'margin-left:auto;color:var(--txs);font-size:11px';
-    stEl.textContent = '📡 住所変換中 0/' + queue.length;
-    legend.appendChild(stEl);
-  }
-
-  for (var i = 0; i < queue.length; i++) {
-    var q = queue[i];
-    var pt = await _geocode(q.addr);
-    var stp = document.getElementById('mapGeoStatus');
-    if (stp) stp.textContent = '📡 ジオコーディング中 ' + (i+1) + '/' + queue.length;
-    if (pt) {
-      var marker = new maplibregl.Marker({element: _markerEl(q.emoji, q.bg), anchor: 'center'})
-        .setLngLat([pt.lng, pt.lat])
-        .setPopup(new maplibregl.Popup({offset:20, closeButton:false})
-          .setHTML('<b>'+q.label+'</b><br><small>'+q.addr+'</small>'))
-        .addTo(_map);
-      _placeMarkers.push(marker);
-      pts.push([pt.lng, pt.lat]);
-    }
-  }
-
-  var st = document.getElementById('mapGeoStatus');
-  if (st) st.remove();
-
-  // 全マーカーが収まるよう表示
-  if (pts.length === 1) {
-    _map.flyTo({center: pts[0], zoom: 15});
-  } else if (pts.length > 1) {
-    var minLng=pts[0][0], maxLng=pts[0][0], minLat=pts[0][1], maxLat=pts[0][1];
-    pts.forEach(function(p){
-      if(p[0]<minLng)minLng=p[0]; if(p[0]>maxLng)maxLng=p[0];
-      if(p[1]<minLat)minLat=p[1]; if(p[1]>maxLat)maxLat=p[1];
-    });
-    _map.fitBounds([[minLng,minLat],[maxLng,maxLat]], {padding:60, maxZoom:15});
-  }
-
-  // しゅん・ひーちゃんの位置を定期更新
-  if (_mapPoll) clearInterval(_mapPoll);
-  _mapPoll = setInterval(_pollLive, 5000);
-}
 
 // ===== スプラッシュ 3D月アニメーション (Three.js) =====
 var _moonRafId=null;
