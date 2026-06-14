@@ -91,6 +91,7 @@ body.font-shun.dark-active .run-done-hdr-badge{background:rgba(180,210,240,.08);
 
 body.font-shun.dark-active .hedit-dep-row{background:#1e2a36}
 body.font-shun.dark-active .revised-tag{background:#3d1515;color:#f87171}
+body.font-shun.dark-active .rev-calc-tag{background:rgba(180,100,140,.2);color:var(--pk)}
 body.font-shun.dark-active .rev-acc{border-bottom-color:#2e2e2e}
 body.font-shun.dark-active .edit-time-inp{color:#e8f0f8}
 body.font-shun.dark-active .edit-time-name{color:#c8d8e8}
@@ -398,6 +399,7 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .hedit-dep-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--pkp);border-radius:10px;margin-bottom:12px}
 .hedit-dep-label{font-size:13px;color:var(--tx);font-weight:600;flex:1}
 .revised-tag{font-size:10px;background:#fee2e2;color:#dc2626;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
+.rev-calc-tag{font-size:10px;background:var(--pkp);color:var(--pk);border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
 .rev-wrap{margin-top:12px}
 .rev-acc{border-bottom:1px solid #f5f0f3}
 .rev-acc:last-child{border-bottom:none}
@@ -1754,28 +1756,60 @@ function parseImportText(text){
   i++;
   while(i<lines.length&&!lines[i])i++;
   const runs=[];
+  function parseStops(startI){
+    const stops=[];let pMin=null,idx=startI;
+    while(idx<lines.length){
+      const l=lines[idx];
+      if(!l){idx++;break;}
+      const mm=l.match(/^(\d+)分$/);
+      if(mm){pMin=parseInt(mm[1]);idx++;continue;}
+      const pm=l.match(/^(\d{1,2}:\d{2})(.+?)迎え?$/);
+      if(pm){stops.push({time:pm[1],name:pm[2],type:'pick',min:pMin||''});pMin=null;idx++;continue;}
+      const sm=l.match(/^(\d{1,2}:\d{2})(.+?)着$/);
+      if(sm){stops.push({time:sm[1],name:sm[2],type:'drop',min:pMin||''});pMin=null;idx++;continue;}
+      const bt=l.match(/^(\d{1,2}:\d{2})$/);
+      if(bt){stops.push({time:bt[1],name:'店',type:'drop',min:pMin||''});pMin=null;idx++;continue;}
+      break;
+    }
+    return{stops,nextI:idx};
+  }
   while(i<lines.length){
     if(!lines[i]){i++;continue;}
     const dm2=lines[i].match(/^(\d{1,2}:\d{2})(.+)出発$/);
-    if(!dm2){i++;continue;}
-    const departTime=dm2[1],departLabel=lines[i];
-    i++;
-    const stops=[];
-    let pMin=null;
-    while(i<lines.length){
-      const l=lines[i];
-      if(!l){i++;break;}
-      const mm=l.match(/^(\d+)分$/);
-      if(mm){pMin=parseInt(mm[1]);i++;continue;}
-      const pm=l.match(/^(\d{1,2}:\d{2})(.+?)迎え?$/);
-      if(pm){stops.push({time:pm[1],name:pm[2],type:'pick',min:pMin||''});pMin=null;i++;continue;}
-      const sm=l.match(/^(\d{1,2}:\d{2})(.+?)着$/);
-      if(sm){stops.push({time:sm[1],name:sm[2],type:'drop',min:pMin||''});pMin=null;i++;continue;}
-      const bt=l.match(/^(\d{1,2}:\d{2})$/);
-      if(bt){stops.push({time:bt[1],name:'店',type:'drop',min:pMin||''});pMin=null;i++;continue;}
-      break;
+    if(dm2){
+      const departTime=dm2[1],departLabel=lines[i];
+      i++;
+      const{stops,nextI}=parseStops(i);
+      i=nextI;
+      if(stops.length)runs.push({departTime,departLabel,stops});
+    } else {
+      // 出発行なし：ピックアップ/到着行から始まる場合は「現在地出発」として逆算
+      const isStop=lines[i].match(/^(\d{1,2}:\d{2})(.+?)迎え?$/)||
+                   lines[i].match(/^(\d{1,2}:\d{2})(.+?)着$/)||
+                   lines[i].match(/^(\d{1,2}:\d{2})$/)||
+                   lines[i].match(/^\d+分$/);
+      if(!isStop){i++;continue;}
+      let priorMin=null,firstTime=null;
+      for(let j=i;j<lines.length&&lines[j];j++){
+        const mM=lines[j].match(/^(\d+)分$/);
+        if(mM&&!firstTime){priorMin=parseInt(mM[1]);continue;}
+        const tM=lines[j].match(/^(\d{1,2}:\d{2})/);
+        if(tM){firstTime=tM[1];break;}
+      }
+      if(!firstTime){i++;continue;}
+      let departTime;
+      if(priorMin!==null){
+        const[hh,mm]=firstTime.split(':').map(Number);
+        const tot=((hh*60+mm-priorMin)%1440+1440)%1440;
+        departTime=p2(Math.floor(tot/60))+':'+p2(tot%60);
+      }else{
+        departTime=firstTime;
+      }
+      const departLabel=`${departTime}現在地出発`;
+      const{stops,nextI}=parseStops(i);
+      i=nextI;
+      if(stops.length)runs.push({departTime,departLabel,stops,reverseCalc:true});
     }
-    if(stops.length)runs.push({departTime,departLabel,stops});
   }
   return runs.length?{dateVal,dateLabel,runs,revised:isRevised}:null;
 }
@@ -1913,10 +1947,10 @@ function buildRunsHtml(e,showNow){
     const runId=useAcc?`runacc_${e.id}_${ri}`:'';
     h+=`<div class="hist-detail-run${useAcc?` run-acc${isOpen?' run-open':''}`:''}"${runId?` id="${runId}"`:''}">`;
     if(useAcc){
-      h+=`<div class="run-acc-hdr" onclick="toggleRunAcc('${runId}')"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div><div style="display:flex;align-items:center;gap:6px">${_ct}${_doneBadge}${_arr}</div></div>`;
+      h+=`<div class="run-acc-hdr" onclick="toggleRunAcc('${runId}')"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}${run.reverseCalc?'<span class="rev-calc-tag">⚡逆算</span>':''}</div><div style="display:flex;align-items:center;gap:6px">${_ct}${_doneBadge}${_arr}</div></div>`;
       h+=`<div class="run-acc-body">${stopsHtml}</div>`;
     }else{
-      h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div>${_ct}</div>${stopsHtml}`;
+      h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}${run.reverseCalc?'<span class="rev-calc-tag">⚡逆算</span>':''}</div>${_ct}</div>${stopsHtml}`;
     }
     h+=`</div>`;
   });
@@ -2179,7 +2213,7 @@ function quickCopyBoy(id){
 function buildRevHtml(rev){
   let h='';
   (rev.runs||[]).forEach(run=>{
-    h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div>`;
+    h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}${run.reverseCalc?'<span class="rev-calc-tag">⚡逆算</span>':''}</div>`;
     (run.stops||[]).forEach(s=>{
       const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">到着</span>';
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
