@@ -156,6 +156,7 @@ body.font-shun.dark-active .month-acc-title{color:#e8f0f8}
 body.font-shun.dark-active .month-acc-arr{color:rgba(180,210,240,.45)}
 body.font-shun.dark-active .month-acc-sum-pay{color:rgba(180,210,240,.5)}
 body.font-shun.dark-active .month-acc-sum-ot{color:#fb923c}
+body.font-shun.dark-active .month-acc-sum-ok{color:#4ade80}
 body.font-shun.dark-active .rm-btn{color:rgba(180,210,240,.35)}
 body.font-shun.dark-active .min-row span{color:rgba(180,210,240,.4)}
 body.font-shun.dark-active .empty-hist{color:rgba(180,210,240,.4)}
@@ -332,6 +333,7 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .month-acc-summary{font-size:11px;font-weight:700;margin-top:4px;display:flex;gap:6px;align-items:center}
 .month-acc-sum-pay{color:var(--txs)}
 .month-acc-sum-ot{color:#e65100}
+.month-acc-sum-ok{color:#2e7d32}
 .month-acc-count{font-size:11px;font-weight:700;color:var(--teal);background:var(--pul);padding:3px 10px;border-radius:20px}
 .month-acc-arr{font-size:11px;color:var(--txs);opacity:.4;transition:transform .25s}
 .month-acc.open .month-acc-arr{transform:rotate(180deg)}
@@ -2127,24 +2129,26 @@ function renderHistPage(){
   Object.entries(monthMap).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([month, entries],mi)=>{
     const accId=`acc_${mi}`;
     const _tmM=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
-    const totalOt=entries.reduce((sum,e)=>{
+    const netOt=entries.reduce((sum,e)=>{
       const deps=e.runs.map(r=>_tmM(r.departTime));
       const drops=e.runs.flatMap(r=>r.stops.filter(s=>s.type==='drop').map(s=>_tmM(s.time)));
       if(!deps.length||!drops.length)return sum;
       const s=Math.min(...deps),en=Math.max(...drops);
       const sm=en>=s?en-s:en-s+1440;
-      return sum+Math.max(0,sm-120);
+      return sum+(sm-120);
     },0);
     const baseAmt=(entries.length*2000).toLocaleString();
-    const otH=Math.floor(totalOt/60),otM=totalOt%60;
-    const otStr=totalOt>0?'+'+(otH?(otH+'時間'+(otM?otM+'分':'')):otM+'分'):'';
+    const absMin=Math.abs(netOt),otH=Math.floor(absMin/60),otM=absMin%60;
+    const timeStr=otH?(otH+'時間'+(otM?otM+'分':'')):otM+'分';
+    const otStr=(netOt>=0?'+':'-')+timeStr;
+    const otClass=netOt>=0?'month-acc-sum-ot':'month-acc-sum-ok';
     html+=`<div class="month-acc" id="${accId}">
       <div class="month-acc-hdr" onclick="toggleAcc('${accId}')">
         <div>
           <span class="month-acc-title">${month}</span>
           <div class="month-acc-summary">
             <span class="month-acc-sum-pay">${baseAmt}円</span>
-            ${otStr?`<span class="month-acc-sum-ot">${otStr}</span>`:''}
+            <span class="${otClass}">${otStr}</span>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
