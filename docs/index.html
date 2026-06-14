@@ -353,9 +353,12 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .month-acc.open .month-acc-body{display:block}
 #pg-hist{padding:env(safe-area-inset-top) 0 0;min-height:calc(100dvh - 56px)}
 #pg-hist.active{display:block !important}
-#histSliderWrap{overflow:hidden;width:100%}
-#histSlider{display:flex;width:100%;transition:transform .32s cubic-bezier(.32,.72,0,1)}
-#histPageToday,#histPageMonths{min-width:100%;flex-shrink:0;padding:14px 14px calc(120px + env(safe-area-inset-bottom))}
+.hist-tab-bar{display:flex;background:var(--pkp);border-radius:12px;margin:10px 14px 0;padding:3px}
+.hist-tab-btn{flex:1;border:none;background:transparent;padding:7px 0;font-size:13px;font-weight:700;color:var(--pk);border-radius:9px;cursor:pointer;transition:background .2s,box-shadow .2s,color .2s;font-family:inherit}
+.hist-tab-btn.active{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.hist-panel{display:none;padding:10px 14px calc(120px + env(safe-area-inset-bottom))}
+.hist-panel.active{display:block;animation:histFadeIn .2s ease}
+@keyframes histFadeIn{from{opacity:0}to{opacity:1}}
 .memo-box{background:#fff;border-radius:16px 16px 0 0;padding:0 14px 14px;position:fixed;bottom:56px;left:0;right:0;z-index:20;transition:transform 0.4s cubic-bezier(0.32,0.72,0,1);box-shadow:0 -2px 16px rgba(180,100,140,.1)}
 .memo-handle{display:flex;justify-content:center;padding:10px 0 6px;cursor:pointer;touch-action:none}
 .memo-handle-bar{width:36px;height:4px;border-radius:2px;background:rgba(180,100,140,.2)}
@@ -467,6 +470,9 @@ hr.dv{border:none;border-top:1px solid #f0eaf0;margin:10px 0}
 body.font-shun.dark-active #starfield{display:block}
 body.font-shun.dark-active .pg{background:transparent;position:relative;z-index:1}
 body.font-shun.dark-active #pg-hist{background:transparent}
+body.font-shun.dark-active .hist-tab-bar{background:#2a1f2e}
+body.font-shun.dark-active .hist-tab-btn{color:rgba(180,210,240,.6)}
+body.font-shun.dark-active .hist-tab-btn.active{background:#3a2a45;color:#b4d2f0;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 #pg-secret{padding:14px 14px 52px}
 #pg-secret.active{display:block !important}
 .secret-wrap{position:relative;border-radius:16px;overflow:hidden}
@@ -481,7 +487,8 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 .secret-link{font-size:18px;font-weight:700;color:var(--pk);text-decoration:none;word-break:break-all;padding:16px;display:inline-block;background:var(--pkp);border-radius:14px;width:100%;box-sizing:border-box}
 @media (min-width: 768px) {
   .pg{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
-  #histPageToday,#histPageMonths{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
+  .hist-panel{padding-left:max(14px,calc(50% - 300px));padding-right:max(14px,calc(50% - 300px))}
+  .hist-tab-bar{margin-left:max(14px,calc(50% - 300px));margin-right:max(14px,calc(50% - 300px))}
   .bnav{padding-left:max(0px,calc(50% - 300px));padding-right:max(0px,calc(50% - 300px))}
   .hist-import-btn{right:max(14px,calc(50% - 300px))}
   .memo-box{left:max(0px,calc(50% - 300px));right:max(0px,calc(50% - 300px))}
@@ -597,12 +604,12 @@ body.font-shun.dark-active #splash{background:#080810}
 </div>
 
 <div class="pg active" id="pg-hist">
-  <div id="histSliderWrap">
-    <div id="histSlider">
-      <div id="histPageToday"></div>
-      <div id="histPageMonths"><div id="histContent"></div></div>
-    </div>
+  <div class="hist-tab-bar">
+    <button class="hist-tab-btn active" id="histBtnToday" onclick="switchHistTab(0)">今日</button>
+    <button class="hist-tab-btn" id="histBtnMonths" onclick="switchHistTab(1)">月リスト</button>
   </div>
+  <div id="histPageToday" class="hist-panel active"></div>
+  <div id="histPageMonths" class="hist-panel"><div id="histContent"></div></div>
   <div class="memo-box">
     <div class="memo-handle"><div class="memo-handle-bar"></div></div>
     <div class="memo-hdr"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>共有メモ</div>
@@ -928,10 +935,13 @@ function setPgHeight(){
 }
 var _histTab=0,_histScrollPos=[0,0];
 function switchHistTab(idx){
+  if(idx===_histTab)return;
   _histScrollPos[_histTab]=window.scrollY;
   _histTab=idx;
-  var slider=document.getElementById('histSlider');
-  if(slider){slider.style.transition='transform .32s cubic-bezier(.32,.72,0,1)';slider.style.transform='translateX('+(idx*-100)+'%)';}
+  var panels=[document.getElementById('histPageToday'),document.getElementById('histPageMonths')];
+  var btns=[document.getElementById('histBtnToday'),document.getElementById('histBtnMonths')];
+  panels.forEach(function(p,i){if(p)p.classList.toggle('active',i===idx);});
+  btns.forEach(function(b,i){if(b)b.classList.toggle('active',i===idx);});
   window.scrollTo(0,_histScrollPos[idx]);
   if(window._setStarfieldBase)window._setStarfieldBase(idx*-20);
 }
@@ -975,38 +985,6 @@ function initApp() {
     }
     setTimeout(tick,60000-Date.now()%60000);
   }setTimeout(tick,60000-Date.now()%60000);})();
-  (function(){
-    var pg=document.getElementById('pg-hist'),slider=document.getElementById('histSlider');
-    var sx=0,sy=0,locked=null;
-    pg.addEventListener('touchstart',function(e){
-      sx=e.touches[0].clientX;sy=e.touches[0].clientY;locked=null;
-      if(slider)slider.style.transition='none';
-    },{passive:true});
-    pg.addEventListener('touchmove',function(e){
-      if(_swipeTouching||locked==='v')return;
-      var dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
-      if(!locked){if(Math.abs(dx)>8||Math.abs(dy)>8)locked=Math.abs(dx)>Math.abs(dy)?'h':'v';return;}
-      e.preventDefault();
-      var pct=dx/window.innerWidth*100;
-      if((_histTab===0&&dx>0)||(_histTab===1&&dx<0))pct*=0.2;
-      if(slider)slider.style.transform='translateX('+(_histTab*-100+pct)+'%)';
-    },{passive:false});
-    pg.addEventListener('touchend',function(e){
-      if(_swipeTouching||locked!=='h'){locked=null;return;}
-      var dx=e.changedTouches[0].clientX-sx;
-      var newTab=_histTab;
-      if(Math.abs(dx)>50){
-        if(dx<0&&_histTab===0)newTab=1;
-        else if(dx>0&&_histTab===1)newTab=0;
-      }
-      if(newTab!==_histTab){
-        switchHistTab(newTab);
-      }else{
-        if(slider){slider.style.transition='transform .32s cubic-bezier(.32,.72,0,1)';slider.style.transform='translateX('+(_histTab*-100)+'%)';}
-      }
-      locked=null;
-    },{passive:true});
-  })();
   var handle=document.querySelector('.memo-handle');
   handle.addEventListener('touchstart',function(e){
     _memoStartY=e.touches[0].clientY;
