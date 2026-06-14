@@ -482,7 +482,7 @@ body.font-shun.dark-active #pg-hist{background:transparent}
 #pg-secret{padding:14px 14px calc(52px + env(safe-area-inset-bottom))}
 /* ===== PWAスタンドアロン: セーフエリアがない端末でも最低16pxの余白 ===== */
 @media (display-mode: standalone) {
-  .bnav{padding-bottom:max(env(safe-area-inset-bottom),16px)}
+  .bnav{background:rgba(255,255,255,0.3);padding-bottom:max(env(safe-area-inset-bottom),16px)}
   .pg{padding-bottom:calc(56px + max(env(safe-area-inset-bottom),16px))}
   .memo-box{bottom:calc(56px + max(env(safe-area-inset-bottom),16px))}
   .fab-wrap{bottom:calc(72px + max(env(safe-area-inset-bottom),16px))}
