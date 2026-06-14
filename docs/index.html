@@ -416,10 +416,18 @@ input:disabled{background:#f0f0f0;color:#bbb}
 @keyframes now-pulse{0%,100%{opacity:1;transform:scale(1)}60%{opacity:.45;transform:scale(.85)}}
 .tl-now-lbl{font-size:11px;font-weight:700;color:var(--pk);letter-spacing:.3px}
 .today-done{text-align:center;padding:8px 0 4px;font-size:11px;font-weight:700;color:var(--txs);opacity:.4;letter-spacing:.5px}
-.debug-time-row{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:12px 16px;margin-top:10px;box-shadow:var(--sh)}
-.debug-time-lbl{font-size:12px;color:var(--txs);font-weight:600;line-height:1;align-self:center}
-.debug-time-inp{font-size:14px;font-weight:700;color:var(--tx);border:1px solid var(--lav);border-radius:8px;background:var(--pkp);outline:none;padding:0 8px;cursor:pointer;width:110px;flex-shrink:0;height:34px;align-self:center;vertical-align:middle}
-.debug-time-clr{font-size:12px;color:var(--txs);border:none;background:none;cursor:pointer;padding:0;margin-left:auto;opacity:.6;white-space:nowrap;line-height:1;align-self:center}
+.debug-time-row{background:var(--card);border-radius:16px;padding:12px 16px;margin-top:10px;box-shadow:var(--sh)}
+.debug-time-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.debug-time-lbl{font-size:12px;color:var(--txs);font-weight:600}
+.debug-time-clr{font-size:12px;color:var(--txs);border:none;background:none;cursor:pointer;padding:0;opacity:.6;white-space:nowrap}
+.debug-steppers{display:flex;gap:6px}
+.debug-stepper{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.debug-stepper-lbl{font-size:10px;color:var(--txs);opacity:.55;font-weight:600}
+.debug-stepper-row{display:flex;align-items:center;background:var(--pkp);border-radius:10px;overflow:hidden;width:100%}
+.debug-stepper-btn{width:32px;height:40px;border:none;background:none;cursor:pointer;font-size:18px;font-weight:700;color:var(--pk);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .12s}
+.debug-stepper-btn:active{background:var(--pkl)}
+.debug-stepper-val{flex:1;text-align:center;font-size:17px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);line-height:40px}
+.debug-time-active .debug-stepper-row{background:var(--pkl)}
 
 .empty-hist{text-align:center;padding:40px 14px;color:#ccc}
 .empty-hist .ei{font-size:44px;margin-bottom:8px}
@@ -1832,6 +1840,38 @@ function setDebugDatetime(v){
   }
   renderHistPage();
 }
+function _dbgNow(){
+  const d=new Date();
+  const date=_debugDate||`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+  const hh=_debugTime?parseInt(_debugTime):d.getHours();
+  const mm=_debugTime?parseInt(_debugTime.slice(3)):d.getMinutes();
+  return {date,hh,mm};
+}
+function stepDebugDate(delta){
+  const n=_dbgNow();
+  const d=new Date(n.date+'T12:00:00');
+  d.setDate(d.getDate()+delta);
+  _debugDate=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+  _debugTime=p2(n.hh)+':'+p2(n.mm);
+  renderHistPage();
+}
+function stepDebugHour(delta){
+  const n=_dbgNow();
+  _debugDate=n.date;
+  _debugTime=p2((n.hh+delta+24)%24)+':'+p2(n.mm);
+  renderHistPage();
+}
+function stepDebugMin(delta){
+  const n=_dbgNow();
+  let total=n.hh*60+n.mm+delta;
+  total=((total%1440)+1440)%1440;
+  _debugDate=n.date;
+  _debugTime=p2(Math.floor(total/60))+':'+p2(total%60);
+  renderHistPage();
+}
+function resetDebugTime(){
+  _debugDate=null;_debugTime=null;renderHistPage();
+}
 function buildRunsHtml(e,showNow){
   const now=showNow?nowHHMM():null;
   // 最初の未完了便を「アクティブ便」としてデフォルト開く
@@ -2072,9 +2112,8 @@ function renderHistPage(){
   todayHtml+=`</div>`;
   todayHtml+=renderBatteryCard();
   todayHtml+=renderIncomeCard();
-  todayHtml+=`<div class="debug-time-row"><span class="debug-time-lbl">🕐 テスト時刻</span><input class="debug-time-inp" id="debugTimeInp" type="datetime-local" onchange="setDebugDatetime(this.value)"><button class="debug-time-clr" onclick="setDebugDatetime('');document.getElementById('debugTimeInp').value=''">リセット</button></div>`;
+  {const _dbd=_debugDate||todayVal();const _dbt=_debugTime?_debugTime.split(':').map(Number):[new Date().getHours(),new Date().getMinutes()];const _dbH=_dbt[0],_dbMin=_dbt[1];const[,_dbMo,_dbD]=_dbd.split('-').map(Number);const _dbAct=!!(_debugDate||_debugTime);todayHtml+=`<div class="debug-time-row${_dbAct?' debug-time-active':''}"><div class="debug-time-hdr"><span class="debug-time-lbl">🕐 テスト時刻</span>${_dbAct?'<button class="debug-time-clr" onclick="resetDebugTime()">リセット</button>':''}</div><div class="debug-steppers"><div class="debug-stepper"><div class="debug-stepper-lbl">日付</div><div class="debug-stepper-row"><button class="debug-stepper-btn" onclick="stepDebugDate(-1)">－</button><div class="debug-stepper-val">${_dbMo}/${_dbD}</div><button class="debug-stepper-btn" onclick="stepDebugDate(+1)">＋</button></div></div><div class="debug-stepper"><div class="debug-stepper-lbl">時間</div><div class="debug-stepper-row"><button class="debug-stepper-btn" onclick="stepDebugHour(-1)">－</button><div class="debug-stepper-val">${p2(_dbH)}</div><button class="debug-stepper-btn" onclick="stepDebugHour(+1)">＋</button></div></div><div class="debug-stepper"><div class="debug-stepper-lbl">分</div><div class="debug-stepper-row"><button class="debug-stepper-btn" onclick="stepDebugMin(-1)">－</button><div class="debug-stepper-val">${p2(_dbMin)}</div><button class="debug-stepper-btn" onclick="stepDebugMin(+1)">＋</button></div></div></div></div>`;}
   tp.innerHTML=todayHtml;
-  if(_debugDate&&_debugTime)document.getElementById('debugTimeInp').value=`${_debugDate}T${_debugTime}`;
   let html='';
   const monthMap={};
   others.forEach(e=>{
