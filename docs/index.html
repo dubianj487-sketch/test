@@ -91,6 +91,7 @@ body.font-shun.dark-active .run-done-hdr-badge{background:rgba(180,210,240,.08);
 
 body.font-shun.dark-active .hedit-dep-row{background:#1e2a36}
 body.font-shun.dark-active .revised-tag{background:#3d1515;color:#f87171}
+body.font-shun.dark-active .overtime-tag{background:#2a1500;color:#fb923c}
 body.font-shun.dark-active .rev-calc-tag{background:linear-gradient(135deg,#1e2a3a,#1a2a4a);color:var(--pk)}
 body.font-shun.dark-active .rev-acc{border-bottom-color:#2e2e2e}
 body.font-shun.dark-active .edit-time-inp{color:#e8f0f8}
@@ -399,6 +400,7 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .hedit-dep-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--pkp);border-radius:10px;margin-bottom:12px}
 .hedit-dep-label{font-size:13px;color:var(--tx);font-weight:600;flex:1}
 .revised-tag{font-size:10px;background:#fee2e2;color:#dc2626;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
+.overtime-tag{font-size:10px;background:#fff3e0;color:#e65100;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
 .rev-calc-tag{font-size:10px;background:linear-gradient(135deg,var(--pkp),var(--pul));color:var(--pk);border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
 .rev-wrap{margin-top:12px}
 .rev-acc{border-bottom:1px solid #f5f0f3}
@@ -2177,10 +2179,14 @@ function renderHistPage(){
     entries.sort((a,b)=>b.dateVal.localeCompare(a.dateVal)).forEach(e=>{
       const allGirls=[...new Set(e.runs.flatMap(r=>r.stops.filter(s=>s.type==='pick').map(s=>s.name)))];
       const girlNames=allGirls.length<=3?allGirls.join('・'):(allGirls.slice(0,3).join('・')+`…他${allGirls.length-3}名`);
+      const _tm=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+      const _deps=e.runs.map(r=>_tm(r.departTime));
+      const _drops=e.runs.flatMap(r=>r.stops.filter(s=>s.type==='drop').map(s=>_tm(s.time)));
+      const _shiftMin=(_deps.length&&_drops.length)?(()=>{const s=Math.min(..._deps),en=Math.max(..._drops);return en>=s?en-s:en-s+1440;})():0;
       html+=`<div class="hist-item" data-id="${e.id}" onclick="openHistDetail(${e.id})">
         <div class="hist-item-hdr">
           <div style="min-width:0;overflow:hidden">
-            <div class="hist-item-date">${fmtDLFull(e.dateVal)}${e.revised?'<span class="revised-tag">訂正</span>':''}</div>
+            <div class="hist-item-date">${fmtDLFull(e.dateVal)}${e.revised?'<span class="revised-tag">訂正</span>':''}${_shiftMin>120?'<span class="overtime-tag">2h超</span>':''}</div>
             <div class="hist-item-sub">${_svgUserSm} ${girlNames||'データなし'}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
