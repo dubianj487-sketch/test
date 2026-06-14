@@ -30,10 +30,15 @@ jobs:
 
     steps:
       - name: Notify Discord Start
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
+          echo "DEPLOY_START=$(date +%s)" >> $GITHUB_ENV
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          CONTENT=$(printf 'SILDE のデプロイを開始しました\nコミット：%s\n"%s"' "$SHORT_SHA" "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\":\"🔄 SILDEのデプロイ開始...\"}"
+            -d "$(jq -n --arg c "$CONTENT" '{content: $c}')"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,19 +62,26 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Wait for CDN propagation and notify
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           PAGE_URL="${{ steps.deployment.outputs.page_url }}"
           EXPECTED="${{ github.sha }}"
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           for i in $(seq 1 60); do
             FOUND=$(curl -s "${PAGE_URL}index.html" | grep -oP '(?<=build-hash" content=")[a-f0-9]+' || true)
             if [ "$FOUND" = "$EXPECTED" ]; then
+              ELAPSED=$(( $(date +%s) - $DEPLOY_START ))
+              CONTENT=$(printf 'SILDE のデプロイが完了しました（%s秒）\nコミット：%s\n"%s"' "$ELAPSED" "$SHORT_SHA" "$COMMIT_MSG")
               curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
                 -H "Content-Type: application/json" \
-                -d "{\"content\":\"🌐 ブラウザで確認できます！\\n${PAGE_URL}\"}"
+                -d "$(jq -n --arg c "$CONTENT" '{content: $c}')"
               exit 0
             fi
             sleep 5
           done
+          ELAPSED=$(( $(date +%s) - $DEPLOY_START ))
+          CONTENT=$(printf 'SILDE のデプロイが完了しました（%s秒）\nコミット：%s\n"%s"' "$ELAPSED" "$SHORT_SHA" "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\":\"✅ デプロイ完了（CDN反映待ちタイムアウト）\\n${PAGE_URL}\"}"
+            -d "$(jq -n --arg c "$CONTENT" '{content: $c}')"
