@@ -281,9 +281,9 @@ input:disabled{background:#f0f0f0;color:#bbb}
 
 .mo{display:none;position:fixed;inset:0;background:rgba(20,18,40,.45);z-index:500;align-items:flex-end}
 .mo.open{display:flex}
-.mbox{background:#f4eef2;border-radius:22px 22px 0 0;padding:0 16px 34px;width:100%;max-height:88vh;overflow-y:auto;animation:su .28s ease}
+.mbox{background:#f4eef2;border-radius:22px 22px 0 0;padding:0 16px calc(20px + env(safe-area-inset-bottom));width:100%;max-height:calc(100dvh - env(safe-area-inset-top) - 20px);overflow-y:auto;animation:su .28s ease}
 @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.mtitle{font-size:15px;font-weight:700;color:var(--tx);padding:16px 0;border-bottom:1px solid #ece4ea;display:flex;align-items:center;justify-content:space-between;background:transparent;margin-bottom:14px}
+.mtitle{font-size:15px;font-weight:700;color:var(--tx);padding:16px 0;border-bottom:1px solid #ece4ea;display:flex;align-items:center;justify-content:space-between;background:#f4eef2;margin-bottom:14px;position:sticky;top:0;z-index:1}
 .mclose{background:none;border:none;font-size:22px;color:#bbb;cursor:pointer}
 
 /* ===== 今日のスケジュールカード ===== */
