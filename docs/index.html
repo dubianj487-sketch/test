@@ -2138,7 +2138,7 @@ function renderHistPage(){
       <div class="month-acc-body">`;
     entries.sort((a,b)=>b.dateVal.localeCompare(a.dateVal)).forEach(e=>{
       const allGirls=[...new Set(e.runs.flatMap(r=>r.stops.filter(s=>s.type==='pick').map(s=>s.name)))];
-      const girlNames=allGirls.length<=2?allGirls.join('・'):(allGirls.slice(0,2).join('・')+`…他${allGirls.length-2}名`);
+      const girlNames=allGirls.length<=3?allGirls.join('・'):(allGirls.slice(0,3).join('・')+`…他${allGirls.length-3}名`);
       html+=`<div class="swipe-wrap"><div class="hist-item swipe-inner" data-id="${e.id}">
         <div class="hist-item-hdr">
           <div style="min-width:0;overflow:hidden">
