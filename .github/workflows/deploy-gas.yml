@@ -19,10 +19,10 @@ jobs:
         run: |
           echo "DEPLOY_START=$(date +%s)" >> $GITHUB_ENV
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          CONTENT=$(printf 'Backend のデプロイを開始しました\nコミット：%s\n"%s"' "$SHORT_SHA" "$COMMIT_MSG")
+          CONTENT=$(printf 'デプロイを開始しました\nコミット：%s\n"%s"' "$SHORT_SHA" "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "$(jq -n --arg c "$CONTENT" '{content: $c}')"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "Backend", content: $c}')"
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -115,7 +115,7 @@ jobs:
         run: |
           ELAPSED=$(( $(date +%s) - $DEPLOY_START ))
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          CONTENT=$(printf 'Backend のデプロイが完了しました（%s秒）\nコミット：%s\n"%s"' "$ELAPSED" "$SHORT_SHA" "$COMMIT_MSG")
+          CONTENT=$(printf 'デプロイが完了しました（%s秒）\nコミット：%s\n"%s"' "$ELAPSED" "$SHORT_SHA" "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "$(jq -n --arg c "$CONTENT" '{content: $c}')"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "Backend", content: $c}')"
