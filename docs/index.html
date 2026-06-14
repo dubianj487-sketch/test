@@ -366,7 +366,7 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .hist-item:active{background:#fdf5f8}
 .hist-item-hdr{display:flex;align-items:center;justify-content:space-between}
 .hist-item-date{font-size:15px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx)}
-.hist-item-sub{font-size:12px;color:#bbb;margin-top:3px}
+.hist-item-sub{font-size:12px;color:#bbb;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hist-item-badge{font-size:11px;font-weight:700;color:var(--teal);background:var(--pul);padding:2px 9px;border-radius:20px}
 .hist-item-arr{font-size:14px;color:var(--txs);opacity:.35}
 
@@ -2137,10 +2137,11 @@ function renderHistPage(){
       </div>
       <div class="month-acc-body">`;
     entries.sort((a,b)=>b.dateVal.localeCompare(a.dateVal)).forEach(e=>{
-      const girlNames=e.runs.flatMap(r=>r.stops.filter(s=>s.type==='pick').map(s=>s.name)).join('・');
+      const allGirls=[...new Set(e.runs.flatMap(r=>r.stops.filter(s=>s.type==='pick').map(s=>s.name)))];
+      const girlNames=allGirls.length<=2?allGirls.join('・'):(allGirls.slice(0,2).join('・')+`…他${allGirls.length-2}名`);
       html+=`<div class="swipe-wrap"><div class="hist-item swipe-inner" data-id="${e.id}">
         <div class="hist-item-hdr">
-          <div>
+          <div style="min-width:0;overflow:hidden">
             <div class="hist-item-date">${fmtDLFull(e.dateVal)}${e.revised?'<span class="revised-tag">訂正</span>':''}</div>
             <div class="hist-item-sub">${_svgUserSm} ${girlNames||'データなし'}</div>
           </div>
