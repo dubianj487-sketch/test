@@ -19,7 +19,7 @@ jobs:
         run: |
           echo "DEPLOY_START=$(date +%s)" >> $GITHUB_ENV
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          CONTENT=$(printf 'Backend · %s\n%s' "$SHORT_SHA" "$COMMIT_MSG")
+          CONTENT=$(printf '[Backend](https://github.com/dubianj487-sketch/test) · %s\n%s' "$SHORT_SHA" "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ開始", content: $c}')"
@@ -115,7 +115,7 @@ jobs:
         run: |
           ELAPSED=$(( $(date +%s) - $DEPLOY_START ))
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          CONTENT=$(printf 'Backend · %s\n%s' "$SHORT_SHA" "$COMMIT_MSG")
+          CONTENT=$(printf '[Backend](https://github.com/dubianj487-sketch/test) · %s\n%s' "$SHORT_SHA" "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了", content: $c}')"
