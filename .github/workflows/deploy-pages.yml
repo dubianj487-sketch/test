@@ -35,9 +35,10 @@ jobs:
         run: |
           echo "DEPLOY_START=$(date +%s)" >> $GITHUB_ENV
           CONTENT=$(printf 'commit: %s' "$COMMIT_MSG")
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ開始・Web", content: $c}')"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ開始・Web", content: $c}')" \
+            -w "\nHTTP: %{http_code}\n"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,9 +71,10 @@ jobs:
             FOUND=$(curl -s "${PAGE_URL}index.html" | grep -oP '(?<=build-hash" content=")[a-f0-9]+' || true)
             if [ "$FOUND" = "$EXPECTED" ]; then
               CONTENT=$(printf 'commit: %s' "$COMMIT_MSG")
-              curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+              curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
                 -H "Content-Type: application/json" \
-                -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了・Web", content: $c}')"
+                -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了・Web", content: $c}')" \
+                -w "\nHTTP: %{http_code}\n"
               exit 0
             fi
             sleep 5
