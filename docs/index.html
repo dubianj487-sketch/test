@@ -993,11 +993,16 @@ function initApp() {
     pg.addEventListener('touchend',function(e){
       if(_swipeTouching||locked!=='h'){locked=null;return;}
       var dx=e.changedTouches[0].clientX-sx;
+      var newTab=_histTab;
       if(Math.abs(dx)>50){
-        if(dx<0&&_histTab===0)switchHistTab(1);
-        else if(dx>0&&_histTab===1)switchHistTab(0);
-        else switchHistTab(_histTab);
-      }else{switchHistTab(_histTab);}
+        if(dx<0&&_histTab===0)newTab=1;
+        else if(dx>0&&_histTab===1)newTab=0;
+      }
+      if(newTab!==_histTab){
+        switchHistTab(newTab);
+      }else{
+        if(slider){slider.style.transition='transform .32s cubic-bezier(.32,.72,0,1)';slider.style.transform='translateX('+(_histTab*-100)+'%)';}
+      }
       locked=null;
     },{passive:true});
   })();
