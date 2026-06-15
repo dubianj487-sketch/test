@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, maximum-scale=1">
+<title>検査整備保安部門(継続検査)｜呼出状況</title>
+<link rel="icon" href="https://mlit3.ncall.info/favicon.png" type="image/png">
+<link href="https://mlit3.ncall.info/css/bootstrap.css" rel="stylesheet">
+<link href="https://mlit3.ncall.info/css/style.css" rel="stylesheet">
+<link href="https://mlit3.ncall.info/css/font-awesome.css" rel="stylesheet">
+<link href="https://mlit3.ncall.info/css/responsive.css" rel="stylesheet">
+<link href="https://mlit3.ncall.info/css/animate.css" rel="stylesheet">
+</head>
+<body>
+<div align="center">
+<h1 class="animated fadeInDown delay-07s">新潟運輸支局</h1>
+<h4 class="animated fadeInDown delay-07s">検査整備保安部門(継続検査)窓口<BR>呼出状況</h4>
+<P>
+<HR>
+<font color="#cc0000"></font>
+<table border="0" cellpadding="3">
+<tbody id="callingTable">
+  <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+</tbody>
+</table>
+<BR>
+※状況によりお呼び出し順が前後する場合があります。ご了承ください。
+<BR><BR>
+<a href="#" onclick="loadData(); return false;">再読み込み</a>
+</P>
+<BR><HR>
+<h1>受付状況確認</h1>
+<P>窓口を選んでください</P>
+<BR>
+<a href="./display2.html">検査整備保安部門(継続検査)</a>
+<BR>
+</div>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbwOXmAdrOHtw_G7wckQLpsjCqoQ-en8ckwgU-lrzeibcl1sVkfQZNIMQtF-sn73LYYA/exec';
+
+async function loadData() {
+  try {
+    var res = await fetch(GAS_URL + '?type=json&_=' + Date.now());
+    var data = await res.json();
+    var yobidashi = data.yobidashi || [];
+    var tbody = document.getElementById('callingTable');
+    tbody.innerHTML = '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
+
+    if (yobidashi.length === 0) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="3" style="text-align:center;padding:20px;">現在呼出中の番号はありません</td>';
+      tbody.appendChild(tr);
+    } else {
+      yobidashi.forEach(function(num) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td><h3><font color="#cc0000">【呼出中】</font></h3></td><td><h2><B>' + num + ' </B></h2></td><td></td>';
+        tbody.appendChild(tr);
+      });
+    }
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+loadData();
+setInterval(loadData, 30000);
+</script>
+</body>
+</html>

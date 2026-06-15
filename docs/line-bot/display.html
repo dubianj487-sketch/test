@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>新潟運輸支局の混雑情報</title>
+<base href="https://www.neconome.com/">
+<link rel="stylesheet" type="text/css" href="/src/view/assets_new/css/style.css?date=202604170858">
+<link rel="stylesheet" type="text/css" href="/src/view/assets_new/css/S0K_new.css?date=202604170858">
+<script type="text/javascript" src="/src/view/assets_new/js/jquery-3.7.1.min.js?date=202604170858"></script>
+</head>
+<body id="page-bukken01-detail">
+<div class="wrapper">
+<main id="global-contents">
+<section id="title">
+  <div id="div_title" class="child">
+    <h1>新潟運輸支局</h1>
+    <p class="reload"><a href="#" id="reloadBtn"><img src="/src/view/assets_new/images/cmn_icn_reload.png"></a></p>
+    <p class="time" id="time"></p>
+  </div>
+</section>
+<div id="div_status">
+  <section id="status">
+    <h2>現在の状況</h2>
+    <div class="default">
+      <h3>交付準備完了番号</h3>
+      <div><div>
+        <div class="comment clamp" id="statusMessage">読み込み中...</div>
+        <p class="button more"><a>続きを見る</a></p>
+        <p class="more-contents" id="statusMessage2"></p>
+        <p class="button nomore" style="display:none"><a>閉じる</a></p>
+      </div></div>
+    </div>
+  </section>
+</div>
+</main>
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwOXmAdrOHtw_G7wckQLpsjCqoQ-en8ckwgU-lrzeibcl1sVkfQZNIMQtF-sn73LYYA/exec';
+
+function updateTime() {
+  var now = new Date();
+  var yyyy = now.getFullYear();
+  var mm = ('0' + (now.getMonth() + 1)).slice(-2);
+  var dd = ('0' + now.getDate()).slice(-2);
+  var hh = ('0' + now.getHours()).slice(-2);
+  var min = ('0' + now.getMinutes()).slice(-2);
+  document.getElementById('time').textContent = yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + min + ' 現在';
+}
+
+async function loadData() {
+  updateTime();
+  try {
+    var res = await fetch(GAS_URL + '?type=json&_=' + Date.now());
+    var data = await res.json();
+    var fubiArray = data.fubi || [];
+    var kanryoArray = data.kanryo || [];
+
+    var invalidBlock = fubiArray.length > 0
+      ? '【審査不備番号】<br>' + fubiArray.map(function(n){ return '<span class="strong">' + n + '</span>番'; }).join(',') + '<br><br>'
+      : '';
+    var completeBlock = kanryoArray.length > 0
+      ? '【交付準備完了番号】<br>' + kanryoArray.map(function(n){ return '<span class="strong">' + n + '</span>番'; }).join(',')
+      : '';
+
+    var message = (fubiArray.length === 0 && kanryoArray.length === 0)
+      ? 'ただいま受付時間外です。'
+      : '以下の番号の方は窓口までお越しください。<br>' + invalidBlock + completeBlock;
+
+    document.getElementById('statusMessage').innerHTML = message;
+    document.getElementById('statusMessage2').innerHTML = message;
+  } catch(e) {
+    document.getElementById('statusMessage').textContent = 'データの取得に失敗しました。';
+  }
+}
+
+$(document).ready(function() {
+  loadData();
+  setInterval(loadData, 60000);
+
+  $('#reloadBtn').on('click', function(e) {
+    e.preventDefault();
+    loadData();
+  });
+
+  $(document).on('click', '.button.more', function(e) {
+    e.preventDefault();
+    var $parent = $(this).closest('div');
+    $parent.find('.comment.clamp').removeClass('clamp');
+    $(this).hide();
+    $parent.find('.button.nomore').show();
+  });
+  $(document).on('click', '.button.nomore', function(e) {
+    e.preventDefault();
+    var $parent = $(this).closest('div');
+    $parent.find('.comment').addClass('clamp');
+    $(this).hide();
+    $parent.find('.button.more').show();
+  });
+});
+</script>
+</body>
+</html>
