@@ -100,10 +100,10 @@ function routeMessage(event) {
     } else if (waitingRows.length > 0) {
       processCancelByNumber(userId, userText, event, sheet, waitingRows);
     } else {
-      replyText(event.replyToken, 'エラー', 'メニューから操作を選択してください。');
+      replyFlex(event.replyToken, 'エラー', flexError('メニューから操作を選択してください。'));
     }
     return;
   }
 
-  replyText(event.replyToken, 'エラー', 'メニューから操作を選択してください。');
+  replyFlex(event.replyToken, 'エラー', flexError('メニューから操作を選択してください。'));
 }

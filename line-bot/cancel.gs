@@ -1,7 +1,6 @@
 function handleCancel(userId, event, sheet, waitingRows) {
   if (waitingRows.length === 0) {
-    const msg = getMessage('cancel_no_number');
-    replyText(event.replyToken, msg ? msg.title : 'キャンセル', msg ? msg.body : '通知を取り消せる受付番号がありません。');
+    replyFlex(event.replyToken, '取り消せる番号がありません', flexCancelNoNumber());
     return;
   }
 
@@ -13,29 +12,16 @@ function handleCancel(userId, event, sheet, waitingRows) {
     };
   });
 
-  const msg = getMessage('cancel_instruction');
-  replyWithQuickReply(
-    event.replyToken,
-    msg ? msg.title : 'キャンセル',
-    msg ? msg.body : '取り消す番号を選択してください。',
-    quickItems
-  );
+  replyFlex(event.replyToken, '取り消す番号を選択してください', flexCancelSelect(waitingRows), quickItems);
 }
 
 function processCancelByNumber(userId, number, event, sheet, waitingRows) {
   const target = waitingRows.find(function(r) { return r.number === number; });
   if (!target) {
-    const msg = getMessage('cancel_not_found');
-    replyText(event.replyToken, msg ? msg.title : 'エラー', msg ? msg.body : '入力された番号は見つかりませんでした。');
+    replyFlex(event.replyToken, 'キャンセルエラー', flexError('入力された受付番号は見つかりませんでした。'));
     return;
   }
 
   sheet.deleteRow(target.rowIndex);
-
-  const msg = getMessage('cancel_success');
-  if (msg) {
-    replyFormattedText(event.replyToken, msg.title, msg.body, number);
-  } else {
-    replyText(event.replyToken, 'キャンセル', number + '番の通知を取り消しました。');
-  }
+  replyFlex(event.replyToken, number + '番をキャンセルしました', flexCancelSuccess(number));
 }
