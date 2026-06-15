@@ -61,7 +61,7 @@ function runWebScraping() {
 
     const response2 = UrlFetchApp.fetch(site2Url);
     const htmlSite2 = response2.getContentText('Shift_JIS');
-    const regexSite2 = /<b>\s*(\d+)\s*<\/b>/g;
+    const regexSite2 = /<b>\s*(\d+)\s*<\/b>/gi;
     let match2;
     while ((match2 = regexSite2.exec(htmlSite2)) !== null) {
       yobidashiNumbers.push(match2[1]);
