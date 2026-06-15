@@ -103,7 +103,7 @@ function flexRegisterDone(number, siteType) {
           type: 'box', layout: 'baseline', margin: 'md',
           contents: [
             { type: 'text', text: number, weight: 'bold', size: '5xl', color: s.color, flex: 0 },
-            { type: 'text', text: '番', weight: 'bold', size: 'xl', color: s.color, flex: 0, margin: 'sm', offsetBottom: '4px' }
+            { type: 'text', text: '番', weight: 'bold', size: 'xl', color: s.color, flex: 0, margin: 'sm' }
           ]
         }
       ]
@@ -135,7 +135,7 @@ function flexNotify(number, category) {
           type: 'box', layout: 'baseline', margin: 'sm',
           contents: [
             { type: 'text', text: number, weight: 'bold', size: '5xl', color: c.color, flex: 0 },
-            { type: 'text', text: '番', weight: 'bold', size: 'xl',  color: c.color, flex: 0, margin: 'sm', offsetBottom: '4px' }
+            { type: 'text', text: '番', weight: 'bold', size: 'xl',  color: c.color, flex: 0, margin: 'sm' }
           ]
         },
         { type: 'separator', margin: 'lg' },
@@ -198,7 +198,7 @@ function flexCancelSuccess(number) {
           type: 'box', layout: 'baseline',
           contents: [
             { type: 'text', text: number, weight: 'bold', size: '4xl', color: '#2D2D2D', flex: 0 },
-            { type: 'text', text: '番', size: 'lg', color: '#2D2D2D', flex: 0, margin: 'sm', offsetBottom: '2px' }
+            { type: 'text', text: '番', size: 'lg', color: '#2D2D2D', flex: 0, margin: 'sm' }
           ]
         },
         { type: 'text', text: '通知の取り消しが完了しました', color: '#888888', size: 'sm', margin: 'sm' }
