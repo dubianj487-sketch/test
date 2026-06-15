@@ -7,6 +7,19 @@ function startRegistration(userId, event, sheet, siteType, existingRowIndex) {
   sheet.appendRow([userId, '', siteType, '', '未通知', '', new Date(), '登録処理']);
 }
 
+function showMyWaiting(userId, replyToken, waitingRows) {
+  if (waitingRows.length === 0) {
+    replyText(replyToken, '交付待ち', '現在待機中の番号はありません。');
+    return;
+  }
+
+  const siteLabel = { SITE1: '中古新規・名義変更', SITE2: '一般継続' };
+  const lines = waitingRows.map(function(r) {
+    return siteLabel[r.site] + '：' + r.number + '番';
+  });
+  replyText(replyToken, '交付待ち一覧', lines.join('\n'));
+}
+
 function completeRegistration(userId, number, rowIndex, event, sheet) {
   if (!/^[0-9]{1,10}$/.test(number)) {
     const siteType = sheet.getRange(rowIndex, 3).getValue();

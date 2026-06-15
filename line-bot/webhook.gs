@@ -88,6 +88,10 @@ function routeMessage(event) {
     case 'キャンセル':
       handleCancel(userId, event, sheet, waitingRows);
       return;
+
+    case '交付待ち':
+      showMyWaiting(userId, event.replyToken, waitingRows);
+      return;
   }
 
   if (/^[0-9]+$/.test(userText)) {
