@@ -103,6 +103,19 @@ function parseStrongNumbers(areaText) {
   return numbers;
 }
 
+function debugSite1Html() {
+  const url = 'https://www.neconome.com/S0K01.html?bkn_cd=003180&tab=2';
+  const options = {
+    method: 'get',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
+    }
+  };
+  const html = UrlFetchApp.fetch(url, options).getContentText('UTF-8');
+  const idx = html.indexOf('003180');
+  Logger.log(html.substring(Math.max(0, idx - 200), idx + 2000));
+}
+
 function saveToStatusSheet(timestamp, url1, url2, fubi, kanryo, yobidashi, counts, result, trigger) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = ss.getSheetByName('status');
