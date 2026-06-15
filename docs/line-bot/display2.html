@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>呼出状況 | 新潟運輸支局</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: #f0f4f8;
+    min-height: 100vh;
+    color: #1d1d1f;
+  }
+  header {
+    background: #c53030;
+    color: white;
+    text-align: center;
+    padding: 24px 16px 20px;
+  }
+  header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+  header p  { font-size: 13px; margin-top: 4px; opacity: 0.85; }
+  main { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #6e6e73;
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
+  .refresh-btn {
+    background: none;
+    border: 1px solid #c7c7cc;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: #6e6e73;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .refresh-btn:active { opacity: 0.6; transform: scale(0.96); }
+  .card {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #3d3d3d;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .call-label {
+    display: inline-block;
+    background: #e53e3e;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .calling-list { display: flex; flex-direction: column; gap: 12px; }
+  .calling-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fff5f5;
+    border-radius: 12px;
+    border-left: 4px solid #e53e3e;
+  }
+  .calling-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #e53e3e;
+    white-space: nowrap;
+  }
+  .calling-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a202c;
+    line-height: 1;
+  }
+  .calling-unit { font-size: 14px; font-weight: 600; color: #4a5568; }
+  .empty { font-size: 14px; color: #a0aec0; text-align: center; padding: 20px 0; }
+  .notice { font-size: 11px; color: #a0aec0; text-align: center; margin-top: 8px; }
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: #a0aec0;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>新潟運輸支局</h1>
+  <p>検査整備保安部門（継続検査）呼出状況</p>
+</header>
+<main>
+  <div class="meta">
+    <span id="updatedAt">読み込み中...</span>
+    <button class="refresh-btn" onclick="load()">更新</button>
+  </div>
+  <div class="card">
+    <div class="card-title">
+      <span class="call-label">呼出中</span>
+      現在の呼出番号
+    </div>
+    <div id="callingList"><div class="empty">なし</div></div>
+    <div class="notice">※状況によりお呼び出し順が前後する場合があります</div>
+  </div>
+</main>
+<footer>30秒ごとに自動更新</footer>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwOXmAdrOHtw_G7wckQLpsjCqoQ-en8ckwgU-lrzeibcl1sVkfQZNIMQtF-sn73LYYA/exec';
+
+function fmt(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2) + ' 更新';
+}
+
+async function load() {
+  document.getElementById('updatedAt').textContent = '更新中...';
+  try {
+    const res  = await fetch(GAS_URL + '?type=json&_=' + Date.now());
+    const data = await res.json();
+    const list = data.yobidashi || [];
+    const el   = document.getElementById('callingList');
+
+    if (list.length === 0) {
+      el.innerHTML = '<div class="empty">現在呼出中の番号はありません</div>';
+    } else {
+      el.innerHTML = '<div class="calling-list">' + list.map(function(n) {
+        return `<div class="calling-row">
+          <span class="calling-label">【呼出中】</span>
+          <span class="calling-num">${n}</span>
+          <span class="calling-unit">番</span>
+        </div>`;
+      }).join('') + '</div>';
+    }
+
+    document.getElementById('updatedAt').textContent = fmt(data.updatedAt) || (new Date().getHours() + ':' + String(new Date().getMinutes()).padStart(2,'0') + ' 更新');
+  } catch(e) {
+    document.getElementById('updatedAt').textContent = '取得失敗';
+  }
+}
+
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>

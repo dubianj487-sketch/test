@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>受付状況 | 新潟運輸支局</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: #f0f4f8;
+    min-height: 100vh;
+    color: #1d1d1f;
+  }
+  header {
+    background: #0057b8;
+    color: white;
+    text-align: center;
+    padding: 24px 16px 20px;
+  }
+  header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+  header p  { font-size: 13px; margin-top: 4px; opacity: 0.85; }
+  main { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #6e6e73;
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
+  .refresh-btn {
+    background: none;
+    border: 1px solid #c7c7cc;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: #6e6e73;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .refresh-btn:active { opacity: 0.6; transform: scale(0.96); }
+  .card {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-red   { background: #e53e3e; }
+  .dot-green { background: #38a169; }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #3d3d3d;
+  }
+  .numbers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 40px;
+    align-items: center;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+  .badge-num  { font-size: 22px; }
+  .badge-unit { font-size: 13px; }
+  .badge-red   { background: #fff0f0; color: #c53030; }
+  .badge-green { background: #f0fff4; color: #276749; }
+  .empty { font-size: 14px; color: #a0aec0; }
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: #a0aec0;
+    padding: 20px;
+  }
+  .loading { opacity: 0.4; }
+</style>
+</head>
+<body>
+<header>
+  <h1>新潟運輸支局</h1>
+  <p>受付状況</p>
+</header>
+<main>
+  <div class="meta">
+    <span id="updatedAt">読み込み中...</span>
+    <button class="refresh-btn" onclick="load()">更新</button>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="dot dot-red"></div>
+      <div class="card-title">審査不備番号</div>
+    </div>
+    <div class="numbers" id="fubi"><span class="empty">なし</span></div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="dot dot-green"></div>
+      <div class="card-title">交付準備完了番号</div>
+    </div>
+    <div class="numbers" id="kanryo"><span class="empty">なし</span></div>
+  </div>
+</main>
+<footer>60秒ごとに自動更新</footer>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwOXmAdrOHtw_G7wckQLpsjCqoQ-en8ckwgU-lrzeibcl1sVkfQZNIMQtF-sn73LYYA/exec';
+
+function fmt(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2) + ' 更新';
+}
+
+function render(id, numbers, cls) {
+  const el = document.getElementById(id);
+  el.innerHTML = numbers.length
+    ? numbers.map(n => `<span class="badge ${cls}"><span class="badge-num">${n}</span><span class="badge-unit">番</span></span>`).join('')
+    : '<span class="empty">なし</span>';
+}
+
+async function load() {
+  document.getElementById('updatedAt').textContent = '更新中...';
+  try {
+    const res  = await fetch(GAS_URL + '?type=json&_=' + Date.now());
+    const data = await res.json();
+    render('fubi',   data.fubi   || [], 'badge-red');
+    render('kanryo', data.kanryo || [], 'badge-green');
+    document.getElementById('updatedAt').textContent = fmt(data.updatedAt) || (new Date().getHours() + ':' + String(new Date().getMinutes()).padStart(2,'0') + ' 更新');
+  } catch(e) {
+    document.getElementById('updatedAt').textContent = '取得失敗';
+  }
+}
+
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>
