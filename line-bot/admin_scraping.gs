@@ -1,5 +1,5 @@
 const CONFIG = {
-  MODE: 'test',
+  MODE: 'main',
   urls: {
     main: {
       site1: 'https://www.neconome.com/S0K01.html?bkn_cd=003180&tab=2',
