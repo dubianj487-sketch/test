@@ -40,7 +40,7 @@ function runWebScraping() {
     const response1 = UrlFetchApp.fetch(site1Url, options1);
     const htmlSite1 = response1.getContentText('UTF-8');
 
-    const blockRegex = /bkn_cd=003180"[\s\S]*?class="comment[^"]*">([\s\S]*?)<\/div>/;
+    const blockRegex = /bkn_cd=003189[\s\S]*?<div class="comment">([\s\S]*?)<\/div>/;
     const matchBlock = htmlSite1.match(blockRegex);
 
     if (matchBlock && matchBlock[1]) {
@@ -94,7 +94,7 @@ function runWebScraping() {
 }
 
 function parseStrongNumbers(areaText) {
-  const regex = /<span class="strong">(\d+)<\/span>/g;
+  const regex = /<span class=(?:"strong"|strong)>(\d+)<\/span>/g;
   let match;
   const numbers = [];
   while ((match = regex.exec(areaText)) !== null) {
