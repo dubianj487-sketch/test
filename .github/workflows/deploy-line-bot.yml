@@ -46,11 +46,11 @@ jobs:
           echo "$CREDS" | base64 -d > ~/.clasprc.json
 
       - name: Push to Google Apps Script
-        working-directory: line-bot
-        run: clasp push --force
+        run: |
+          echo '{"scriptId":"1o3p4NScPizFgJv14p6CtFfvueCzvP6uwgVFsCqpX6NXyrQedCiOef3Vw","rootDir":"./line-bot"}' > .clasp.json
+          clasp push --force
 
       - name: Deploy Web App
-        working-directory: line-bot
         run: |
           DEPLOY_LIST=$(clasp deployments 2>&1)
           echo "=== 既存デプロイ一覧 ==="
