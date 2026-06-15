@@ -112,8 +112,14 @@ function debugSite1Html() {
     }
   };
   const html = UrlFetchApp.fetch(url, options).getContentText('UTF-8');
-  const idx = html.indexOf('003180');
-  Logger.log(html.substring(Math.max(0, idx - 200), idx + 2000));
+  const idx = html.indexOf('審査不備');
+  if (idx === -1) {
+    Logger.log('「審査不備」が見つかりません。「comment」クラスを検索します。');
+    const idx2 = html.indexOf('comment');
+    Logger.log(html.substring(Math.max(0, idx2 - 100), idx2 + 3000));
+  } else {
+    Logger.log(html.substring(Math.max(0, idx - 500), idx + 2000));
+  }
 }
 
 function saveToStatusSheet(timestamp, url1, url2, fubi, kanryo, yobidashi, counts, result, trigger) {
