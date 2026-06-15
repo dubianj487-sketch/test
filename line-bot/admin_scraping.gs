@@ -122,6 +122,12 @@ function debugSite1Html() {
   }
 }
 
+function debugSite2Html() {
+  const url = 'https://mlit3.ncall.info/g01/niigata01/index.cgi?k=0';
+  const html = UrlFetchApp.fetch(url).getContentText('Shift_JIS');
+  Logger.log(html.substring(0, 3000));
+}
+
 function saveToStatusSheet(timestamp, url1, url2, fubi, kanryo, yobidashi, counts, result, trigger) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = ss.getSheetByName('status');
