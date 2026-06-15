@@ -1,0 +1,58 @@
+name: Deploy LINE Bot GAS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'line-bot/**'
+      - '.github/workflows/deploy-line-bot.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Notify Discord Start
+        run: |
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\":\"🔄 LINE Bot GASデプロイ開始...\"}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install clasp
+        run: npm install -g @google/clasp
+
+      - name: Write clasp credentials
+        run: |
+          CREDS="${{ secrets.CLASPRC_JSON_BASE64 }}"
+          if [ -z "$CREDS" ]; then
+            echo "❌ CLASPRC_JSON_BASE64 が未設定"
+            exit 1
+          fi
+          echo "$CREDS" | base64 -d > ~/.clasprc.json
+
+      - name: Push to Google Apps Script
+        run: |
+          echo '{"scriptId":"1o3p4NScPizFgJv14p6CtFfvueCzvP6uwgVFsCqpX6NXyrQedCiOef3Vw","rootDir":"./line-bot"}' > .clasp.json
+          clasp push --force
+
+      - name: Notify Discord Complete
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            MSG="✅ LINE Bot GASデプロイ完了！"
+          else
+            MSG="❌ LINE Bot GASデプロイ失敗"
+          fi
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\":\"${MSG}\"}"
