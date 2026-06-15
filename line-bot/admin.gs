@@ -1,3 +1,27 @@
+function setupSheets() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+
+  const sheets = {
+    'server': ['審査不備', '交付準備完了', '呼出中'],
+    'data':    ['userId', 'step', 'number', 'name', 'kana', 'phone', 'timestamp', 'mode'],
+    'message': ['timestamp', 'userId', 'message'],
+    'status':  ['timestamp', 'SITE1_url', 'SITE2_url', '審査不備', '交付準備完了', '呼出中', 'counts', 'result', 'trigger']
+  };
+
+  Object.entries(sheets).forEach(function([name, headers]) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) {
+      sheet = ss.insertSheet(name);
+      sheet.appendRow(headers);
+      Logger.log(name + ' シートを作成しました');
+    } else {
+      Logger.log(name + ' シートはすでに存在します');
+    }
+  });
+
+  Logger.log('セットアップ完了');
+}
+
 function adminProcess(userId, event) {
   const userText = event.message.text.trim();
   const replyToken = event.replyToken;
