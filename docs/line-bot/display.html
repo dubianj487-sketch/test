@@ -2,103 +2,157 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>新潟運輸支局の混雑情報</title>
-<base href="https://www.neconome.com/">
-<link rel="stylesheet" type="text/css" href="/src/view/assets_new/css/style.css?date=202604170858">
-<link rel="stylesheet" type="text/css" href="/src/view/assets_new/css/S0K_new.css?date=202604170858">
-<script type="text/javascript" src="/src/view/assets_new/js/jquery-3.7.1.min.js?date=202604170858"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>受付状況 | 新潟運輸支局</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: #f0f4f8;
+    min-height: 100vh;
+    color: #1d1d1f;
+  }
+  header {
+    background: #0057b8;
+    color: white;
+    text-align: center;
+    padding: 24px 16px 20px;
+  }
+  header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+  header p  { font-size: 13px; margin-top: 4px; opacity: 0.85; }
+  main { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #6e6e73;
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
+  .refresh-btn {
+    background: none;
+    border: 1px solid #c7c7cc;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: #6e6e73;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .refresh-btn:active { opacity: 0.6; transform: scale(0.96); }
+  .card {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-red   { background: #e53e3e; }
+  .dot-green { background: #38a169; }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #3d3d3d;
+  }
+  .numbers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 40px;
+    align-items: center;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+  .badge-num  { font-size: 22px; }
+  .badge-unit { font-size: 13px; }
+  .badge-red   { background: #fff0f0; color: #c53030; }
+  .badge-green { background: #f0fff4; color: #276749; }
+  .empty { font-size: 14px; color: #a0aec0; }
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: #a0aec0;
+    padding: 20px;
+  }
+  .loading { opacity: 0.4; }
+</style>
 </head>
-<body id="page-bukken01-detail">
-<div class="wrapper">
-<main id="global-contents">
-<section id="title">
-  <div id="div_title" class="child">
-    <h1>新潟運輸支局</h1>
-    <p class="reload"><a href="#" id="reloadBtn"><img src="/src/view/assets_new/images/cmn_icn_reload.png"></a></p>
-    <p class="time" id="time"></p>
+<body>
+<header>
+  <h1>新潟運輸支局</h1>
+  <p>受付状況</p>
+</header>
+<main>
+  <div class="meta">
+    <span id="updatedAt">読み込み中...</span>
+    <button class="refresh-btn" onclick="load()">更新</button>
   </div>
-</section>
-<div id="div_status">
-  <section id="status">
-    <h2>現在の状況</h2>
-    <div class="default">
-      <h3>交付準備完了番号</h3>
-      <div><div>
-        <div class="comment clamp" id="statusMessage">読み込み中...</div>
-        <p class="button more"><a>続きを見る</a></p>
-        <p class="more-contents" id="statusMessage2"></p>
-        <p class="button nomore" style="display:none"><a>閉じる</a></p>
-      </div></div>
+  <div class="card">
+    <div class="card-header">
+      <div class="dot dot-red"></div>
+      <div class="card-title">審査不備番号</div>
     </div>
-  </section>
-</div>
+    <div class="numbers" id="fubi"><span class="empty">なし</span></div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="dot dot-green"></div>
+      <div class="card-title">交付準備完了番号</div>
+    </div>
+    <div class="numbers" id="kanryo"><span class="empty">なし</span></div>
+  </div>
 </main>
-</div>
+<footer>60秒ごとに自動更新</footer>
 
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwOXmAdrOHtw_G7wckQLpsjCqoQ-en8ckwgU-lrzeibcl1sVkfQZNIMQtF-sn73LYYA/exec';
 
-function updateTime() {
-  var now = new Date();
-  var yyyy = now.getFullYear();
-  var mm = ('0' + (now.getMonth() + 1)).slice(-2);
-  var dd = ('0' + now.getDate()).slice(-2);
-  var hh = ('0' + now.getHours()).slice(-2);
-  var min = ('0' + now.getMinutes()).slice(-2);
-  document.getElementById('time').textContent = yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + min + ' 現在';
+function fmt(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2) + ' 更新';
 }
 
-async function loadData() {
-  updateTime();
+function render(id, numbers, cls) {
+  const el = document.getElementById(id);
+  el.innerHTML = numbers.length
+    ? numbers.map(n => `<span class="badge ${cls}"><span class="badge-num">${n}</span><span class="badge-unit">番</span></span>`).join('')
+    : '<span class="empty">なし</span>';
+}
+
+async function load() {
+  document.getElementById('updatedAt').textContent = '更新中...';
   try {
-    var res = await fetch(GAS_URL + '?type=json&_=' + Date.now());
-    var data = await res.json();
-    var fubiArray = data.fubi || [];
-    var kanryoArray = data.kanryo || [];
-
-    var invalidBlock = fubiArray.length > 0
-      ? '【審査不備番号】<br>' + fubiArray.map(function(n){ return '<span class="strong">' + n + '</span>番'; }).join(',') + '<br><br>'
-      : '';
-    var completeBlock = kanryoArray.length > 0
-      ? '【交付準備完了番号】<br>' + kanryoArray.map(function(n){ return '<span class="strong">' + n + '</span>番'; }).join(',')
-      : '';
-
-    var message = (fubiArray.length === 0 && kanryoArray.length === 0)
-      ? 'ただいま受付時間外です。'
-      : '以下の番号の方は窓口までお越しください。<br>' + invalidBlock + completeBlock;
-
-    document.getElementById('statusMessage').innerHTML = message;
-    document.getElementById('statusMessage2').innerHTML = message;
+    const res  = await fetch(GAS_URL + '?type=json&_=' + Date.now());
+    const data = await res.json();
+    render('fubi',   data.fubi   || [], 'badge-red');
+    render('kanryo', data.kanryo || [], 'badge-green');
+    document.getElementById('updatedAt').textContent = fmt(data.updatedAt) || (new Date().getHours() + ':' + String(new Date().getMinutes()).padStart(2,'0') + ' 更新');
   } catch(e) {
-    document.getElementById('statusMessage').textContent = 'データの取得に失敗しました。';
+    document.getElementById('updatedAt').textContent = '取得失敗';
   }
 }
 
-$(document).ready(function() {
-  loadData();
-  setInterval(loadData, 60000);
-
-  $('#reloadBtn').on('click', function(e) {
-    e.preventDefault();
-    loadData();
-  });
-
-  $(document).on('click', '.button.more', function(e) {
-    e.preventDefault();
-    var $parent = $(this).closest('div');
-    $parent.find('.comment.clamp').removeClass('clamp');
-    $(this).hide();
-    $parent.find('.button.nomore').show();
-  });
-  $(document).on('click', '.button.nomore', function(e) {
-    e.preventDefault();
-    var $parent = $(this).closest('div');
-    $parent.find('.comment').addClass('clamp');
-    $(this).hide();
-    $parent.find('.button.more').show();
-  });
-});
+load();
+setInterval(load, 60000);
 </script>
 </body>
 </html>
