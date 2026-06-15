@@ -128,6 +128,6 @@ function setupNotifyTrigger() {
   ScriptApp.getProjectTriggers().forEach(function(t) {
     if (t.getHandlerFunction() === 'checkAndNotify') ScriptApp.deleteTrigger(t);
   });
-  ScriptApp.newTrigger('checkAndNotify').timeBased().everyMinutes(5).create();
-  Logger.log('トリガー設定完了（5分おき・8:30〜17:30のみ動作）');
+  ScriptApp.newTrigger('checkAndNotify').timeBased().everyMinutes(1).create();
+  Logger.log('トリガー設定完了（1分おき・8:30〜17:30のみ動作）');
 }
