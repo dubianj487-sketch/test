@@ -1,5 +1,5 @@
 const CHANNEL_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty('CHANNEL_ACCESS_TOKEN');
-const SPREADSHEET_ID = '15wgBIMQNXmvPi52LeaSfGFk4lPfe0edpa0GzVt_TFS8';
+const SPREADSHEET_ID = '1-ta-orEvI-_KYVBOWsuyT6KbCu9Q4Yo1uTefneThKaA';
 const SHEET_DATA = 'data';
 const SHEET_MESSAGE = 'message';
 
