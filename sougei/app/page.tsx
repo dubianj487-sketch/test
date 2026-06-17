@@ -46,8 +46,12 @@ export default function DashboardPage() {
   const movingCount = drivers.filter(d => d.status === '移動中').length
   const doneCount = drivers.filter(d => d.status === '終了').length
 
+  const getDisplayStatus = (d: DriverWithDispatch) => {
+    const ds = d.currentDispatch?.status
+    return ds === '待機' ? '承諾待ち' : d.status
+  }
   const statusOrder: Record<string, number> = { '移動中': 0, '承諾待ち': 1, '待機': 2, '終了': 3 }
-  const sorted = [...drivers].sort((a, b) => (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3))
+  const sorted = [...drivers].sort((a, b) => (statusOrder[getDisplayStatus(a)] ?? 3) - (statusOrder[getDisplayStatus(b)] ?? 3))
 
   function getAvatarStyle(status: string) {
     const bg =
@@ -133,8 +137,7 @@ export default function DashboardPage() {
         )}
 
         {sorted.map(driver => {
-          const dispatchStatus = driver.currentDispatch?.status
-          const displayStatus = dispatchStatus === '承諾待ち' ? '承諾待ち' : driver.status
+          const displayStatus = getDisplayStatus(driver)
           const isMoving = driver.status === '移動中'
           const isAvail = driver.status === '待機' && displayStatus !== '承諾待ち'
           const isDone = driver.status === '終了'
