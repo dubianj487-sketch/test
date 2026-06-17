@@ -26,12 +26,6 @@ function checkAndNotify() {
     updateServerSheet(site1, site2);
   }
 
-  const labels = {
-    '審査不備':    { title: '審査不備のお知らせ',    body: '受付番号 {number} の書類に不備があります。\n窓口へお越しください。' },
-    '交付準備完了': { title: '交付準備完了のお知らせ', body: '受付番号 {number} の準備ができました。\n窓口へお越しください。' },
-    '呼出中':      { title: '呼出中のお知らせ',       body: '受付番号 {number} が呼ばれています。\n窓口へお越しください。' }
-  };
-
   waitingRows.forEach(function(row) {
     let category = '';
 
@@ -44,9 +38,7 @@ function checkAndNotify() {
 
     if (!category) return;
 
-    const label = labels[category];
-    const body  = label.body.replace('{number}', row.number);
-    pushText(row.userId, label.title, body);
+    pushFlex(row.userId, category + 'のお知らせ：' + row.number + '番', flexNotify(row.number, category));
     sheet.getRange(row.rowIndex, 8).setValue('通知済み');
   });
 }

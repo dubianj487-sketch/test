@@ -14,10 +14,15 @@ jobs:
 
     steps:
       - name: Notify Discord Start
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
+          echo "DEPLOY_START=$(date +%s)" >> $GITHUB_ENV
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          CONTENT=$(printf 'commit: %s' "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\":\"🔄 GASデプロイ開始...\"}"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ開始・Backend", content: $c}')"
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -65,12 +70,10 @@ jobs:
       - name: Deploy Web App and update URL in HTML
         if: env.GAS_CHANGED == 'true' && env.SKIP_GAS == 'false'
         run: |
-          # 既存デプロイを確認
           DEPLOY_LIST=$(clasp deployments 2>&1)
           echo "=== 既存デプロイ一覧 ==="
           echo "$DEPLOY_LIST"
 
-          # HEAD以外のデプロイIDを取得
           EXISTING_ID=$(echo "$DEPLOY_LIST" | grep -v '@HEAD' | grep -oP '(?<=- )[A-Za-z0-9_-]{30,}' | head -1)
 
           if [ -n "$EXISTING_ID" ]; then
@@ -95,7 +98,6 @@ jobs:
           WEB_APP_URL="https://script.google.com/macros/s/${DEPLOY_ID}/exec"
           echo "✅ Web App URL: $WEB_APP_URL"
 
-          # docs/index.html の GAS_URL を更新
           sed -i "s|const GAS_URL = '.*'|const GAS_URL = '${WEB_APP_URL}'|g" docs/index.html
 
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -108,7 +110,12 @@ jobs:
 
       - name: Notify Discord Complete
         if: always()
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
+          ELAPSED=$(( $(date +%s) - $DEPLOY_START ))
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          CONTENT=$(printf 'commit: %s' "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\":\"✅ GASデプロイ完了！\"}"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了・Backend", content: $c}')"

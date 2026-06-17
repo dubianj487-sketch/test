@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>新潟運輸支局の混雑情報｜ネコの目.com</title>
+<base href="https://www.neconome.com/">
+<link rel="stylesheet" type="text/css" href="/src/view/assets_new/css/style.css?date=202604170858">
+<link rel="stylesheet" type="text/css" href="/src/view/assets_new/css/S0K_new.css?date=202604170858">
+<script type="text/javascript" src="/src/view/assets_new/js/jquery-3.7.1.min.js?date=202604170858"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    var now = new Date();
+    var yyyy = now.getFullYear();
+    var mm = ('0' + (now.getMonth() + 1)).slice(-2);
+    var dd = ('0' + now.getDate()).slice(-2);
+    var hh = ('0' + now.getHours()).slice(-2);
+    var min = ('0' + now.getMinutes()).slice(-2);
+    $('.time').html(yyyy + '/' + mm + '/' + dd + ' ' + hh + ':' + min + ' 現在');
+
+    $(document).on('click', '.button.more', function(e) {
+      e.preventDefault();
+      var $parent = $(this).closest('div');
+      $parent.find('.comment.clamp').removeClass('clamp');
+      $(this).hide();
+      $parent.find('.button.nomore').show();
+    });
+    $(document).on('click', '.button.nomore', function(e) {
+      e.preventDefault();
+      var $parent = $(this).closest('div');
+      $parent.find('.comment').addClass('clamp');
+      $(this).hide();
+      $parent.find('.button.more').show();
+    });
+
+    $(document).on('click', '.reload a', function(e) {
+      e.preventDefault();
+      window.top.location.href = "<?= ScriptApp.getService().getUrl() ?>";
+    });
+  });
+</script>
+</head>
+<body id="page-bukken01-detail">
+<div class="wrapper">
+<main id="global-contents">
+<section id="title">
+  <div id="div_title" class="child">
+    <h1>新潟運輸支局</h1>
+    <p class="reload"><a href="#"><img src="/src/view/assets_new/images/cmn_icn_reload.png"></a></p>
+    <p class="time"></p>
+  </div>
+</section>
+<div id="div_status">
+  <section id="status">
+    <h2>現在の状況</h2>
+    <div class="default">
+      <h3>交付準備完了番号</h3>
+      <div><div>
+        <div class="comment clamp"><?!= STATUS_MESSAGE ?></div>
+        <p class="button more"><a>続きを見る</a></p>
+        <p class="more-contents"><?!= STATUS_MESSAGE ?></p>
+        <p class="button nomore" style="display:none"><a>閉じる</a></p>
+      </div></div>
+    </div>
+  </section>
+</div>
+</main>
+</div>
+</body></html>

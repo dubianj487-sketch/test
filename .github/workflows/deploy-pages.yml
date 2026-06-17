@@ -30,10 +30,14 @@ jobs:
 
     steps:
       - name: Notify Discord Start
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
+          echo "DEPLOY_START=$(date +%s)" >> $GITHUB_ENV
+          CONTENT=$(printf 'commit: %s' "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\":\"🔄 SILDEのデプロイ開始...\"}"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ開始・Web", content: $c}')"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,19 +61,23 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Wait for CDN propagation and notify
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           PAGE_URL="${{ steps.deployment.outputs.page_url }}"
           EXPECTED="${{ github.sha }}"
           for i in $(seq 1 60); do
             FOUND=$(curl -s "${PAGE_URL}index.html" | grep -oP '(?<=build-hash" content=")[a-f0-9]+' || true)
             if [ "$FOUND" = "$EXPECTED" ]; then
+              CONTENT=$(printf 'commit: %s\n%s' "$COMMIT_MSG" "$PAGE_URL")
               curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
                 -H "Content-Type: application/json" \
-                -d "{\"content\":\"🌐 ブラウザで確認できます！\\n${PAGE_URL}\"}"
+                -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了・Web", content: $c}')"
               exit 0
             fi
             sleep 5
           done
+          CONTENT=$(printf 'commit: %s\nhttps://dubianj487-sketch.github.io/test/' "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\":\"✅ デプロイ完了（CDN反映待ちタイムアウト）\\n${PAGE_URL}\"}"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了・Web", content: $c}')"

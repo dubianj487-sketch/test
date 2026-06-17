@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scraping Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,500,0,0&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --md-sys-color-primary: #1a73e8;
+      --md-sys-color-on-primary: #ffffff;
+      --md-sys-color-secondary-container: #e8f0fe;
+      --md-sys-color-on-secondary-container: #174ea6;
+      --md-sys-color-surface: #ffffff;
+      --md-sys-color-surface-variant: #f1f3f4;
+      --md-sys-color-outline: #dadce0;
+      --bg-color: #f8f9fa;
+      --text-main: #202124;
+      --text-sub: #5f6368;
+      --border-color: #e8eaed;
+      --header-bg: #ffffff;
+      --goog-blue: #4285f4;
+      --goog-red: #ea4335;
+      --goog-yellow: #fbbc05;
+      --goog-green: #34a853;
+      --md-sys-elevation-1: 0px 1px 3px 1px rgba(0,0,0,0.1), 0px 1px 2px 0px rgba(0,0,0,0.06);
+      --md-sys-elevation-2: 0px 2px 6px 2px rgba(0,0,0,0.15), 0px 1px 2px 0px rgba(0,0,0,0.30);
+      --theme-transition: background-color 600ms cubic-bezier(0.4,0,0.2,1), color 600ms cubic-bezier(0.4,0,0.2,1), border-color 600ms cubic-bezier(0.4,0,0.2,1), box-shadow 600ms cubic-bezier(0.4,0,0.2,1);
+    }
+    html.theme-dark {
+      --md-sys-color-primary: #8ab4f8;
+      --md-sys-color-on-primary: #202124;
+      --md-sys-color-secondary-container: #1c2b41;
+      --md-sys-color-on-secondary-container: #d2e3fc;
+      --md-sys-color-surface: #2d2d30;
+      --md-sys-color-surface-variant: #3c4043;
+      --md-sys-color-outline: #5f6368;
+      --bg-color: #1f1f1f;
+      --text-main: #e8eaed;
+      --text-sub: #9aa0a6;
+      --border-color: #3c4043;
+      --header-bg: #2d2d30;
+      --md-sys-elevation-1: 0px 1px 3px 1px rgba(0,0,0,0.3), 0px 1px 2px 0px rgba(0,0,0,0.2);
+      --md-sys-elevation-2: 0px 4px 8px 3px rgba(0,0,0,0.4), 0px 1px 3px 0px rgba(0,0,0,0.3);
+    }
+    body { display:flex; flex-direction:column; min-height:100vh; margin:0; background-color:var(--bg-color); font-family:'Roboto','Noto Sans JP',sans-serif; -webkit-font-smoothing:antialiased; transition:var(--theme-transition); overflow-x:hidden; }
+    header { display:flex; justify-content:space-between; align-items:center; height:64px; padding:0 16px; background-color:var(--header-bg); border-bottom:1px solid var(--border-color); box-sizing:border-box; transition:var(--theme-transition); }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .header-logo { display:flex; gap:2px; width:24px; height:24px; }
+    .header-logo .logo-bar { width:4.5px; }
+    .header-logo .bar-1 { height:16px; }
+    .header-logo .bar-2 { height:24px; }
+    .header-logo .bar-3 { height:18px; }
+    .header-logo .bar-4 { height:14px; }
+    .header-title { font-size:18px; font-weight:500; color:var(--text-main); transition:var(--theme-transition); }
+    .settings-icon-btn { display:flex; justify-content:center; align-items:center; width:40px; height:40px; border:none; border-radius:50%; background:transparent; color:var(--text-main); cursor:pointer; transition:background-color 200ms, transform 100ms, color 600ms cubic-bezier(0.4,0,0.2,1); }
+    .settings-icon-btn:hover { background-color:var(--md-sys-color-surface-variant); }
+    .settings-icon-btn:active { transform:scale(0.92); }
+    .settings-icon-btn .material-symbols-outlined { font-size:22px; }
+    main { flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:32px 12px; box-sizing:border-box; }
+    .google-loader { width:100%; max-width:380px; height:4px; background-color:var(--md-sys-color-secondary-container); border-radius:100px; margin-bottom:20px; position:relative; overflow:hidden; animation:fadeOutLoader 200ms ease-in 1200ms forwards; transition:var(--theme-transition); }
+    .google-loader::before { content:""; position:absolute; background-color:var(--md-sys-color-primary); top:0; left:-50%; width:40%; height:100%; border-radius:100px; animation:googleProgress 1s linear infinite; }
+    @keyframes googleProgress { 0%{left:-40%;width:30%;} 50%{width:60%;} 100%{left:100%;width:100%;} }
+    @keyframes fadeOutLoader { to{opacity:0;transform:scaleY(0);margin-bottom:0;height:0;} }
+    .menu-card { background-color:var(--md-sys-color-surface); border-radius:28px; box-shadow:var(--md-sys-elevation-1); width:100%; max-width:380px; padding:32px 0 24px 0; box-sizing:border-box; animation:googleLaunch 500ms cubic-bezier(0,0,0.2,1) 1200ms forwards; opacity:0; transform:translateY(32px) scale(0.92); transition:var(--theme-transition); overflow:hidden; }
+    @keyframes googleLaunch { to{opacity:1;transform:translateY(0) scale(1);} }
+    .menu-header { display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:16px; padding:0 20px; }
+    .brand-logo { display:flex; gap:3px; width:48px; height:48px; margin-bottom:16px; }
+    .logo-bar { width:9px; border-radius:100px; transition:transform 250ms cubic-bezier(0.2,0,0,1); }
+    .bar-1 { background-color:var(--goog-blue); height:32px; align-self:flex-end; transition-delay:0ms; }
+    .bar-2 { background-color:var(--goog-red); height:48px; transition-delay:40ms; }
+    .bar-3 { background-color:var(--goog-yellow); height:36px; align-self:center; transition-delay:80ms; }
+    .bar-4 { background-color:var(--goog-green); height:28px; align-self:flex-start; transition-delay:120ms; }
+    .menu-card:hover .logo-bar { transform:translateY(-6px); }
+    .menu-header h1 { font-size:24px; font-weight:700; letter-spacing:-0.2px; color:var(--text-main); margin:0 0 4px 0; transition:var(--theme-transition); }
+    .menu-header p { font-size:12px; color:var(--text-sub); margin:0; line-height:1.5; transition:var(--theme-transition); }
+    .tab-container { position:relative; display:flex; padding:0 20px; margin-bottom:24px; border-bottom:1px solid var(--border-color); transition:var(--theme-transition); }
+    .tab-button { flex:1; background:transparent; border:none; height:48px; font-size:14px; font-weight:500; color:var(--text-sub); cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px; position:relative; transition:color 250ms cubic-bezier(0.4,0,0.2,1); }
+    .tab-button .material-symbols-outlined { font-size:18px; }
+    .tab-button:hover { color:var(--text-main); }
+    .tab-button.active { color:var(--md-sys-color-primary); font-weight:700; }
+    .tab-indicator { position:absolute; bottom:0; left:20px; width:calc(50% - 20px); height:3px; background-color:var(--md-sys-color-primary); border-top-left-radius:3px; border-top-right-radius:3px; transition:transform 300ms cubic-bezier(0.2,0,0,1), background-color 600ms; }
+    .tab-slider-wrapper { display:flex; width:200%; transition:transform 300ms cubic-bezier(0.2,0,0,1); }
+    .tab-content { width:50%; padding:0 20px; box-sizing:border-box; display:flex; flex-direction:column; }
+    .section-label { font-size:11px; font-weight:700; color:var(--text-sub); letter-spacing:0.8px; margin-top:16px; margin-bottom:8px; text-transform:uppercase; transition:var(--theme-transition); }
+    .section-label:first-of-type { margin-top:0; }
+    .button-group { display:flex; flex-direction:column; gap:12px; }
+    .menu-btn { position:relative; display:flex; justify-content:center; align-items:center; box-sizing:border-box; width:100%; min-height:56px; padding:12px 16px; text-align:center; text-decoration:none; border-radius:100px; font-size:13px; font-weight:500; letter-spacing:0.2px; line-height:1.4; white-space:nowrap; overflow:hidden; user-select:none; -webkit-user-select:none; transition:background-color 600ms cubic-bezier(0.4,0,0.2,1), color 600ms cubic-bezier(0.4,0,0.2,1), border-color 600ms cubic-bezier(0.4,0,0.2,1), transform 100ms cubic-bezier(0.4,0,0.2,1); }
+    .menu-btn .material-symbols-outlined { font-size:16px; margin-left:6px; color:inherit; transition:transform 200ms cubic-bezier(0.4,0,0.2,1); }
+    .menu-btn::after { content:""; position:absolute; top:0; left:0; right:0; bottom:0; background-color:transparent; transition:background-color 150ms cubic-bezier(0.4,0,0.2,1); pointer-events:none; }
+    .btn-outlined { background-color:var(--md-sys-color-surface-variant); color:var(--text-main); border:none; box-shadow:var(--md-sys-elevation-1); }
+    .btn-outlined:active { transform:scale(0.97); }
+    .btn-primary { background-color:var(--md-sys-color-primary); color:var(--md-sys-color-on-primary); border:none; box-shadow:var(--md-sys-elevation-1); }
+    .btn-primary:active { transform:scale(0.97); }
+    .btn-secondary { background-color:var(--md-sys-color-secondary-container); color:var(--md-sys-color-on-secondary-container); border:none; box-shadow:none; }
+    .btn-secondary:active { transform:scale(0.97); }
+    footer { display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px 16px; font-size:11px; color:var(--text-sub); border-top:1px solid var(--border-color); background-color:var(--md-sys-color-surface); animation:googleLaunch 500ms cubic-bezier(0,0,0.2,1) 1300ms forwards; opacity:0; transition:var(--theme-transition); }
+    .footer-links { display:flex; gap:16px; }
+    .footer-links a { color:var(--text-sub); text-decoration:none; transition:var(--theme-transition); }
+    .footer-links a:hover { color:var(--text-main); text-decoration:underline; }
+    .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.4); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); display:flex; justify-content:center; align-items:center; z-index:1000; opacity:0; pointer-events:none; transition:opacity 200ms ease; }
+    .modal-overlay.open { opacity:1; pointer-events:auto; }
+    .modal-dialog { background-color:var(--md-sys-color-surface); border-radius:28px; box-shadow:var(--md-sys-elevation-2); width:90%; max-width:320px; padding:24px; box-sizing:border-box; transform:scale(0.9) translateY(10px); transition:transform 200ms cubic-bezier(0,0,0.2,1), var(--theme-transition); }
+    .modal-overlay.open .modal-dialog { transform:scale(1) translateY(0); }
+    .modal-title { font-size:20px; font-weight:500; color:var(--text-main); margin:0 0 20px 0; transition:var(--theme-transition); }
+    .radio-group { display:flex; flex-direction:column; gap:16px; margin-bottom:24px; }
+    .radio-option { display:flex; align-items:center; gap:12px; cursor:pointer; color:var(--text-main); font-size:15px; user-select:none; transition:var(--theme-transition); }
+    .radio-option input[type="radio"] { appearance:none; -webkit-appearance:none; width:20px; height:20px; border:2px solid var(--md-sys-color-outline); border-radius:50%; outline:none; margin:0; display:flex; justify-content:center; align-items:center; transition:border-color 600ms, background-color 600ms; }
+    .radio-option input[type="radio"]:checked { border-color:var(--md-sys-color-primary); }
+    .radio-option input[type="radio"]::before { content:""; width:10px; height:10px; border-radius:50%; background-color:var(--md-sys-color-primary); transform:scale(0); transition:transform 200ms, background-color 600ms; }
+    .radio-option input[type="radio"]:checked::before { transform:scale(1); }
+    .modal-actions { display:flex; justify-content:flex-end; }
+    .close-btn { padding:10px 24px; border:none; border-radius:100px; background-color:var(--md-sys-color-primary); color:var(--md-sys-color-on-primary); font-size:14px; font-weight:500; cursor:pointer; box-shadow:var(--md-sys-elevation-1); transition:box-shadow 200ms, transform 100ms, background-color 600ms, color 600ms; }
+    .close-btn:active { transform:scale(0.95); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <div class="header-logo">
+        <div class="logo-bar bar-1"></div>
+        <div class="logo-bar bar-2"></div>
+        <div class="logo-bar bar-3"></div>
+        <div class="logo-bar bar-4"></div>
+      </div>
+      <div class="header-title">Scraping Manager</div>
+    </div>
+    <button class="settings-icon-btn" id="openSettingsBtn" aria-label="設定メニューを開く">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
+  </header>
+
+  <main>
+    <div class="google-loader"></div>
+    <div class="menu-card">
+      <div class="menu-header">
+        <div class="brand-logo">
+          <div class="logo-bar bar-1"></div>
+          <div class="logo-bar bar-2"></div>
+          <div class="logo-bar bar-3"></div>
+          <div class="logo-bar bar-4"></div>
+        </div>
+        <h1>Dashboard</h1>
+        <p>接続テストとソースコードの検証</p>
+      </div>
+
+      <div class="tab-container">
+        <button class="tab-button active" onclick="switchTab(0, this)">
+          <span class="material-symbols-outlined">home</span>メイン
+        </button>
+        <button class="tab-button" onclick="switchTab(1, this)">
+          <span class="material-symbols-outlined">build</span>システム
+        </button>
+        <div class="tab-indicator" id="tabIndicator"></div>
+      </div>
+
+      <div class="tab-slider-wrapper" id="contentWrapper">
+        <div class="tab-content">
+          <div class="section-label">プロダクション</div>
+          <div class="button-group">
+            <a href="https://www.neconome.com/S0K01.html?bkn_cd=003180&tab=2" target="_blank" class="menu-btn btn-outlined">
+              新潟運輸支局｜ネコの目.com <span class="material-symbols-outlined">open_in_new</span>
+            </a>
+            <a href="https://mlit3.ncall.info/g01/niigata01/index.cgi?k=0" target="_blank" class="menu-btn btn-outlined">
+              検査整備保安部門（継続検査） <span class="material-symbols-outlined">open_in_new</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="tab-content">
+          <div class="section-label">サンドボックス</div>
+          <div class="button-group" style="margin-bottom:20px;">
+            <a href="https://script.google.com/macros/s/AKfycbyghKP_m2gpGcgoqlB8ycMec_iLErbqJ8NtvmlfXQzSeCjTw3DsUkcbmcRkXW28BcJ7/exec?type=site" target="_top" class="menu-btn btn-primary">
+              ネコの目（テスト） <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+            <a href="https://script.google.com/macros/s/AKfycbyghKP_m2gpGcgoqlB8ycMec_iLErbqJ8NtvmlfXQzSeCjTw3DsUkcbmcRkXW28BcJ7/exec?type=site2" target="_top" class="menu-btn btn-primary">
+              継続検査（テスト） <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+          </div>
+          <div class="section-label">データソース</div>
+          <div class="button-group">
+            <a href="https://script.google.com/macros/s/AKfycbyghKP_m2gpGcgoqlB8ycMec_iLErbqJ8NtvmlfXQzSeCjTw3DsUkcbmcRkXW28BcJ7/exec?type=raw" target="_top" class="menu-btn btn-secondary">
+              ネコの目（HTML） <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+            <a href="https://script.google.com/macros/s/AKfycbyghKP_m2gpGcgoqlB8ycMec_iLErbqJ8NtvmlfXQzSeCjTw3DsUkcbmcRkXW28BcJ7/exec?type=raw2" target="_top" class="menu-btn btn-secondary">
+              継続検査（HTML） <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+            <a href="https://docs.google.com/spreadsheets/d/15wgBIMQNXmvPi52LeaSfGFk4lPfe0edpa0GzVt_TFS8/edit?openExternalBrowser=1" target="_blank" class="menu-btn btn-secondary">
+              設定データ管理（Sheet） <span class="material-symbols-outlined">open_in_new</span>
+            </a>
+            <a href="https://drive.google.com/drive/folders/1ARagDX88i_kW1dHQnz70mU3edAC_diT3" target="_blank" class="menu-btn btn-secondary">
+              システムバックアップ（Drive） <span class="material-symbols-outlined">backup</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-dialog">
+      <h2 class="modal-title">設定</h2>
+      <div class="section-label" style="margin-top:0;margin-bottom:12px;">テーマの選択</div>
+      <div class="radio-group">
+        <label class="radio-option"><input type="radio" name="themeSelect" value="light"><span>ライトモード</span></label>
+        <label class="radio-option"><input type="radio" name="themeSelect" value="dark"><span>ダークモード</span></label>
+        <label class="radio-option"><input type="radio" name="themeSelect" value="auto"><span>システムの設定に同期</span></label>
+      </div>
+      <div class="modal-actions">
+        <button class="close-btn" id="closeSettingsBtn">完了</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-links">
+      <a href="https://policies.google.com/privacy?hl=ja" target="_blank">プライバシー</a>
+      <a href="https://policies.google.com/terms?hl=ja" target="_blank">利用規約</a>
+    </div>
+    <div>&copy; 2026 Google</div>
+  </footer>
+
+  <script>
+    const htmlEl = document.documentElement;
+    const modalOverlay = document.getElementById('settingsModal');
+    const openBtn = document.getElementById('openSettingsBtn');
+    const closeBtn = document.getElementById('closeSettingsBtn');
+    const radioButtons = document.querySelectorAll('input[name="themeSelect"]');
+
+    function switchTab(index, element) {
+      const indicator = document.getElementById('tabIndicator');
+      const wrapper = document.getElementById('contentWrapper');
+      const buttons = document.querySelectorAll('.tab-button');
+      indicator.style.transform = `translateX(${index * 100}%)`;
+      wrapper.style.transform = `translateX(-${index * 50}%)`;
+      buttons.forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+    }
+
+    const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const applyTheme = (theme) => {
+      if (theme === 'dark' || (theme === 'auto' && getSystemTheme() === 'dark')) {
+        htmlEl.classList.add('theme-dark');
+      } else {
+        htmlEl.classList.remove('theme-dark');
+      }
+    };
+
+    const savedTheme = localStorage.getItem('selected-theme') || 'auto';
+    applyTheme(savedTheme);
+    document.querySelector(`input[name="themeSelect"][value="${savedTheme}"]`).checked = true;
+
+    radioButtons.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const targetTheme = e.target.value;
+        localStorage.setItem('selected-theme', targetTheme);
+        applyTheme(targetTheme);
+      });
+    });
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if ((localStorage.getItem('selected-theme') || 'auto') === 'auto') applyTheme('auto');
+    });
+
+    openBtn.addEventListener('click', () => modalOverlay.classList.add('open'));
+    closeBtn.addEventListener('click', () => modalOverlay.classList.remove('open'));
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) modalOverlay.classList.remove('open');
+    });
+  </script>
+</body>
+</html>

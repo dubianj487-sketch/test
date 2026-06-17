@@ -1,17 +1,12 @@
 function startRegistration(userId, event, sheet, siteType, existingRowIndex) {
   if (existingRowIndex !== -1) sheet.deleteRow(existingRowIndex);
-
-  const msg = getMessage('register_start_' + siteType);
-  if (msg) replyText(event.replyToken, msg.title, msg.body);
-
   sheet.appendRow([userId, '', siteType, '', '未通知', '', new Date(), '登録処理']);
+  replyFlex(event.replyToken, '受付番号を入力してください', flexRegisterStart(siteType));
 }
 
 function completeRegistration(userId, number, rowIndex, event, sheet) {
   if (!/^[0-9]{1,10}$/.test(number)) {
-    const siteType = sheet.getRange(rowIndex, 3).getValue();
-    const msg = getMessage('error_number_' + siteType);
-    if (msg) replyText(event.replyToken, msg.title, msg.body);
+    replyFlex(event.replyToken, '入力エラー', flexError('受付番号は半角数字で入力してください。'));
     return;
   }
 
@@ -19,6 +14,12 @@ function completeRegistration(userId, number, rowIndex, event, sheet) {
   sheet.getRange(rowIndex, 2).setValue(number);
   sheet.getRange(rowIndex, 8).setValue('待機');
 
-  const msg = getMessage('register_done_' + siteType);
-  if (msg) replyFormattedText(event.replyToken, msg.title, msg.body, number);
+  replyFlex(event.replyToken, number + '番を登録しました', flexRegisterDone(number, siteType));
+}
+
+function showMyWaiting(userId, replyToken, waitingRows) {
+  const altText = waitingRows.length === 0
+    ? '待機中の番号はありません'
+    : '交付待ち一覧：' + waitingRows.map(function(r) { return r.number + '番'; }).join('、');
+  replyFlex(replyToken, altText, flexMyWaiting(waitingRows));
 }

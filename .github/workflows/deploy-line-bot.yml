@@ -6,8 +6,10 @@ on:
       - main
     paths:
       - 'line-bot/**'
-      - '.github/workflows/deploy-line-bot.yml'
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
@@ -15,10 +17,14 @@ jobs:
 
     steps:
       - name: Notify Discord Start
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
+          echo "DEPLOY_START=$(date +%s)" >> $GITHUB_ENV
+          CONTENT=$(printf 'commit: %s' "$COMMIT_MSG")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\":\"🔄 LINE Bot GASデプロイ開始...\"}"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ開始・LINEボット", content: $c}')"
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,7 +41,7 @@ jobs:
         run: |
           CREDS="${{ secrets.CLASPRC_JSON_BASE64 }}"
           if [ -z "$CREDS" ]; then
-            echo "❌ CLASPRC_JSON_BASE64 が未設定"
+            echo "⚠️ CLASPRC_JSON_BASE64 が未設定のためデプロイをスキップします"
             exit 1
           fi
           echo "$CREDS" | base64 -d > ~/.clasprc.json
@@ -45,14 +51,29 @@ jobs:
           echo '{"scriptId":"1o3p4NScPizFgJv14p6CtFfvueCzvP6uwgVFsCqpX6NXyrQedCiOef3Vw","rootDir":"./line-bot"}' > .clasp.json
           clasp push --force
 
+      - name: Deploy Web App
+        run: |
+          DEPLOY_LIST=$(clasp deployments 2>&1)
+          echo "=== 既存デプロイ一覧 ==="
+          echo "$DEPLOY_LIST"
+
+          EXISTING_ID=$(echo "$DEPLOY_LIST" | grep -v '@HEAD' | grep -oP '(?<=- )[A-Za-z0-9_-]{30,}' | head -1)
+
+          if [ -n "$EXISTING_ID" ]; then
+            echo "既存デプロイを更新: $EXISTING_ID"
+            clasp deploy --deploymentId "$EXISTING_ID" --description "production"
+          else
+            echo "新規デプロイを作成"
+            clasp deploy --description "production"
+          fi
+
       - name: Notify Discord Complete
         if: always()
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          if [ "${{ job.status }}" = "success" ]; then
-            MSG="✅ LINE Bot GASデプロイ完了！"
-          else
-            MSG="❌ LINE Bot GASデプロイ失敗"
-          fi
+          ELAPSED=$(( $(date +%s) - $DEPLOY_START ))
+          CONTENT=$(printf 'commit: %s\n⏱ %s秒' "$COMMIT_MSG" "$ELAPSED")
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"content\":\"${MSG}\"}"
+            -d "$(jq -n --arg c "$CONTENT" '{username: "デプロイ完了・LINEボット", content: $c}')"

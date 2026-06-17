@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- build: 2026-06-14 v3 -->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -11,8 +12,6 @@
 <meta name="supported-color-schemes" content="light dark">
 <title>🌙 SILDE</title>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Kaisei+Opti:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
-<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -26,8 +25,9 @@ html{-webkit-color-scheme:light dark;color-scheme:light dark}
   --sh:0 4px 20px rgba(200,100,140,.12);
   --gold:#e88fac;--teal:#c4608a;
 }
-body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#CE95B0 !important;background-color:#CE95B0 !important;height:100dvh;overflow:hidden;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation}
-html{background:#CE95B0 !important;background-color:#CE95B0 !important;overscroll-behavior:none;height:100dvh}
+body{font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;background:#f4eef2 !important;background-color:#f4eef2 !important;min-height:100dvh;display:flex;flex-direction:column;color:var(--tx) !important;overscroll-behavior:none;touch-action:manipulation}
+html{background:#f4eef2 !important;background-color:#f4eef2 !important;overscroll-behavior:none;min-height:100dvh}
+body:has(.mo.open){overflow:hidden}
 /* ===== フォント切り替え ===== */
 body.font-shun{--app-font:-apple-system,BlinkMacSystemFont,'Helvetica Neue'}
 body.font-shun .auto-dep-time,body.font-shun .shift-stepper-time,
@@ -35,7 +35,7 @@ body.font-shun .tl-time,body.font-shun .today-banner-date,
 body.font-shun .today-banner::before,body.font-shun .hist-item-date,
 body.font-shun .hist-detail-date{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif!important}
 body.font-shun .nb,body.font-shun input,body.font-shun select,
-body.font-shun .btn,body.font-shun .bmap,body.font-shun .dep-tab,
+body.font-shun .btn,body.font-shun .dep-tab,
 body.font-shun .otab,body.font-shun .obox.boy{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif!important}
 body.font-shun.font-maru{--app-font:'Zen Maru Gothic'}
 body.font-shun.font-maru .auto-dep-time,body.font-shun.font-maru .shift-stepper-time,
@@ -43,7 +43,7 @@ body.font-shun.font-maru .tl-time,body.font-shun.font-maru .today-banner-date,
 body.font-shun.font-maru .today-banner::before,body.font-shun.font-maru .hist-item-date,
 body.font-shun.font-maru .hist-detail-date,
 body.font-shun.font-maru .nb,body.font-shun.font-maru input,body.font-shun.font-maru select,
-body.font-shun.font-maru .btn,body.font-shun.font-maru .bmap,body.font-shun.font-maru .dep-tab,
+body.font-shun.font-maru .btn,body.font-shun.font-maru .dep-tab,
 body.font-shun.font-maru .otab,body.font-shun.font-maru .obox.boy{font-family:'Zen Maru Gothic',sans-serif!important}
 /* ===== しゅんくんテーマ カラー (ライトモード) ===== */
 body.font-shun{
@@ -59,7 +59,6 @@ html:has(body.font-shun){background:#d8eef8 !important}
 body.font-shun .pg{background:#c0d8ec}
 body.font-shun .bp{background:#2a5a8a;box-shadow:0 4px 14px rgba(30,60,120,.3)}
 body.font-shun .bgr{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
-body.font-shun .bmap{background:linear-gradient(135deg,#3a7aaa,#2a5a8a)}
 body.font-shun .bdk{background:#1e3050}
 body.font-shun .bsave{background:linear-gradient(135deg,#5a8ab5,#2a5a8a);box-shadow:0 4px 14px rgba(30,60,120,.3)}
 body.font-shun .today-banner{background:linear-gradient(135deg,#2a5a8a,#5a8ab5)}
@@ -89,6 +88,9 @@ body.font-shun.dark-active .run-done-hdr-badge{background:rgba(180,210,240,.08);
 
 body.font-shun.dark-active .hedit-dep-row{background:#1e2a36}
 body.font-shun.dark-active .revised-tag{background:#3d1515;color:#f87171}
+body.font-shun.dark-active .overtime-tag{background:#2a1500;color:#fb923c}
+body.font-shun.dark-active .raise-tag{background:#0d2137;color:#60a5fa}
+body.font-shun.dark-active .rev-calc-tag{background:linear-gradient(135deg,#1e2a3a,#1a2a4a);color:var(--pk)}
 body.font-shun.dark-active .rev-acc{border-bottom-color:#2e2e2e}
 body.font-shun.dark-active .edit-time-inp{color:#e8f0f8}
 body.font-shun.dark-active .edit-time-name{color:#c8d8e8}
@@ -102,7 +104,7 @@ body.font-shun.dark-active input:focus,body.font-shun.dark-active select:focus{b
 body.font-shun.dark-active .gi-card{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
 body.font-shun.dark-active .shift-stepper{background:#1e1e1e;border-color:rgba(90,138,181,.2)}
 body.font-shun.dark-active .run-block{background:#242424;border-color:rgba(255,255,255,.04)}
-body.font-shun.dark-active .hist-item{background:#242424}
+body.font-shun.dark-active .hist-item{background:#242424;border-bottom-color:#333}
 body.font-shun.dark-active .hist-item:active{background:#2e2e2e}
 body.font-shun.dark-active .swipe-wrap{border-bottom-color:#333}
 body.font-shun.dark-active .swipe-inner{background:#242424}
@@ -138,9 +140,6 @@ body.font-shun.dark-active .battery-wrap::after{background:rgba(255,255,255,.3)}
 body.font-shun.dark-active .battery-name{color:rgba(180,210,240,.7)}
 body.font-shun.dark-active .battery-pct{color:#e8f0f8}
 body.font-shun.dark-active .battery-charge{color:rgba(180,210,240,.5)}
-body.font-shun.dark-active .map-legend{background:#1a1a1a;color:#c8d8e8;box-shadow:0 1px 4px rgba(0,0,0,.4)}
-body.map-active .bnav{background:rgba(250,246,250,0.65)!important;-webkit-backdrop-filter:blur(26px) saturate(1.9)!important;backdrop-filter:blur(26px) saturate(1.9)!important;border-top:1.5px solid rgba(255,255,255,0.5)!important;box-shadow:none!important}
-body.map-active.font-shun.dark-active .bnav{background:rgba(8,14,30,0.65)!important;border-top-color:rgba(90,140,200,0.18)!important}
 body.font-shun.dark-active .hist-item-sub{color:rgba(180,210,240,.45)}
 body.font-shun.dark-active .hist-item-arr{color:rgba(180,210,240,.3)}
 body.font-shun.dark-active .today-card-empty p{color:rgba(180,210,240,.45)}
@@ -156,6 +155,9 @@ body.font-shun.dark-active .memo-hdr{color:rgba(180,210,240,.65)}
 body.font-shun.dark-active hr.dv{border-top-color:#2a2a2a}
 body.font-shun.dark-active .month-acc-title{color:#e8f0f8}
 body.font-shun.dark-active .month-acc-arr{color:rgba(180,210,240,.45)}
+body.font-shun.dark-active .month-acc-sum-pay{color:rgba(180,210,240,.5)}
+body.font-shun.dark-active .month-acc-sum-ot{color:#fb923c}
+body.font-shun.dark-active .month-acc-sum-ok{color:#4ade80}
 body.font-shun.dark-active .rm-btn{color:rgba(180,210,240,.35)}
 body.font-shun.dark-active .min-row span{color:rgba(180,210,240,.4)}
 body.font-shun.dark-active .empty-hist{color:rgba(180,210,240,.4)}
@@ -182,9 +184,6 @@ body.font-system *{font-family:system-ui,-apple-system,sans-serif !important}
 body.font-shun .sett-pill.sel{background:var(--teal);color:#fff}
 body.font-shun.dark-active .sett-pill{background:rgba(255,255,255,.08);color:rgba(180,210,240,.7)}
 body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
-.overland-url-row{display:flex;align-items:center;gap:8px;background:var(--pkp);border-radius:10px;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;active:opacity:.8}
-.overland-url-row:active{opacity:.7}
-.overland-url-text{flex:1;font-size:10px;color:var(--txs);word-break:break-all;opacity:.7}
 
 .bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#fff;display:flex;box-shadow:0 -4px 20px rgba(80,60,140,.15)}
 .nb{flex:1;padding:6px 4px 4px;border:none;background:none;cursor:pointer;font-family:'Zen Maru Gothic',sans-serif;font-size:10px;color:#aaa8c0;display:flex;flex-direction:column;align-items:center;gap:2px;border-top:3px solid transparent;transition:all .2s}
@@ -192,16 +191,8 @@ body.font-shun.dark-active .sett-pill.sel{background:var(--teal);color:#fff}
 .nb .ni svg{width:18px;height:18px}
 .nb.active{color:var(--teal);border-top-color:var(--teal);font-weight:700}
 
-.pg{display:none;padding:max(14px,env(safe-area-inset-top)) 14px 56px;animation:fi .25s ease;overflow-y:scroll;overscroll-behavior:contain;flex:1;min-height:0;-webkit-overflow-scrolling:touch;background:#f4eef2}
+.pg{display:none;padding:max(14px,env(safe-area-inset-top)) 14px 56px;animation:fi .25s ease;background:#f4eef2;min-height:calc(100dvh - 56px)}
 .pg.active{display:block}
-#pg-map{padding:0;overflow:hidden;display:none;flex-direction:column;height:calc(100vh - 56px)}
-#pg-map.active{display:flex}
-#map-container{flex:1;min-height:0;width:100%;height:100%}
-.maplibregl-popup-content,.mapboxgl-popup-content{color:#111!important;background:#fff!important;border-radius:10px!important;padding:10px 14px!important;box-shadow:0 2px 12px rgba(0,0,0,.18)!important}
-.map-legend{padding:10px 14px 6px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.map-legend-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
-.map-marker{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.8)}
-
 @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 12px rgba(180,100,140,.1);overflow:hidden}
@@ -224,9 +215,6 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .bdk{background:var(--night);color:#fde8e8}
 .bsave{background:linear-gradient(135deg,#e88fac,#c4608a);color:#fff;box-shadow:0 2px 10px rgba(200,100,140,.25)}
 .sm{padding:8px 16px;font-size:13px;border-radius:9px;width:auto;margin-bottom:0}
-.bmap{background:var(--pk);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
-.bmap:active{opacity:.8}
-.bmap.calculating{background:var(--lav);animation:blink .8s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
 
 .dep-tabs{display:flex;gap:6px;margin:0 0 14px}
@@ -294,9 +282,9 @@ input:disabled{background:#f0f0f0;color:#bbb}
 
 .mo{display:none;position:fixed;inset:0;background:rgba(20,18,40,.45);z-index:500;align-items:flex-end}
 .mo.open{display:flex}
-.mbox{background:#f4eef2;border-radius:22px 22px 0 0;padding:0 16px 34px;width:100%;max-height:88vh;overflow-y:auto;animation:su .28s ease}
+.mbox{background:#f4eef2;border-radius:22px 22px 0 0;padding:0 16px calc(20px + env(safe-area-inset-bottom));width:100%;max-height:calc(100dvh - env(safe-area-inset-top) - 20px);overflow-y:auto;animation:su .28s ease}
 @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.mtitle{font-size:15px;font-weight:700;color:var(--tx);padding:16px 0;border-bottom:1px solid #ece4ea;display:flex;align-items:center;justify-content:space-between;background:transparent;margin-bottom:14px}
+.mtitle{font-size:15px;font-weight:700;color:var(--tx);padding:16px 0;border-bottom:1px solid #ece4ea;display:flex;align-items:center;justify-content:space-between;background:#f4eef2;margin-bottom:14px;position:sticky;top:0;z-index:1}
 .mclose{background:none;border:none;font-size:22px;color:#bbb;cursor:pointer}
 
 /* ===== 今日のスケジュールカード ===== */
@@ -343,35 +331,32 @@ input:disabled{background:#f0f0f0;color:#bbb}
 .month-acc-hdr{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:background .12s}
 .month-acc-hdr:active{background:#fdf5f8}
 .month-acc-title{font-size:17px;font-weight:700;color:var(--tx);font-family:'Kaisei Opti',serif}
+.month-acc-summary{font-size:11px;font-weight:700;margin-top:4px;display:flex;gap:6px;align-items:center}
+.month-acc-sum-pay{color:var(--txs)}
+.month-acc-sum-ot{color:#e65100}
+.month-acc-sum-ok{color:#2e7d32}
 .month-acc-count{font-size:11px;font-weight:700;color:var(--teal);background:var(--pul);padding:3px 10px;border-radius:20px}
 .month-acc-arr{font-size:11px;color:var(--txs);opacity:.4;transition:transform .25s}
 .month-acc.open .month-acc-arr{transform:rotate(180deg)}
 .month-acc-body{display:none;border-top:1px solid #f5f0f3;padding:0}
 .month-acc.open .month-acc-body{display:block}
-#pg-hist{overflow:hidden !important;flex-direction:column;padding:0 0 52px;position:relative}
+#pg-hist{padding:env(safe-area-inset-top) 0 0;height:calc(100dvh - 56px - env(safe-area-inset-bottom));flex-direction:column;overflow:hidden}
 #pg-hist.active{display:flex !important}
-.hist-dots{display:flex;justify-content:center;gap:7px;padding:8px 0 4px;flex-shrink:0}
-.hist-dots-bar{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:6px 14px 8px;padding-top:max(10px,env(safe-area-inset-top));background:rgba(244,238,242,.82);-webkit-backdrop-filter:saturate(180%) blur(18px);backdrop-filter:saturate(180%) blur(18px)}
-body.font-shun .hist-dots-bar{background:rgba(220,232,244,.82)}
-body.font-shun.dark-active .hist-dots-bar{background:rgba(18,22,32,.82)}
-.hist-import-btn{position:absolute;right:14px;bottom:8px;background:none;border:none;font-size:11px;color:var(--txs);opacity:.6;cursor:pointer;padding:4px;font-family:var(--app-font,'Zen Maru Gothic'),sans-serif;display:flex;align-items:center;gap:3px;-webkit-tap-highlight-color:transparent}
-.hist-dot{width:6px;height:6px;border-radius:50%;background:rgba(180,100,140,.2);transition:all .2s;cursor:pointer}
-.hist-dot.active{background:#c4608a;width:18px;border-radius:3px}
-#histSlider{display:flex;flex:1;min-height:0;overflow-x:scroll;scroll-snap-type:x mandatory;scrollbar-width:none}
-#histSlider::-webkit-scrollbar{display:none}
-#histPageToday,#histPageMonths{min-width:100%;scroll-snap-align:start;overflow-y:scroll;overscroll-behavior:contain;padding:max(14px,env(safe-area-inset-top)) 14px 160px}
+#histSliderWrap{overflow:hidden;width:100%;flex:1;min-height:0}
+#histSlider{display:flex;width:100%;height:100%;transition:transform .32s cubic-bezier(.32,.72,0,1)}
+#histPageToday,#histPageMonths{min-width:100%;flex-shrink:0;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box;padding:14px 14px calc(80px + env(safe-area-inset-bottom))}
 .memo-box{background:#fff;border-radius:16px 16px 0 0;padding:0 14px 14px;position:fixed;bottom:56px;left:0;right:0;z-index:20;transition:transform 0.4s cubic-bezier(0.32,0.72,0,1);box-shadow:0 -2px 16px rgba(180,100,140,.1)}
 .memo-handle{display:flex;justify-content:center;padding:10px 0 6px;cursor:pointer;touch-action:none}
 .memo-handle-bar{width:36px;height:4px;border-radius:2px;background:rgba(180,100,140,.2)}
 .memo-hdr{font-size:13px;font-weight:700;color:var(--txs);margin-bottom:8px}
 .memo-inp{width:100%;min-height:90px;border:none;border-radius:0;padding:0;font-size:15px;font-family:inherit;resize:none;background:transparent;color:var(--tx);outline:none}
 
-.hist-item{background:transparent;border-radius:0;padding:13px 16px;margin-bottom:0;cursor:pointer;transition:background .12s;border:none;border-bottom:1px solid #f8f4f6;-webkit-tap-highlight-color:transparent}
+.hist-item{background:transparent;border-radius:0;padding:13px 16px;margin-bottom:0;cursor:pointer;transition:background .12s;border:none;border-bottom:1px solid #f8f4f6;-webkit-tap-highlight-color:transparent;touch-action:pan-y}
 .hist-item:last-child{border-bottom:none}
 .hist-item:active{background:#fdf5f8}
 .hist-item-hdr{display:flex;align-items:center;justify-content:space-between}
 .hist-item-date{font-size:15px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx)}
-.hist-item-sub{font-size:12px;color:#bbb;margin-top:3px}
+.hist-item-sub{font-size:12px;color:#bbb;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hist-item-badge{font-size:11px;font-weight:700;color:var(--teal);background:var(--pul);padding:2px 9px;border-radius:20px}
 .hist-item-arr{font-size:14px;color:var(--txs);opacity:.35}
 
@@ -403,6 +388,9 @@ body.font-shun.dark-active .hist-dots-bar{background:rgba(18,22,32,.82)}
 .hedit-dep-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--pkp);border-radius:10px;margin-bottom:12px}
 .hedit-dep-label{font-size:13px;color:var(--tx);font-weight:600;flex:1}
 .revised-tag{font-size:10px;background:#fee2e2;color:#dc2626;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
+.overtime-tag{font-size:10px;background:#fff3e0;color:#e65100;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
+.raise-tag{font-size:10px;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
+.rev-calc-tag{font-size:10px;background:linear-gradient(135deg,var(--pkp),var(--pul));color:var(--pk);border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;vertical-align:middle}
 .rev-wrap{margin-top:12px}
 .rev-acc{border-bottom:1px solid #f5f0f3}
 .rev-acc:last-child{border-bottom:none}
@@ -422,14 +410,22 @@ body.font-shun.dark-active .hist-dots-bar{background:rgba(18,22,32,.82)}
 @keyframes now-pulse{0%,100%{opacity:1;transform:scale(1)}60%{opacity:.45;transform:scale(.85)}}
 .tl-now-lbl{font-size:11px;font-weight:700;color:var(--pk);letter-spacing:.3px}
 .today-done{text-align:center;padding:8px 0 4px;font-size:11px;font-weight:700;color:var(--txs);opacity:.4;letter-spacing:.5px}
-.debug-time-row{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:12px 16px;margin-top:10px;box-shadow:var(--sh)}
-.debug-time-lbl{font-size:12px;color:var(--txs);font-weight:600;line-height:1;align-self:center}
-.debug-time-inp{font-size:14px;font-weight:700;color:var(--tx);border:1px solid var(--lav);border-radius:8px;background:var(--pkp);outline:none;padding:0 8px;cursor:pointer;width:110px;flex-shrink:0;height:34px;align-self:center;vertical-align:middle}
-.debug-time-clr{font-size:12px;color:var(--txs);border:none;background:none;cursor:pointer;padding:0;margin-left:auto;opacity:.6;white-space:nowrap;line-height:1;align-self:center}
+.debug-time-row{background:var(--card);border-radius:16px;padding:12px 16px;margin-top:10px;box-shadow:var(--sh)}
+.debug-time-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.debug-time-lbl{font-size:12px;color:var(--txs);font-weight:600}
+.debug-time-clr{font-size:12px;color:var(--txs);border:none;background:none;cursor:pointer;padding:0;opacity:.6;white-space:nowrap}
+.debug-steppers{display:flex;gap:6px}
+.debug-stepper{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.debug-stepper-lbl{font-size:10px;color:var(--txs);opacity:.55;font-weight:600}
+.debug-stepper-row{display:flex;align-items:center;background:var(--pkp);border-radius:10px;overflow:hidden;width:100%}
+.debug-stepper-btn{width:32px;height:40px;border:none;background:none;cursor:pointer;font-size:18px;font-weight:700;color:var(--pk);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .12s}
+.debug-stepper-btn:active{background:var(--pkl)}
+.debug-stepper-val{flex:1;text-align:center;font-size:17px;font-weight:700;font-family:'Kaisei Opti',serif;color:var(--tx);line-height:40px}
+.debug-time-active .debug-stepper-row{background:var(--pkl)}
 
 .empty-hist{text-align:center;padding:40px 14px;color:#ccc}
 .empty-hist .ei{font-size:44px;margin-bottom:8px}
-.fab-wrap{position:fixed;bottom:72px;right:16px;z-index:190;display:flex;flex-direction:column;align-items:flex-end;gap:14px;pointer-events:none}
+.fab-wrap{position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));right:16px;z-index:190;display:flex;flex-direction:column;align-items:flex-end;gap:14px;pointer-events:none}
 .fab-wrap .fab{pointer-events:auto}
 .fab-menu{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
 .fab-item{display:flex;align-items:center;gap:10px;transform:translateY(16px) scale(.8);opacity:0;transition:transform .2s,opacity .2s;pointer-events:none}
@@ -480,12 +476,13 @@ body.font-shun.dark-active #pg-hist{background:transparent}
   .bnav{padding-left:max(0px,calc(50% - 300px));padding-right:max(0px,calc(50% - 300px))}
   .hist-import-btn{right:max(14px,calc(50% - 300px))}
   .memo-box{left:max(0px,calc(50% - 300px));right:max(0px,calc(50% - 300px))}
+  .mo{justify-content:center}
+  .mbox{max-width:600px}
 }
 /* ===== セーフエリア下端 (常時適用: env()はセーフエリアがなければ0になる) ===== */
 .bnav{padding-bottom:env(safe-area-inset-bottom)}
 .memo-box{bottom:calc(56px + env(safe-area-inset-bottom))}
 .pg{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
-#pg-hist{padding:0 0 calc(52px + env(safe-area-inset-bottom))}
 #pg-secret{padding:14px 14px calc(52px + env(safe-area-inset-bottom))}
 #splash{position:fixed;inset:0;z-index:9999;background:#CE95B0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s ease;pointer-events:all}
 body.font-shun #splash{background:#d8eef8}
@@ -593,26 +590,17 @@ body.font-shun.dark-active #splash{background:#080810}
 </div>
 
 <div class="pg active" id="pg-hist">
-  <div id="histSlider">
-    <div id="histPageToday"></div>
-    <div id="histPageMonths"><div id="histContent" style="min-height:60vh"></div></div>
+  <div id="histSliderWrap">
+    <div id="histSlider">
+      <div id="histPageToday"></div>
+      <div id="histPageMonths"><div id="histContent"></div></div>
+    </div>
   </div>
   <div class="memo-box">
     <div class="memo-handle"><div class="memo-handle-bar"></div></div>
     <div class="memo-hdr"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>共有メモ</div>
     <textarea id="memoInp" class="memo-inp" oninput="onMemoInput()" placeholder="ここに共有メモを入力..."></textarea>
   </div>
-</div>
-
-<div class="pg" id="pg-map">
-  <div class="map-legend" id="mapLegend">
-    <span class="map-legend-item">🏠 場所</span>
-    <span class="map-legend-item">👧 女の子</span>
-    <span class="map-legend-item">🚩 出発地</span>
-    <span class="map-legend-item" id="locStatusShun" style="opacity:.4">🌙 しゅん</span>
-    <span class="map-legend-item" id="locStatusHee" style="opacity:.4">🌸 ひーちゃん</span>
-  </div>
-  <div id="map-container"></div>
 </div>
 
 <div class="pg" id="pg-master">
@@ -656,7 +644,6 @@ body.font-shun.dark-active #splash{background:#080810}
 
 <div class="bnav">
   <button class="nb active" id="nb-hist" onclick="switchPg('hist')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>スケジュール</button>
-  <button class="nb" id="nb-map" onclick="switchPg('map')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span>マップ</button>
   <button class="nb" id="nb-master" onclick="switchPg('master')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>行き先</button>
   <button class="nb" id="nb-secret" onclick="switchPg('secret')"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>シークレット</button>
   <button class="nb" id="nb-settings" onclick="openSettings()"><span class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>設定</button>
@@ -710,7 +697,10 @@ body.font-shun.dark-active #splash{background:#080810}
   <div class="mbox">
     <div class="mtitle">
       <span id="moHistTitle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>スケジュール詳細</span>
-      <button class="mclose" onclick="closeMo('moHistDetail')">✕</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="moHistShiftTime" style="font-size:12px;font-weight:600;color:var(--txs);opacity:.7"></span>
+        <button class="mclose" onclick="closeMo('moHistDetail')">✕</button>
+      </div>
     </div>
     <div id="moHistBody"></div>
   </div>
@@ -753,20 +743,6 @@ body.font-shun.dark-active #splash{background:#080810}
       <div class="sett-row">
         <button class="sett-pill" id="sp-maru" onclick="setAppFont('maru')">あ まるゴシック</button>
         <button class="sett-pill" id="sp-sys" onclick="setAppFont('system')">A システム</button>
-      </div>
-    </div>
-    <div class="sett-section">
-      <div class="sett-label">Overland URL（位置共有）</div>
-      <div style="font-size:11px;color:var(--txs);margin-bottom:6px">OverlandアプリのServer URLにコピーして設定してください</div>
-      <div class="overland-url-row" onclick="copyOverlandUrl('shun')" title="タップでコピー">
-        <span style="font-size:13px">🌙 しゅん</span>
-        <span class="overland-url-text" id="ovUrlShun"></span>
-        <span style="font-size:11px;color:var(--txs)">コピー</span>
-      </div>
-      <div class="overland-url-row" onclick="copyOverlandUrl('hee')" title="タップでコピー" style="margin-top:6px">
-        <span style="font-size:13px">🌸 ひーちゃん</span>
-        <span class="overland-url-text" id="ovUrlHee"></span>
-        <span style="font-size:11px;color:var(--txs)">コピー</span>
       </div>
     </div>
   </div>
@@ -916,13 +892,16 @@ function onMemoInput(){
 })();
 
 function setPgHeight(){
-  document.querySelectorAll('.pg:not(#pg-map)').forEach(function(el){
+  document.querySelectorAll('.pg').forEach(function(el){
     el.style.height='';
   });
 }
-function slideTo(idx){
-  var s=document.getElementById('histSlider');
-  s.scrollTo({left:idx*s.offsetWidth,behavior:'smooth'});
+var _histTab=0;
+function switchHistTab(idx){
+  _histTab=idx;
+  var slider=document.getElementById('histSlider');
+  if(slider){slider.style.transition='transform .32s cubic-bezier(.32,.72,0,1)';slider.style.transform='translateX('+(idx*-100)+'%)';}
+  if(window._setStarfieldBase)window._setStarfieldBase(idx*-20);
 }
 var _memoIsOpen=false,_memoStartY=0,_memoStartTransY=0;
 function _memoClosedY(){return window.innerHeight;}
@@ -964,12 +943,38 @@ function initApp() {
     }
     setTimeout(tick,60000-Date.now()%60000);
   }setTimeout(tick,60000-Date.now()%60000);})();
-  var sl=document.getElementById('histSlider');
-  sl.addEventListener('scroll',function(){
-    var m=this.scrollLeft>this.offsetWidth*0.5;
-    document.getElementById('dot-today').classList.toggle('active',!m);
-    document.getElementById('dot-months').classList.toggle('active',m);
-  });
+  (function(){
+    var pg=document.getElementById('pg-hist'),slider=document.getElementById('histSlider');
+    var sx=0,sy=0,locked=null;
+    pg.addEventListener('touchstart',function(e){
+      sx=e.touches[0].clientX;sy=e.touches[0].clientY;locked=null;
+      if(slider)slider.style.transition='none';
+    },{passive:true});
+    pg.addEventListener('touchmove',function(e){
+      if(_swipeTouching||locked==='v')return;
+      var dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
+      if(!locked){if(Math.abs(dx)>8||Math.abs(dy)>8)locked=Math.abs(dx)>Math.abs(dy)?'h':'v';return;}
+      e.preventDefault();
+      var pct=dx/window.innerWidth*100;
+      if((_histTab===0&&dx>0)||(_histTab===1&&dx<0))pct*=0.2;
+      if(slider)slider.style.transform='translateX('+(_histTab*-100+pct)+'%)';
+    },{passive:false});
+    pg.addEventListener('touchend',function(e){
+      if(_swipeTouching||locked!=='h'){locked=null;return;}
+      var dx=e.changedTouches[0].clientX-sx;
+      var newTab=_histTab;
+      if(Math.abs(dx)>50){
+        if(dx<0&&_histTab===0)newTab=1;
+        else if(dx>0&&_histTab===1)newTab=0;
+      }
+      if(newTab!==_histTab){
+        switchHistTab(newTab);
+      }else{
+        if(slider){slider.style.transition='transform .32s cubic-bezier(.32,.72,0,1)';slider.style.transform='translateX('+(_histTab*-100)+'%)';}
+      }
+      locked=null;
+    },{passive:true});
+  })();
   var handle=document.querySelector('.memo-handle');
   handle.addEventListener('touchstart',function(e){
     _memoStartY=e.touches[0].clientY;
@@ -1048,8 +1053,7 @@ function updateThemeColor(){
   var m=document.querySelector('meta[name="theme-color"]');
   if(!m) return;
   var b=document.body.classList;
-  if(b.contains('map-active')) m.content = b.contains('dark-active') ? '#1a2a40' : '#e8e4e0';
-  else if(b.contains('font-shun')) m.content = b.contains('dark-active') ? '#07091a' : '#d8eef8';
+  if(b.contains('font-shun')) m.content = b.contains('dark-active') ? '#07091a' : '#d8eef8';
   else m.content='#CE95B0';
 }
 function switchPg(p){
@@ -1057,11 +1061,13 @@ function switchPg(p){
   document.querySelectorAll('.nb').forEach(e=>e.classList.remove('active'));
   document.getElementById('pg-'+p).classList.add('active');
   document.getElementById('nb-'+p).classList.add('active');
-  document.body.classList.toggle('map-active', p==='map');
   updateThemeColor();
-  if(p==='hist') renderHistPage();
-  if(p==='map') initMap(); else setPgHeight();
+  window.scrollTo(0,0);
+  if(p==='hist'){renderHistPage();switchHistTab(_histTab);}
+  else setPgHeight();
   if(p==='secret') renderSecretPage();
+  var _pgOrder={hist:0,master:1,secret:2,settings:3};
+  if(window._setStarfieldBase)window._setStarfieldBase((_pgOrder[p]||0)*-25+(p==='hist'?_histTab*-20:0));
 }
 
 function openSchedModal(){
@@ -1721,28 +1727,60 @@ function parseImportText(text){
   i++;
   while(i<lines.length&&!lines[i])i++;
   const runs=[];
+  function parseStops(startI){
+    const stops=[];let pMin=null,idx=startI;
+    while(idx<lines.length){
+      const l=lines[idx];
+      if(!l){idx++;break;}
+      const mm=l.match(/^(\d+)分$/);
+      if(mm){pMin=parseInt(mm[1]);idx++;continue;}
+      const pm=l.match(/^(\d{1,2}:\d{2})(.+?)迎え?$/);
+      if(pm){stops.push({time:pm[1],name:pm[2],type:'pick',min:pMin||''});pMin=null;idx++;continue;}
+      const sm=l.match(/^(\d{1,2}:\d{2})(.+?)着$/);
+      if(sm){stops.push({time:sm[1],name:sm[2],type:'drop',min:pMin||''});pMin=null;idx++;continue;}
+      const bt=l.match(/^(\d{1,2}:\d{2})$/);
+      if(bt){stops.push({time:bt[1],name:'店',type:'drop',min:pMin||''});pMin=null;idx++;continue;}
+      break;
+    }
+    return{stops,nextI:idx};
+  }
   while(i<lines.length){
     if(!lines[i]){i++;continue;}
     const dm2=lines[i].match(/^(\d{1,2}:\d{2})(.+)出発$/);
-    if(!dm2){i++;continue;}
-    const departTime=dm2[1],departLabel=lines[i];
-    i++;
-    const stops=[];
-    let pMin=null;
-    while(i<lines.length){
-      const l=lines[i];
-      if(!l){i++;break;}
-      const mm=l.match(/^(\d+)分$/);
-      if(mm){pMin=parseInt(mm[1]);i++;continue;}
-      const pm=l.match(/^(\d{1,2}:\d{2})(.+?)迎え?$/);
-      if(pm){stops.push({time:pm[1],name:pm[2],type:'pick',min:pMin||''});pMin=null;i++;continue;}
-      const sm=l.match(/^(\d{1,2}:\d{2})(.+?)着$/);
-      if(sm){stops.push({time:sm[1],name:sm[2],type:'drop',min:pMin||''});pMin=null;i++;continue;}
-      const bt=l.match(/^(\d{1,2}:\d{2})$/);
-      if(bt){stops.push({time:bt[1],name:'店',type:'drop',min:pMin||''});pMin=null;i++;continue;}
-      break;
+    if(dm2){
+      const departTime=dm2[1],departLabel=lines[i];
+      i++;
+      const{stops,nextI}=parseStops(i);
+      i=nextI;
+      if(stops.length)runs.push({departTime,departLabel,stops});
+    } else {
+      // 出発行なし：ピックアップ/到着行から始まる場合は「現在地出発」として逆算
+      const isStop=lines[i].match(/^(\d{1,2}:\d{2})(.+?)迎え?$/)||
+                   lines[i].match(/^(\d{1,2}:\d{2})(.+?)着$/)||
+                   lines[i].match(/^(\d{1,2}:\d{2})$/)||
+                   lines[i].match(/^\d+分$/);
+      if(!isStop){i++;continue;}
+      let priorMin=null,firstTime=null;
+      for(let j=i;j<lines.length&&lines[j];j++){
+        const mM=lines[j].match(/^(\d+)分$/);
+        if(mM&&!firstTime){priorMin=parseInt(mM[1]);continue;}
+        const tM=lines[j].match(/^(\d{1,2}:\d{2})/);
+        if(tM){firstTime=tM[1];break;}
+      }
+      if(!firstTime){i++;continue;}
+      let departTime;
+      if(priorMin!==null){
+        const[hh,mm]=firstTime.split(':').map(Number);
+        const tot=((hh*60+mm-priorMin)%1440+1440)%1440;
+        departTime=p2(Math.floor(tot/60))+':'+p2(tot%60);
+      }else{
+        departTime=firstTime;
+      }
+      const departLabel=`${departTime}現在地出発`;
+      const{stops,nextI}=parseStops(i);
+      i=nextI;
+      if(stops.length)runs.push({departTime,departLabel,stops,reverseCalc:true});
     }
-    if(stops.length)runs.push({departTime,departLabel,stops});
   }
   return runs.length?{dateVal,dateLabel,runs,revised:isRevised}:null;
 }
@@ -1811,6 +1849,38 @@ function setDebugDatetime(v){
   }
   renderHistPage();
 }
+function _dbgNow(){
+  const d=new Date();
+  const date=_debugDate||`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+  const hh=_debugTime?parseInt(_debugTime):d.getHours();
+  const mm=_debugTime?parseInt(_debugTime.slice(3)):d.getMinutes();
+  return {date,hh,mm};
+}
+function stepDebugDate(delta){
+  const n=_dbgNow();
+  const d=new Date(n.date+'T12:00:00');
+  d.setDate(d.getDate()+delta);
+  _debugDate=`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+  _debugTime=p2(n.hh)+':'+p2(n.mm);
+  renderHistPage();
+}
+function stepDebugHour(delta){
+  const n=_dbgNow();
+  _debugDate=n.date;
+  _debugTime=p2((n.hh+delta+24)%24)+':'+p2(n.mm);
+  renderHistPage();
+}
+function stepDebugMin(delta){
+  const n=_dbgNow();
+  let total=n.hh*60+n.mm+delta;
+  total=((total%1440)+1440)%1440;
+  _debugDate=n.date;
+  _debugTime=p2(Math.floor(total/60))+':'+p2(total%60);
+  renderHistPage();
+}
+function resetDebugTime(){
+  _debugDate=null;_debugTime=null;renderHistPage();
+}
 function buildRunsHtml(e,showNow){
   const now=showNow?nowHHMM():null;
   // 最初の未完了便を「アクティブ便」としてデフォルト開く
@@ -1848,10 +1918,10 @@ function buildRunsHtml(e,showNow){
     const runId=useAcc?`runacc_${e.id}_${ri}`:'';
     h+=`<div class="hist-detail-run${useAcc?` run-acc${isOpen?' run-open':''}`:''}"${runId?` id="${runId}"`:''}">`;
     if(useAcc){
-      h+=`<div class="run-acc-hdr" onclick="toggleRunAcc('${runId}')"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div><div style="display:flex;align-items:center;gap:6px">${_ct}${_doneBadge}${_arr}</div></div>`;
+      h+=`<div class="run-acc-hdr" onclick="toggleRunAcc('${runId}')"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}${run.reverseCalc?'<span class="rev-calc-tag"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>逆算</span>':''}</div><div style="display:flex;align-items:center;gap:6px">${_ct}${_doneBadge}${_arr}</div></div>`;
       h+=`<div class="run-acc-body">${stopsHtml}</div>`;
     }else{
-      h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div>${_ct}</div>${stopsHtml}`;
+      h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="hist-detail-run-lbl" style="margin-bottom:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}${run.reverseCalc?'<span class="rev-calc-tag"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>逆算</span>':''}</div>${_ct}</div>${stopsHtml}`;
     }
     h+=`</div>`;
   });
@@ -2051,9 +2121,8 @@ function renderHistPage(){
   todayHtml+=`</div>`;
   todayHtml+=renderBatteryCard();
   todayHtml+=renderIncomeCard();
-  todayHtml+=`<div class="debug-time-row"><span class="debug-time-lbl">🕐 テスト時刻</span><input class="debug-time-inp" id="debugTimeInp" type="datetime-local" onchange="setDebugDatetime(this.value)"><button class="debug-time-clr" onclick="setDebugDatetime('');document.getElementById('debugTimeInp').value=''">リセット</button></div>`;
+  {const _dbd=_debugDate||todayVal();const _dbt=_debugTime?_debugTime.split(':').map(Number):[new Date().getHours(),new Date().getMinutes()];const _dbH=_dbt[0],_dbMin=_dbt[1];const[,_dbMo,_dbD]=_dbd.split('-').map(Number);const _dbAct=!!(_debugDate||_debugTime);todayHtml+=`<div class="debug-time-row${_dbAct?' debug-time-active':''}"><div class="debug-time-hdr"><span class="debug-time-lbl">🕐 テスト時刻</span>${_dbAct?'<button class="debug-time-clr" onclick="resetDebugTime()">リセット</button>':''}</div><div class="debug-steppers"><div class="debug-stepper"><div class="debug-stepper-lbl">日付</div><div class="debug-stepper-row"><button class="debug-stepper-btn" onclick="stepDebugDate(-1)">－</button><div class="debug-stepper-val">${_dbMo}/${_dbD}</div><button class="debug-stepper-btn" onclick="stepDebugDate(+1)">＋</button></div></div><div class="debug-stepper"><div class="debug-stepper-lbl">時間</div><div class="debug-stepper-row"><button class="debug-stepper-btn" onclick="stepDebugHour(-1)">－</button><div class="debug-stepper-val">${p2(_dbH)}</div><button class="debug-stepper-btn" onclick="stepDebugHour(+1)">＋</button></div></div><div class="debug-stepper"><div class="debug-stepper-lbl">分</div><div class="debug-stepper-row"><button class="debug-stepper-btn" onclick="stepDebugMin(-1)">－</button><div class="debug-stepper-val">${p2(_dbMin)}</div><button class="debug-stepper-btn" onclick="stepDebugMin(+1)">＋</button></div></div></div></div>`;}
   tp.innerHTML=todayHtml;
-  if(_debugDate&&_debugTime)document.getElementById('debugTimeInp').value=`${_debugDate}T${_debugTime}`;
   let html='';
   const monthMap={};
   others.forEach(e=>{
@@ -2063,9 +2132,29 @@ function renderHistPage(){
   });
   Object.entries(monthMap).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([month, entries],mi)=>{
     const accId=`acc_${mi}`;
+    const _tmM=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+    const netOt=entries.reduce((sum,e)=>{
+      const deps=e.runs.map(r=>_tmM(r.departTime));
+      const drops=e.runs.flatMap(r=>r.stops.filter(s=>s.type==='drop').map(s=>_tmM(s.time)));
+      if(!deps.length||!drops.length)return sum;
+      const s=Math.min(...deps),en=Math.max(...drops);
+      const sm=en>=s?en-s:en-s+1440;
+      return sum+(sm-120);
+    },0);
+    const baseAmt=entries.reduce((s,e)=>s+(e.dateVal>='2026-04-10'?2000:1000),0).toLocaleString();
+    const absMin=Math.abs(netOt),otH=Math.floor(absMin/60),otM=absMin%60;
+    const timeStr=otH?(otH+'時間'+(otM?otM+'分':'')):otM+'分';
+    const otStr=(netOt>=0?'+':'-')+timeStr;
+    const otClass=netOt>=0?'month-acc-sum-ot':'month-acc-sum-ok';
     html+=`<div class="month-acc" id="${accId}">
       <div class="month-acc-hdr" onclick="toggleAcc('${accId}')">
-        <span class="month-acc-title">${month}</span>
+        <div>
+          <span class="month-acc-title">${month}</span>
+          <div class="month-acc-summary">
+            <span class="month-acc-sum-pay">${baseAmt}円</span>
+            <span class="${otClass}">${otStr}</span>
+          </div>
+        </div>
         <div style="display:flex;align-items:center;gap:8px">
           <span class="month-acc-count">${entries.length}件</span>
           <span class="month-acc-arr">▾</span>
@@ -2073,11 +2162,16 @@ function renderHistPage(){
       </div>
       <div class="month-acc-body">`;
     entries.sort((a,b)=>b.dateVal.localeCompare(a.dateVal)).forEach(e=>{
-      const girlNames=e.runs.flatMap(r=>r.stops.filter(s=>s.type==='pick').map(s=>s.name)).join('・');
-      html+=`<div class="swipe-wrap"><div class="hist-item swipe-inner" data-id="${e.id}">
+      const allGirls=[...new Set(e.runs.flatMap(r=>r.stops.filter(s=>s.type==='pick').map(s=>s.name)))];
+      const girlNames=allGirls.length<=3?allGirls.join('・'):(allGirls.slice(0,3).join('・')+`…他${allGirls.length-3}名`);
+      const _tm=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+      const _deps=e.runs.map(r=>_tm(r.departTime));
+      const _drops=e.runs.flatMap(r=>r.stops.filter(s=>s.type==='drop').map(s=>_tm(s.time)));
+      const _shiftMin=(_deps.length&&_drops.length)?(()=>{const s=Math.min(..._deps),en=Math.max(..._drops);return en>=s?en-s:en-s+1440;})():0;
+      html+=`<div class="hist-item" data-id="${e.id}" onclick="openHistDetail(${e.id})">
         <div class="hist-item-hdr">
-          <div>
-            <div class="hist-item-date">${fmtDLFull(e.dateVal)}${e.revised?'<span class="revised-tag">訂正</span>':''}</div>
+          <div style="min-width:0;overflow:hidden">
+            <div class="hist-item-date">${fmtDLFull(e.dateVal)}${e.revised?'<span class="revised-tag">訂正</span>':''}${e.dateVal==='2026-04-10'?'<span class="raise-tag">昇給</span>':''}${_shiftMin>120?'<span class="overtime-tag">2h超</span>':''}</div>
             <div class="hist-item-sub">${_svgUserSm} ${girlNames||'データなし'}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
@@ -2085,10 +2179,7 @@ function renderHistPage(){
             <span class="hist-item-arr">›</span>
           </div>
         </div>
-      </div><div class="swipe-actions">
-        <button class="swipe-btn swipe-btn-edit" onclick="openHistEdit(${e.id})">${_svgEdit}編集</button>
-        <button class="swipe-btn swipe-btn-del" onclick="swipeDeleteHist(${e.id})">${_svgTrash}削除</button>
-      </div></div>`;
+      </div>`;
     });
     html+=`</div></div>`;
   });
@@ -2102,7 +2193,6 @@ function renderHistPage(){
       if(t&&openMonths.has(t.textContent))el.classList.add('open');
     });
   }
-  initSwipeItems();
   updateRunCountdowns();
 }
 
@@ -2118,7 +2208,7 @@ function quickCopyBoy(id){
 function buildRevHtml(rev){
   let h='';
   (rev.runs||[]).forEach(run=>{
-    h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}</div>`;
+    h+=`<div class="hist-detail-run"><div class="hist-detail-run-lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 4h1a2 2 0 0 1 2 2v5h-2m-4 0H9m-6-6h15m-6 0V6"/></svg>${run.departLabel}${run.reverseCalc?'<span class="rev-calc-tag"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>逆算</span>':''}</div>`;
     (run.stops||[]).forEach(s=>{
       const badge=s.type==='pick'?'<span class="edit-time-badge badge-pick">迎え</span>':'<span class="edit-time-badge badge-drop">到着</span>';
       const dot=s.type==='pick'?'dot-pick':'dot-drop';
@@ -2135,6 +2225,12 @@ function openHistDetail(id){
   if(!e) return;
   const _svgCal=`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
   document.getElementById('moHistTitle').innerHTML=`${_svgCal}${fmtDLFull(e.dateVal)}${e.revised?'<span class="revised-tag">訂正</span>':''}`;
+  const _tm2=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+  const _deps2=e.runs.map(r=>_tm2(r.departTime));
+  const _drops2=e.runs.flatMap(r=>r.stops.filter(s=>s.type==='drop').map(s=>_tm2(s.time)));
+  const _sm=(_deps2.length&&_drops2.length)?(()=>{const s=Math.min(..._deps2),en=Math.max(..._drops2);return en>=s?en-s:en-s+1440;})():0;
+  const _sh=Math.floor(_sm/60),_smin=_sm%60;
+  document.getElementById('moHistShiftTime').textContent=_sm>0?(_sh?_sh+'時間':'')+(_smin?_smin+'分':''):'';
   let html=buildRunsHtml(e);
   if(e.revisions&&e.revisions.length>0){
     html+=`<div class="rev-wrap"><div style="font-size:11px;font-weight:700;color:var(--txs);letter-spacing:.5px;margin-bottom:6px;opacity:.7">🕒 修正履歴</div>`;
@@ -2150,6 +2246,11 @@ function openHistDetail(id){
     html+=`</div>`;
   }
   html+=`<div class="today-action-bar" style="margin:14px -16px 0;border-radius:0 0 14px 14px;overflow:hidden">
+    <div class="today-action-btn" onclick="closeMo('moHistDetail');openHistEdit(${e.id})">
+      <span class="today-action-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
+      <span class="today-action-lbl">編集</span>
+    </div>
+    <div class="today-action-sep"></div>
     <div class="today-action-btn" onclick="shareHist(${e.id})">
       <span class="today-action-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>
       <span class="today-action-lbl">共有</span>
@@ -2389,7 +2490,7 @@ function initSwipe(innerEl, actionsWidth, tapAction, itemId, rightSwipeAction){
 function initSwipeItems(){
   document.querySelectorAll('#histContent .hist-item.swipe-inner').forEach(function(el){
     var id=parseInt(el.getAttribute('data-id'));
-    initSwipe(el,160,function(){openHistDetail(id);},String(id),function(){slideTo(0);});
+    initSwipe(el,160,function(){openHistDetail(id);},String(id),function(){switchHistTab(0);});
   });
 }
 
@@ -2628,7 +2729,7 @@ function showToast(msg){
       len:80+Math.random()*100,life:0,maxLife:45+Math.random()*35
     });
   }
-  var px={tx:0,ty:0,cx:0,cy:0,sx:0,sy:0,on:false};
+  var px={tx:0,ty:0,cx:0,cy:0,sx:0,sy:0,on:false,bx:0};
   document.addEventListener('touchstart',function(e){
     if(!document.body.classList.contains('dark-active'))return;
     px.sx=e.touches[0].clientX;px.sy=e.touches[0].clientY;px.on=true;
@@ -2641,11 +2742,12 @@ function showToast(msg){
   document.addEventListener('touchend',function(){
     px.on=false;px.tx=0;px.ty=0;
   },{passive:true});
+  window._setStarfieldBase=function(x){px.bx=x;};
   function draw(){
     requestAnimationFrame(draw);
     var isDark=document.body.classList.contains('dark-active');
     if(!isDark){ctx.clearRect(0,0,c.width,c.height);return}
-    px.cx+=(px.tx-px.cx)*0.08;
+    px.cx+=(px.bx+px.tx-px.cx)*0.08;
     px.cy+=(px.ty-px.cy)*0.08;
     ctx.clearRect(0,0,c.width,c.height);
     t+=0.018;
@@ -2719,18 +2821,6 @@ function openSettings(){
   if(elH) elH.textContent = base+'?user=hee';
   document.getElementById('moSettings').classList.add('open');
 }
-function copyOverlandUrl(user){
-  var url = GAS_URL.split('?')[0]+'?user='+user;
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(url).then(function(){ showToast('コピーしました'); }).catch(function(){ _fallbackCopy(url); });
-  } else { _fallbackCopy(url); }
-}
-function _fallbackCopy(text){
-  var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
-  document.body.appendChild(ta); ta.focus(); ta.select();
-  try{ document.execCommand('copy'); showToast('コピーしました'); } catch(e){ showToast('コピー失敗'); }
-  document.body.removeChild(ta);
-}
 function setAppTheme(t){
   _theme=t; localStorage.setItem('appTheme',t); localStorage.setItem('fontMode',t==='shun'?'shun':'hee');
   _applyAll(); openSettings();
@@ -2743,91 +2833,7 @@ function setAppFont(f){
 }
 (function(){ _applyAll(); })();
 
-// ========== マップ ==========
-var _map = null;
-var _placeMarkers = [];
-var _liveMarkers = {};
-var _mapPoll = null;
-
-var _MAP_USERS = [
-  {key:'shun', label:'しゅん',     emoji:'🌙', bg:'#2a5a8a'},
-  {key:'hee',  label:'ひーちゃん', emoji:'🌸', bg:'#c478a8'}
-];
-
-function _markerEl(emoji, bg){
-  var el = document.createElement('div');
-  el.className = 'map-marker';
-  el.style.background = bg;
-  el.textContent = emoji;
-  return el;
-}
-
-function _ago(isoStr){
-  if(!isoStr) return '';
-  var diff = Math.floor((Date.now() - new Date(isoStr).getTime())/1000);
-  if(diff < 60) return diff + '秒前';
-  if(diff < 3600) return Math.floor(diff/60) + '分前';
-  return Math.floor(diff/3600) + '時間前';
-}
-
-function _livePopupHtml(u, d){
-  var BS = ['','🔌 未接続','⚡ 充電中','🔋 満充電'];
-  var lines = ['<b>' + u.label + '</b>'];
-  var battStr = (d.batt != null) ? d.batt + '%' : '';
-  if(d.bs != null && BS[d.bs]) battStr += (battStr ? ' ' : '') + BS[d.bs];
-  lines.push('🔋 ' + (battStr || '–'));
-  lines.push('🚗 ' + (d.vel != null ? d.vel + ' km/h' : '–'));
-  if(d.motionactivities && d.motionactivities.length){
-    lines.push('🏃 ' + d.motionactivities.join(' · '));
-  }
-  lines.push('<small>' + _ago(d.at) + '</small>');
-  return lines.join('<br>');
-}
-
-// しゅん・ひーちゃんのマーカーを作成/更新
-function _renderLive(){
-  _MAP_USERS.forEach(function(u){
-    var d = locationData[u.key];
-    if(!d) return;
-    var lat = +d.lat, lng = +d.lng;
-    if(!lat || !lng || isNaN(lat) || isNaN(lng)) return;
-    var st = document.getElementById('locStatus' + u.key.charAt(0).toUpperCase() + u.key.slice(1));
-    if(st) st.style.opacity = '1';
-    var html = _livePopupHtml(u, d);
-    if(_liveMarkers[u.key]){
-      _liveMarkers[u.key].setLngLat([lng, lat]);
-      _liveMarkers[u.key].getPopup().setHTML(html);
-    } else if(_map){
-      var el = _markerEl(u.emoji, u.bg);
-      var popup = new maplibregl.Popup({offset:20, closeButton:false}).setHTML(html);
-      var marker = new maplibregl.Marker({element:el, anchor:'center'})
-        .setLngLat([lng, lat])
-        .setPopup(popup)
-        .addTo(_map);
-      el.addEventListener('click', function(e){
-        e.stopPropagation();
-        if(popup.isOpen()) popup.remove(); else popup.addTo(_map);
-      });
-      _liveMarkers[u.key] = marker;
-    }
-  });
-}
-
-// しゅん・ひーちゃんの最新位置を取得して反映
-function _pollLive(){
-  fetch(GAS_URL + '?action=location&_=' + Date.now())
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      if(data && data.ok && data.data){
-        Object.keys(data.data).forEach(function(k){
-          var d = data.data[k];
-          if(d && d.lat) locationData[k] = d;
-        });
-        _renderLive();
-      }
-    }).catch(function(){});
-}
-
+// ========== ジオコード（スケジュール作成で使用）==========
 function _geocacheKey(addr){ return 'geo2_' + addr; }
 
 function _parseLatLng(s) {
@@ -2867,90 +2873,6 @@ async function _geocode(addr) {
   return null;
 }
 
-async function initMap() {
-  var container = document.getElementById('map-container');
-  if (!container) return;
-
-  if (!_map) {
-    _map = new maplibregl.Map({
-      container: 'map-container',
-      style: 'https://api.maptiler.com/maps/streets-v2/style.json?key=xo1M5L6ZL4wO1wT74HBb',
-      center: [135.5023, 34.6937],
-      zoom: 11
-    });
-    await new Promise(function(resolve){ _map.on('load', resolve); });
-    _map.resize();
-  } else {
-    _map.resize();
-  }
-
-  // 場所マーカーをいったん消す
-  _placeMarkers.forEach(function(m){ m.remove(); });
-  _placeMarkers = [];
-
-  var pts = []; // [lng,lat] 全マーカー位置
-
-  // しゅん・ひーちゃん
-  _renderLive();
-  _MAP_USERS.forEach(function(u){
-    var d = locationData[u.key];
-    if(!d) return;
-    var lat = +d.lat, lng = +d.lng;
-    if(lat && lng && !isNaN(lat) && !isNaN(lng)) pts.push([lng, lat]);
-  });
-
-  // 登録してある場所（場所マスター・女の子）
-  var queue = [];
-  locations.forEach(function(l){ var a=String(l.addr||'').trim(); if(a) queue.push({addr:a, emoji:l.isShop?'🏠':'📍', bg:l.isShop?'#e88fac':'#6a9e8a', label:l.name+(l.nick?'（'+l.nick+'）':'')}); });
-  girls.forEach(function(g){ var a=String(g.addr||'').trim(); if(a) queue.push({addr:a, emoji:'👧', bg:'#c478a8', label:g.name+(g.nick?'（'+g.nick+'）':'')}); });
-
-  var legend = document.getElementById('mapLegend');
-  var oldSt = document.getElementById('mapGeoStatus');
-  if (oldSt) oldSt.remove();
-  var needGeo = queue.filter(function(q){ return !_parseLatLng(q.addr) && !localStorage.getItem(_geocacheKey(q.addr)); });
-  if (needGeo.length > 0) {
-    var stEl = document.createElement('span');
-    stEl.id = 'mapGeoStatus';
-    stEl.style.cssText = 'margin-left:auto;color:var(--txs);font-size:11px';
-    stEl.textContent = '📡 住所変換中 0/' + queue.length;
-    legend.appendChild(stEl);
-  }
-
-  for (var i = 0; i < queue.length; i++) {
-    var q = queue[i];
-    var pt = await _geocode(q.addr);
-    var stp = document.getElementById('mapGeoStatus');
-    if (stp) stp.textContent = '📡 ジオコーディング中 ' + (i+1) + '/' + queue.length;
-    if (pt) {
-      var marker = new maplibregl.Marker({element: _markerEl(q.emoji, q.bg), anchor: 'center'})
-        .setLngLat([pt.lng, pt.lat])
-        .setPopup(new maplibregl.Popup({offset:20, closeButton:false})
-          .setHTML('<b>'+q.label+'</b><br><small>'+q.addr+'</small>'))
-        .addTo(_map);
-      _placeMarkers.push(marker);
-      pts.push([pt.lng, pt.lat]);
-    }
-  }
-
-  var st = document.getElementById('mapGeoStatus');
-  if (st) st.remove();
-
-  // 全マーカーが収まるよう表示
-  if (pts.length === 1) {
-    _map.flyTo({center: pts[0], zoom: 15});
-  } else if (pts.length > 1) {
-    var minLng=pts[0][0], maxLng=pts[0][0], minLat=pts[0][1], maxLat=pts[0][1];
-    pts.forEach(function(p){
-      if(p[0]<minLng)minLng=p[0]; if(p[0]>maxLng)maxLng=p[0];
-      if(p[1]<minLat)minLat=p[1]; if(p[1]>maxLat)maxLat=p[1];
-    });
-    _map.fitBounds([[minLng,minLat],[maxLng,maxLat]], {padding:60, maxZoom:15});
-  }
-
-  // しゅん・ひーちゃんの位置を定期更新
-  if (_mapPoll) clearInterval(_mapPoll);
-  _mapPoll = setInterval(_pollLive, 5000);
-}
 
 // ===== スプラッシュ 3D月アニメーション (Three.js) =====
 var _moonRafId=null;

@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, maximum-scale=1">
+<title>検査整備保安部門(継続検査)｜テストサイト</title>
+<link rel="icon" href="https://mlit3.ncall.info/favicon.png" type="image/png">
+<link href="https://mlit3.ncall.info/css/bootstrap.css" rel="stylesheet">
+<link href="https://mlit3.ncall.info/css/style.css" rel="stylesheet">
+<link href="https://mlit3.ncall.info/css/font-awesome.css" rel="stylesheet">
+<link href="https://mlit3.ncall.info/css/responsive.css" rel="stylesheet">
+<link href="https://mlit3.ncall.info/css/animate.css" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body>
+<div align="center">
+<h1 class="animated fadeInDown delay-07s">新潟運輸支局</h1>
+<h4 class="animated fadeInDown delay-07s">検査整備保安部門(継続検査)窓口<BR>呼出状況</h4>
+<P>
+<HR>
+<table border="0" cellpadding="3">
+<tbody>
+    <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+    <?!= CALLING_ROWS ?>
+</tbody>
+</table>
+<BR>
+※状況によりお呼び出し順が前後する場合があります。ご了承ください。
+<BR><BR>
+<a href="<?= WEB_APP_URL ?>?type=site2">再読み込み</a>
+</P>
+<BR><HR>
+<h1>受付状況確認</h1>
+<P>窓口を選んでください</P>
+<BR>
+<a href="<?= WEB_APP_URL ?>?type=site2">検査整備保安部門(継続検査)</a>
+<BR>
+</div>
+</body>
+</html>
