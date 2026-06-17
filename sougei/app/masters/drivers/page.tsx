@@ -24,6 +24,12 @@ export default function DriversPage() {
     if (data) setDrivers(data)
   }
 
+  async function resetStatus(id: string) {
+    await supabase.from('dispatches').update({ status: '完了' }).eq('driver_id', id).eq('status', '移動中')
+    await supabase.from('drivers').update({ status: '待機' }).eq('id', id)
+    await fetchDrivers()
+  }
+
   function openAddForm() {
     setEditingId(null)
     setFormName('')
@@ -150,6 +156,14 @@ export default function DriversPage() {
                     <div style={{ fontSize: 11, color: '#aeaeb2', background: 'rgba(0,0,0,0.04)', borderRadius: 6, padding: '3px 7px', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {d.note}
                     </div>
+                  )}
+                  {d.status !== '待機' && (
+                    <button
+                      onClick={() => resetStatus(d.id)}
+                      style={{ padding: '5px 10px', borderRadius: 20, background: '#fff3e0', border: 'none', color: '#c2750a', fontSize: 11, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
+                    >
+                      待機に戻す
+                    </button>
                   )}
                   <button
                     onClick={() => openEditForm(d)}
