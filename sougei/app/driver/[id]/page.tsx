@@ -25,11 +25,13 @@ export default function DriverNotificationPage({
   useEffect(() => {
     if (!driverId) return
     fetchData()
+    const timer = setInterval(() => fetchData(false), 5000)
+    return () => clearInterval(timer)
   }, [driverId])
 
-  async function fetchData() {
+  async function fetchData(showLoading = true) {
     if (!driverId) return
-    setLoading(true)
+    if (showLoading) setLoading(true)
 
     const [driverRes, dispatchRes] = await Promise.all([
       supabase.from('drivers').select('*').eq('id', driverId).single(),
@@ -37,7 +39,7 @@ export default function DriverNotificationPage({
         .from('dispatches')
         .select('*')
         .eq('driver_id', driverId)
-        .in('status', ['待機', '移動中'])
+        .in('status', ['承諾待ち', '移動中'])
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle(),
@@ -64,6 +66,7 @@ export default function DriverNotificationPage({
   async function handleDecline() {
     if (!dispatch) return
     await supabase.from('dispatches').update({ status: '完了', driver_id: null }).eq('id', dispatch.id)
+    await supabase.from('drivers').update({ status: '待機' }).eq('id', driverId!)
     setView('none')
     setDispatch(null)
   }

@@ -31,7 +31,8 @@ export default function DashboardPage() {
     if (!error && data) {
       const withDispatch = data.map((d: Driver & { dispatches?: { destination: string | null, estimated_return: string | null, status: string }[] }) => {
         const active = d.dispatches?.find(dp => dp.status === '移動中')
-        return { ...d, currentDispatch: active || undefined }
+        const pending = d.dispatches?.find(dp => dp.status === '承諾待ち')
+        return { ...d, currentDispatch: active || pending || undefined }
       })
       setDrivers(withDispatch)
     }
@@ -45,17 +46,19 @@ export default function DashboardPage() {
   const movingCount = drivers.filter(d => d.status === '移動中').length
   const doneCount = drivers.filter(d => d.status === '終了').length
 
-  const statusOrder: Record<string, number> = { '移動中': 0, '待機': 1, '終了': 2 }
+  const statusOrder: Record<string, number> = { '移動中': 0, '承諾待ち': 1, '待機': 2, '終了': 3 }
   const sorted = [...drivers].sort((a, b) => (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3))
 
   function getAvatarStyle(status: string) {
     const bg =
       status === '移動中' ? 'rgba(194,117,10,0.12)' :
       status === '待機' ? 'rgba(26,158,80,0.12)' :
+      status === '承諾待ち' ? 'rgba(52,120,246,0.12)' :
       'rgba(0,0,0,0.05)'
     const color =
       status === '移動中' ? '#c2750a' :
       status === '待機' ? '#1a9e50' :
+      status === '承諾待ち' ? '#3478f6' :
       '#aeaeb2'
     return { background: bg, color }
   }
@@ -64,9 +67,10 @@ export default function DashboardPage() {
     const bg =
       status === '移動中' ? '#c2750a' :
       status === '待機' ? '#1a9e50' :
+      status === '承諾待ち' ? '#3478f6' :
       '#e5e5ea'
     const color =
-      status === '移動中' || status === '待機' ? '#ffffff' : '#8e8e93'
+      status === '移動中' || status === '待機' || status === '承諾待ち' ? '#ffffff' : '#8e8e93'
     return { background: bg, color }
   }
 
@@ -132,6 +136,7 @@ export default function DashboardPage() {
           const isMoving = driver.status === '移動中'
           const isAvail = driver.status === '待機'
           const isDone = driver.status === '終了'
+          const isPending = driver.status === '承諾待ち'
           const avatarStyle = getAvatarStyle(driver.status)
           const badgeStyle = getBadgeStyle(driver.status)
           const destination = driver.currentDispatch?.destination || null
@@ -187,7 +192,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Bottom row - destination */}
-              {(isMoving || isDone) && destination && (
+              {(isMoving || isDone || isPending) && destination && (
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 10, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.06em', marginBottom: 3 }}>送り先</div>
@@ -195,6 +200,14 @@ export default function DashboardPage() {
                       {destination}
                     </div>
                   </div>
+                  {isPending && (
+                    <div style={{ flexShrink: 0, textAlign: 'right', paddingLeft: 20 }}>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: '#3478f6', letterSpacing: '0.06em', marginBottom: 3 }}>承諾待ち</div>
+                      <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1, color: '#3478f6' }}>
+                        未承諾
+                      </div>
+                    </div>
+                  )}
                   {isMoving && estimatedReturn && (
                     <div style={{ flexShrink: 0, textAlign: 'right', paddingLeft: 20 }}>
                       <div style={{ fontSize: 10, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.06em', marginBottom: 3 }}>店戻り</div>

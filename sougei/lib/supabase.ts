@@ -10,7 +10,7 @@ export type Driver = {
   name: string
   capacity: number
   note: string | null
-  status: '待機' | '移動中' | '終了'
+  status: '待機' | '移動中' | '終了' | '承諾待ち'
   created_at: string
 }
 
@@ -29,7 +29,7 @@ export type Dispatch = {
   destination: string | null
   urgency: '今すぐ' | '時間指定'
   scheduled_time: string | null
-  status: '待機' | '移動中' | '完了'
+  status: '待機' | '移動中' | '完了' | '承諾待ち'
   estimated_return: string | null
   date: string
   created_at: string

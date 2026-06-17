@@ -94,14 +94,14 @@ export default function DispatchPage() {
         destination: dest,
         urgency: run.urgency === 'now' ? '今すぐ' : '時間指定',
         scheduled_time: run.urgency === 'scheduled' ? run.scheduledTime : null,
-        status: '移動中',
+        status: '承諾待ち',
         estimated_return: estimatedReturn,
         date: today,
       })
 
       await supabase
         .from('drivers')
-        .update({ status: '移動中' })
+        .update({ status: '承諾待ち' })
         .eq('id', run.driverId)
     }
     setSaving(false)
@@ -347,6 +347,7 @@ export default function DispatchPage() {
                     const isSel = run.driverId === d.id
                     const assignedElsewhere = allAssignedDriverIds.includes(d.id) && !isSel
                     const canSelect = isAvail && !assignedElsewhere
+                    const isPendingOther = d.status === '承諾待ち'
                     const statusLabel = d.status
 
                     return (
@@ -378,13 +379,13 @@ export default function DispatchPage() {
                           <div style={{ fontSize: 16, fontWeight: 700, color: canSelect ? '#1c1c1e' : '#aeaeb2', letterSpacing: '-0.01em' }}>{d.name}</div>
                           <div style={{ fontSize: 11, color: '#aeaeb2', marginTop: 1 }}>
                             {!isAvail
-                              ? (d.status === '移動中' ? '送迎中' : '終了済み')
+                              ? (d.status === '移動中' ? '送迎中' : d.status === '承諾待ち' ? '承諾待ち' : '終了済み')
                               : assignedElsewhere ? '他の便に割当済み' : '配車可能'}
                           </div>
                         </div>
                         <div style={{
-                          background: isAvail ? '#1a9e50' : d.status === '移動中' ? '#c2750a' : '#e5e5ea',
-                          color: isAvail || d.status === '移動中' ? '#ffffff' : '#8e8e93',
+                          background: isAvail ? '#1a9e50' : d.status === '移動中' ? '#c2750a' : d.status === '承諾待ち' ? '#3478f6' : '#e5e5ea',
+                          color: isAvail || d.status === '移動中' || d.status === '承諾待ち' ? '#ffffff' : '#8e8e93',
                           borderRadius: 20, padding: '3px 10px',
                           fontSize: 11, fontWeight: 700,
                         }}>
