@@ -10,7 +10,7 @@ export type Driver = {
   name: string
   capacity: number
   note: string | null
-  status: '待機' | '移動中' | '終了' | '承諾待ち'
+  status: '待機' | '移動中' | '終了'
   created_at: string
 }
 

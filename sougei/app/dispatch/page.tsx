@@ -24,6 +24,7 @@ export default function DispatchPage() {
   const [step, setStep] = useState(1)
   const [girls, setGirls] = useState<Girl[]>([])
   const [drivers, setDrivers] = useState<Driver[]>([])
+  const [busyDriverIds, setBusyDriverIds] = useState<string[]>([])
   const [selectedGirls, setSelectedGirls] = useState<string[]>([])
   const [runs, setRuns] = useState<Run[]>([])
   const [saving, setSaving] = useState(false)
@@ -33,12 +34,14 @@ export default function DispatchPage() {
   }, [])
 
   async function fetchData() {
-    const [girlsRes, driversRes] = await Promise.all([
+    const [girlsRes, driversRes, activeRes] = await Promise.all([
       supabase.from('girls').select('*').order('created_at', { ascending: true }),
       supabase.from('drivers').select('*').order('created_at', { ascending: true }),
+      supabase.from('dispatches').select('driver_id').in('status', ['承諾待ち', '移動中']),
     ])
     if (girlsRes.data) setGirls(girlsRes.data)
     if (driversRes.data) setDrivers(driversRes.data)
+    if (activeRes.data) setBusyDriverIds(activeRes.data.map(d => d.driver_id).filter(Boolean) as string[])
   }
 
   function toggleGirl(id: string) {
@@ -99,10 +102,7 @@ export default function DispatchPage() {
         date: today,
       })
 
-      await supabase
-        .from('drivers')
-        .update({ status: '承諾待ち' })
-        .eq('id', run.driverId)
+      // ドライバーステータスはDB制約のため変更しない。dispatch.statusで管理。
     }
     setSaving(false)
     router.push('/')
@@ -343,12 +343,12 @@ export default function DispatchPage() {
                   {/* Driver */}
                   <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 8 }}>ドライバー</div>
                   {drivers.map(d => {
-                    const isAvail = d.status === '待機'
                     const isSel = run.driverId === d.id
                     const assignedElsewhere = allAssignedDriverIds.includes(d.id) && !isSel
+                    const isBusy = busyDriverIds.includes(d.id)
+                    const isAvail = d.status === '待機' && !isBusy
                     const canSelect = isAvail && !assignedElsewhere
-                    const isPendingOther = d.status === '承諾待ち'
-                    const statusLabel = d.status
+                    const statusLabel = isBusy && d.status === '待機' ? '承諾待ち' : d.status
 
                     return (
                       <button
@@ -378,14 +378,14 @@ export default function DispatchPage() {
                         <div style={{ flex: 1, textAlign: 'left', paddingLeft: 10 }}>
                           <div style={{ fontSize: 16, fontWeight: 700, color: canSelect ? '#1c1c1e' : '#aeaeb2', letterSpacing: '-0.01em' }}>{d.name}</div>
                           <div style={{ fontSize: 11, color: '#aeaeb2', marginTop: 1 }}>
-                            {!isAvail
-                              ? (d.status === '移動中' ? '送迎中' : d.status === '承諾待ち' ? '承諾待ち' : '終了済み')
+                            {!canSelect && !assignedElsewhere
+                              ? (d.status === '移動中' ? '送迎中' : isBusy ? '承諾待ち' : '終了済み')
                               : assignedElsewhere ? '他の便に割当済み' : '配車可能'}
                           </div>
                         </div>
                         <div style={{
-                          background: isAvail ? '#1a9e50' : d.status === '移動中' ? '#c2750a' : d.status === '承諾待ち' ? '#3478f6' : '#e5e5ea',
-                          color: isAvail || d.status === '移動中' || d.status === '承諾待ち' ? '#ffffff' : '#8e8e93',
+                          background: isAvail ? '#1a9e50' : d.status === '移動中' ? '#c2750a' : isBusy ? '#3478f6' : '#e5e5ea',
+                          color: isAvail || d.status === '移動中' || isBusy ? '#ffffff' : '#8e8e93',
                           borderRadius: 20, padding: '3px 10px',
                           fontSize: 11, fontWeight: 700,
                         }}>

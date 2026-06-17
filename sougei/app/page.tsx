@@ -133,12 +133,14 @@ export default function DashboardPage() {
         )}
 
         {sorted.map(driver => {
+          const dispatchStatus = driver.currentDispatch?.status
+          const displayStatus = dispatchStatus === '承諾待ち' ? '承諾待ち' : driver.status
           const isMoving = driver.status === '移動中'
-          const isAvail = driver.status === '待機'
+          const isAvail = driver.status === '待機' && displayStatus !== '承諾待ち'
           const isDone = driver.status === '終了'
-          const isPending = driver.status === '承諾待ち'
-          const avatarStyle = getAvatarStyle(driver.status)
-          const badgeStyle = getBadgeStyle(driver.status)
+          const isPending = displayStatus === '承諾待ち'
+          const avatarStyle = getAvatarStyle(displayStatus)
+          const badgeStyle = getBadgeStyle(displayStatus)
           const destination = driver.currentDispatch?.destination || null
           const estimatedReturnRaw = driver.currentDispatch?.estimated_return || null
           const estimatedReturn = estimatedReturnRaw
@@ -183,9 +185,9 @@ export default function DashboardPage() {
                       fontSize: 11,
                       fontWeight: 700,
                     }}
-                    className={isMoving ? 'animate-badge-pulse' : ''}
+                    className={isMoving || isPending ? 'animate-badge-pulse' : ''}
                   >
-                    {driver.status}
+                    {displayStatus}
                   </div>
                   <span style={{ fontSize: 18, color: '#d1d1d6', lineHeight: 1 }}>›</span>
                 </div>

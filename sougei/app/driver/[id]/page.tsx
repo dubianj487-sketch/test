@@ -66,7 +66,6 @@ export default function DriverNotificationPage({
   async function handleDecline() {
     if (!dispatch) return
     await supabase.from('dispatches').update({ status: '完了', driver_id: null }).eq('id', dispatch.id)
-    await supabase.from('drivers').update({ status: '待機' }).eq('id', driverId!)
     setView('none')
     setDispatch(null)
   }
