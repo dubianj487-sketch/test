@@ -39,7 +39,7 @@ export default function DriverNotificationPage({
         .from('dispatches')
         .select('*')
         .eq('driver_id', driverId)
-        .in('status', ['承諾待ち', '移動中'])
+        .in('status', ['待機', '移動中'])
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle(),

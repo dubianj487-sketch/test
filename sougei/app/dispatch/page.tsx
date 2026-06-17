@@ -37,7 +37,7 @@ export default function DispatchPage() {
     const [girlsRes, driversRes, activeRes] = await Promise.all([
       supabase.from('girls').select('*').order('created_at', { ascending: true }),
       supabase.from('drivers').select('*').order('created_at', { ascending: true }),
-      supabase.from('dispatches').select('driver_id').in('status', ['承諾待ち', '移動中']),
+      supabase.from('dispatches').select('driver_id').in('status', ['待機', '移動中']),
     ])
     if (girlsRes.data) setGirls(girlsRes.data)
     if (driversRes.data) setDrivers(driversRes.data)
@@ -92,17 +92,16 @@ export default function DispatchPage() {
 
       const estimatedReturn = new Date(Date.now() + 60 * 60 * 1000).toISOString()
 
-      await supabase.from('dispatches').insert({
+      const { error } = await supabase.from('dispatches').insert({
         driver_id: run.driverId,
         destination: dest,
         urgency: run.urgency === 'now' ? '今すぐ' : '時間指定',
         scheduled_time: run.urgency === 'scheduled' ? run.scheduledTime : null,
-        status: '承諾待ち',
+        status: '待機',
         estimated_return: estimatedReturn,
         date: today,
       })
-
-      // ドライバーステータスはDB制約のため変更しない。dispatch.statusで管理。
+      if (error) console.error('dispatch insert error:', error)
     }
     setSaving(false)
     router.push('/')
