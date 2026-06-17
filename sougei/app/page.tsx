@@ -26,10 +26,14 @@ export default function DashboardPage() {
   async function fetchDrivers() {
     const { data, error } = await supabase
       .from('drivers')
-      .select('*')
+      .select('*, dispatches(destination, estimated_return, status)')
       .order('created_at', { ascending: true })
     if (!error && data) {
-      setDrivers(data)
+      const withDispatch = data.map((d: Driver & { dispatches?: { destination: string | null, estimated_return: string | null, status: string }[] }) => {
+        const active = d.dispatches?.find(dp => dp.status === '移動中')
+        return { ...d, currentDispatch: active || null }
+      })
+      setDrivers(withDispatch)
     }
     setLoading(false)
   }
@@ -131,7 +135,10 @@ export default function DashboardPage() {
           const avatarStyle = getAvatarStyle(driver.status)
           const badgeStyle = getBadgeStyle(driver.status)
           const destination = driver.currentDispatch?.destination || null
-          const estimatedReturn = driver.currentDispatch?.estimated_return || null
+          const estimatedReturnRaw = driver.currentDispatch?.estimated_return || null
+          const estimatedReturn = estimatedReturnRaw
+            ? (() => { const d = new Date(estimatedReturnRaw); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` })()
+            : null
 
           return (
             <div

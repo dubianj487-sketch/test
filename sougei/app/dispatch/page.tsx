@@ -87,12 +87,15 @@ export default function DispatchPage() {
       const girlObjs = run.girlIds.map(id => girls.find(g => g.id === id)).filter(Boolean) as Girl[]
       const dest = run.dest || girlObjs.map(g => g.area).join('・')
 
+      const estimatedReturn = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+
       await supabase.from('dispatches').insert({
         driver_id: run.driverId,
         destination: dest,
         urgency: run.urgency === 'now' ? '今すぐ' : '時間指定',
         scheduled_time: run.urgency === 'scheduled' ? run.scheduledTime : null,
-        status: '待機',
+        status: '移動中',
+        estimated_return: estimatedReturn,
         date: today,
       })
 
