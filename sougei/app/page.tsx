@@ -31,7 +31,7 @@ export default function DashboardPage() {
     if (!error && data) {
       const withDispatch = data.map((d: Driver & { dispatches?: { destination: string | null, estimated_return: string | null, status: string }[] }) => {
         const active = d.dispatches?.find(dp => dp.status === '移動中')
-        return { ...d, currentDispatch: active || null }
+        return { ...d, currentDispatch: active || undefined }
       })
       setDrivers(withDispatch)
     }
