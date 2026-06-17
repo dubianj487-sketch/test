@@ -1,5 +1,6 @@
 sougei/node_modules/
 sougei/.next/
 sougei/.env.local
+sougei/screenshots/
 .claude/
 .mcp.json
