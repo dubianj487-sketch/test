@@ -2,3 +2,4 @@ sougei/node_modules/
 sougei/.next/
 sougei/.env.local
 .claude/
+.mcp.json
