@@ -119,7 +119,7 @@ export default function GirlsPage() {
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 40px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 96px' }}>
 
         {/* List */}
         {view === 'list' && (

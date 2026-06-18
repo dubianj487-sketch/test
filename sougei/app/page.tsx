@@ -42,7 +42,7 @@ export default function DashboardPage() {
   const days = ['日', '月', '火', '水', '木', '金', '土']
   const dateStr = `${now.getMonth() + 1}月${now.getDate()}日（${days[now.getDay()]}）`
 
-  const availableCount = drivers.filter(d => d.status === '待機').length
+  const availableCount = drivers.filter(d => d.status === '待機' || d.status === 'お店前').length
   const movingCount = drivers.filter(d => d.status === '移動中').length
   const doneCount = drivers.filter(d => d.status === '終了').length
 
@@ -50,32 +50,33 @@ export default function DashboardPage() {
     const ds = d.currentDispatch?.status
     return ds === '待機' ? '承諾待ち' : d.status
   }
-  const statusOrder: Record<string, number> = { '移動中': 0, '承諾待ち': 1, '待機': 2, '終了': 3 }
-  const sorted = [...drivers].sort((a, b) => (statusOrder[getDisplayStatus(a)] ?? 3) - (statusOrder[getDisplayStatus(b)] ?? 3))
+  const statusOrder: Record<string, number> = { '移動中': 0, '承諾待ち': 1, 'お店前': 2, '待機': 3, '終了': 4 }
+  const sorted = [...drivers].sort((a, b) => (statusOrder[getDisplayStatus(a)] ?? 4) - (statusOrder[getDisplayStatus(b)] ?? 4))
+
+  function getStatusColor(status: string) {
+    switch (status) {
+      case '移動中': return '#c2750a'
+      case '待機': return '#1a9e50'
+      case '承諾待ち': return '#3478f6'
+      case 'お店前': return '#5856d6'
+      default: return '#aeaeb2'
+    }
+  }
 
   function getAvatarStyle(status: string) {
-    const bg =
-      status === '移動中' ? 'rgba(194,117,10,0.12)' :
-      status === '待機' ? 'rgba(26,158,80,0.12)' :
-      status === '承諾待ち' ? 'rgba(52,120,246,0.12)' :
-      'rgba(0,0,0,0.05)'
-    const color =
-      status === '移動中' ? '#c2750a' :
-      status === '待機' ? '#1a9e50' :
-      status === '承諾待ち' ? '#3478f6' :
-      '#aeaeb2'
-    return { background: bg, color }
+    const color = getStatusColor(status)
+    return {
+      background: status === '終了' ? 'rgba(0,0,0,0.05)' : `${color}1e`,
+      color: status === '終了' ? '#aeaeb2' : color,
+    }
   }
 
   function getBadgeStyle(status: string) {
-    const bg =
-      status === '移動中' ? '#c2750a' :
-      status === '待機' ? '#1a9e50' :
-      status === '承諾待ち' ? '#3478f6' :
-      '#e5e5ea'
-    const color =
-      status === '移動中' || status === '待機' || status === '承諾待ち' ? '#ffffff' : '#8e8e93'
-    return { background: bg, color }
+    const color = getStatusColor(status)
+    return {
+      background: status === '終了' ? '#e5e5ea' : color,
+      color: status === '終了' ? '#8e8e93' : '#ffffff',
+    }
   }
 
   return (
@@ -87,14 +88,11 @@ export default function DashboardPage() {
           <div style={{ fontSize: 20, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em', lineHeight: 1 }}>送迎</div>
           <div style={{ fontSize: 12, color: '#8e8e93', fontWeight: 400, marginTop: 2 }}>{dateStr}</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Link href="/masters/drivers" style={{ fontSize: 12, color: '#8e8e93', textDecoration: 'none', padding: '4px 8px' }}>管理</Link>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#e5e5ea', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="7.5" r="3.5" fill="#8e8e93" />
-              <path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-            </svg>
-          </div>
+        <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#e5e5ea', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="7.5" r="3.5" fill="#8e8e93" />
+            <path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+          </svg>
         </div>
       </div>
 
@@ -123,7 +121,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Driver list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 100px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 140px' }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 8, paddingLeft: 2 }}>ドライバー</div>
 
         {loading && (
@@ -139,9 +137,9 @@ export default function DashboardPage() {
         {sorted.map(driver => {
           const displayStatus = getDisplayStatus(driver)
           const isMoving = driver.status === '移動中'
-          const isAvail = driver.status === '待機' && displayStatus !== '承諾待ち'
           const isDone = driver.status === '終了'
           const isPending = displayStatus === '承諾待ち'
+          const isOmiseMae = displayStatus === 'お店前'
           const avatarStyle = getAvatarStyle(displayStatus)
           const badgeStyle = getBadgeStyle(displayStatus)
           const destination = driver.currentDispatch?.destination || null
@@ -188,7 +186,7 @@ export default function DashboardPage() {
                       fontSize: 11,
                       fontWeight: 700,
                     }}
-                    className={isMoving || isPending ? 'animate-badge-pulse' : ''}
+                    className={isMoving || isPending || isOmiseMae ? 'animate-badge-pulse' : ''}
                   >
                     {displayStatus}
                   </div>
@@ -236,17 +234,12 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Bottom buttons */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '8px 14px 28px', background: 'linear-gradient(0deg, #f5f5f5 60%, rgba(245,245,245,0))', zIndex: 100, pointerEvents: 'none' }}>
-        <div style={{ display: 'flex', gap: 8, pointerEvents: 'auto' }}>
-          <button
-            style={{ flex: 1, padding: 15, background: '#1a9e50', border: 'none', borderRadius: 14, color: '#ffffff', fontSize: 15, fontWeight: 600, fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", cursor: 'pointer' }}
-          >
-            迎え管理
-          </button>
+      {/* Bottom CTA - above tab bar */}
+      <div style={{ position: 'fixed', bottom: 56, left: 0, right: 0, padding: '8px 14px 8px', background: 'linear-gradient(0deg, #f5f5f5 60%, rgba(245,245,245,0))', zIndex: 100, pointerEvents: 'none' }}>
+        <div style={{ maxWidth: 390, margin: '0 auto', pointerEvents: 'auto' }}>
           <Link
             href="/dispatch"
-            style={{ flex: 1, padding: 15, background: '#1c1c1e', border: 'none', borderRadius: 14, color: '#ffffff', fontSize: 15, fontWeight: 700, fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", cursor: 'pointer', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 15, background: '#1c1c1e', border: 'none', borderRadius: 14, color: '#ffffff', fontSize: 15, fontWeight: 700, fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", cursor: 'pointer', textDecoration: 'none' }}
           >
             送り配車
           </Link>

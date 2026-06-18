@@ -1,7 +1,23 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase, type Dispatch, type Driver } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+import { supabase, type Driver } from '@/lib/supabase'
+
+type DispatchFull = {
+  id: string
+  driver_id: string | null
+  destination: string | null
+  urgency: '今すぐ' | '時間指定'
+  scheduled_time: string | null
+  status: '待機' | '移動中' | '完了' | '承諾待ち'
+  estimated_return: string | null
+  date: string
+  created_at: string
+  dispatch_girls?: {
+    girls: { name: string } | null
+  }[]
+}
 
 type View = 'request' | 'moving' | 'done' | 'none'
 
@@ -10,9 +26,10 @@ export default function DriverNotificationPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const router = useRouter()
   const [driverId, setDriverId] = useState<string | null>(null)
   const [driver, setDriver] = useState<Driver | null>(null)
-  const [dispatch, setDispatch] = useState<Dispatch | null>(null)
+  const [dispatch, setDispatch] = useState<DispatchFull | null>(null)
   const [view, setView] = useState<View>('none')
   const [loading, setLoading] = useState(true)
 
@@ -37,7 +54,7 @@ export default function DriverNotificationPage({
       supabase.from('drivers').select('*').eq('id', driverId).single(),
       supabase
         .from('dispatches')
-        .select('*')
+        .select('*, dispatch_girls(girls(name))')
         .eq('driver_id', driverId)
         .in('status', ['待機', '移動中'])
         .order('created_at', { ascending: false })
@@ -47,9 +64,10 @@ export default function DriverNotificationPage({
 
     if (driverRes.data) setDriver(driverRes.data)
     if (dispatchRes.data) {
-      setDispatch(dispatchRes.data)
+      setDispatch(dispatchRes.data as DispatchFull)
       setView(dispatchRes.data.status === '移動中' ? 'moving' : 'request')
     } else {
+      setDispatch(null)
       setView('none')
     }
     setLoading(false)
@@ -74,18 +92,20 @@ export default function DriverNotificationPage({
     if (!dispatch) return
     await supabase.from('dispatches').update({ status: '完了' }).eq('id', dispatch.id)
     await supabase.from('drivers').update({ status: '終了' }).eq('id', driverId!)
+    setDriver(d => d ? { ...d, status: '終了' } : d)
     setView('done')
+  }
+
+  async function handleOmiseMae() {
+    if (!driverId || !driver) return
+    const newStatus = driver.status === 'お店前' ? '待機' : 'お店前'
+    await supabase.from('drivers').update({ status: newStatus }).eq('id', driverId)
+    setDriver(d => d ? { ...d, status: newStatus } : d)
   }
 
   const isRequest = view === 'request'
   const isMoving = view === 'moving'
   const isDone = view === 'done'
-
-  const headerDotStyle: React.CSSProperties = {
-    width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-    background: isMoving ? '#c2750a' : '#d03030',
-    boxShadow: isMoving ? '0 0 6px rgba(194,117,10,0.6)' : '0 0 6px rgba(208,48,48,0.6)',
-  }
 
   const urgencyLabel = dispatch?.urgency === '今すぐ'
     ? '今すぐ'
@@ -107,6 +127,11 @@ export default function DriverNotificationPage({
     color: isUrgentNow ? '#d03030' : '#1c1c1e',
   }
 
+  const girlNames = dispatch?.dispatch_girls
+    ?.map(dg => dg.girls?.name)
+    .filter(Boolean)
+    .join('・') || null
+
   if (loading) {
     return (
       <div style={{ minHeight: '100dvh', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" }}>
@@ -121,8 +146,20 @@ export default function DriverNotificationPage({
       {/* Header */}
       <div style={{ background: '#ffffff', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.06)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            onClick={() => router.push('/driver')}
+            style={{ width: 30, height: 30, borderRadius: '50%', background: '#f5f5f5', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          >
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <path d="M10 3L5 8l5 5" stroke="#1c1c1e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
           {(isRequest || isMoving) && (
-            <div style={headerDotStyle} className="animate-live-pulse" />
+            <div style={{
+              width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+              background: isMoving ? '#c2750a' : '#d03030',
+              boxShadow: isMoving ? '0 0 6px rgba(194,117,10,0.6)' : '0 0 6px rgba(208,48,48,0.6)',
+            }} className="animate-live-pulse" />
           )}
           <div>
             <div style={{ fontSize: 20, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em', lineHeight: 1 }}>送迎</div>
@@ -155,7 +192,7 @@ export default function DriverNotificationPage({
               <div style={{ padding: '22px 20px 18px' }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 8 }}>担当</div>
                 <div style={{ fontSize: 32, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-                  {dispatch.destination || '—'}
+                  {girlNames || '—'}
                 </div>
               </div>
 
@@ -169,7 +206,7 @@ export default function DriverNotificationPage({
                     <circle cx="8" cy="7.5" r="4" stroke="#1c1c1e" strokeWidth="1.8" />
                     <path d="M8 11.5C8 11.5 2 16 2 19h12c0-3-6-7.5-6-7.5z" stroke="#1c1c1e" strokeWidth="1.8" strokeLinejoin="round" fill="none" />
                   </svg>
-                  <span style={{ fontSize: 26, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em', lineHeight: 1 }}>
+                  <span style={{ fontSize: 24, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em', lineHeight: 1 }}>
                     {dispatch.destination || '—'}
                   </span>
                 </div>
@@ -197,17 +234,15 @@ export default function DriverNotificationPage({
             </div>
 
             <div style={{ background: '#ffffff', borderRadius: 18, border: '1.5px solid rgba(0,0,0,0.1)', overflow: 'hidden', marginBottom: 14 }}>
-              {/* Girls */}
               <div style={{ padding: '22px 20px 18px' }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 8 }}>担当</div>
                 <div style={{ fontSize: 32, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-                  {dispatch.destination || '—'}
+                  {girlNames || '—'}
                 </div>
               </div>
 
               <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '0 20px' }} />
 
-              {/* Destination */}
               <div style={{ padding: '16px 20px 20px' }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 8 }}>送り先</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -215,7 +250,7 @@ export default function DriverNotificationPage({
                     <circle cx="8" cy="7.5" r="4" stroke="#1c1c1e" strokeWidth="1.8" />
                     <path d="M8 11.5C8 11.5 2 16 2 19h12c0-3-6-7.5-6-7.5z" stroke="#1c1c1e" strokeWidth="1.8" strokeLinejoin="round" fill="none" />
                   </svg>
-                  <span style={{ fontSize: 26, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em', lineHeight: 1 }}>
+                  <span style={{ fontSize: 24, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em', lineHeight: 1 }}>
                     {dispatch.destination || '—'}
                   </span>
                 </div>
@@ -234,12 +269,49 @@ export default function DriverNotificationPage({
         )}
 
         {/* No dispatch state */}
-        {view === 'none' && !loading && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ fontSize: 14, color: '#aeaeb2', textAlign: 'center' }}>
-              現在、配車依頼はありません
-              {driver && <div style={{ marginTop: 8, fontSize: 17, fontWeight: 700, color: '#1c1c1e' }}>{driver.name}</div>}
+        {view === 'none' && !loading && driver && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 17, fontWeight: 700, color: '#1c1c1e', marginBottom: 6 }}>{driver.name}</div>
+              <div style={{ fontSize: 14, color: '#aeaeb2' }}>現在、配車依頼はありません</div>
             </div>
+
+            {/* お店前 toggle */}
+            {(driver.status === '待機' || driver.status === 'お店前') && (
+              <div style={{ width: '100%' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 12 }}>
+                  現在の待機場所
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => driver.status !== '待機' && handleOmiseMae()}
+                    style={{
+                      flex: 1, padding: '14px 8px', borderRadius: 14,
+                      background: driver.status === '待機' ? '#1a9e50' : 'rgba(0,0,0,0.04)',
+                      border: 'none', cursor: driver.status !== '待機' ? 'pointer' : 'default',
+                      fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 700, color: driver.status === '待機' ? '#ffffff' : '#aeaeb2' }}>近場待機</div>
+                    <div style={{ fontSize: 10, color: driver.status === '待機' ? 'rgba(255,255,255,0.7)' : '#c7c7cc', marginTop: 2 }}>コンビニ等</div>
+                  </button>
+                  <button
+                    onClick={() => driver.status !== 'お店前' && handleOmiseMae()}
+                    style={{
+                      flex: 1, padding: '14px 8px', borderRadius: 14,
+                      background: driver.status === 'お店前' ? '#5856d6' : 'rgba(0,0,0,0.04)',
+                      border: 'none', cursor: driver.status !== 'お店前' ? 'pointer' : 'default',
+                      fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 700, color: driver.status === 'お店前' ? '#ffffff' : '#aeaeb2' }}>お店前</div>
+                    <div style={{ fontSize: 10, color: driver.status === 'お店前' ? 'rgba(255,255,255,0.7)' : '#c7c7cc', marginTop: 2 }}>到着済み</div>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -247,29 +319,33 @@ export default function DriverNotificationPage({
       {/* Bottom CTA */}
       {isRequest && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '8px 16px 36px', background: 'linear-gradient(0deg, #f5f5f5 60%, rgba(245,245,245,0))', zIndex: 100 }}>
-          <button
-            onClick={handleAccept}
-            style={{ width: '100%', padding: 18, background: '#1a9e50', border: 'none', borderRadius: 14, color: '#ffffff', fontSize: 18, fontWeight: 700, fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", cursor: 'pointer', letterSpacing: '-0.01em', marginBottom: 10 }}
-          >
-            了解する
-          </button>
-          <button
-            onClick={handleDecline}
-            style={{ width: '100%', padding: 10, background: 'transparent', border: 'none', color: '#aeaeb2', fontSize: 14, fontWeight: 500, fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", cursor: 'pointer' }}
-          >
-            対応できない
-          </button>
+          <div style={{ maxWidth: 390, margin: '0 auto' }}>
+            <button
+              onClick={handleAccept}
+              style={{ width: '100%', padding: 18, background: '#1a9e50', border: 'none', borderRadius: 14, color: '#ffffff', fontSize: 18, fontWeight: 700, fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", cursor: 'pointer', letterSpacing: '-0.01em', marginBottom: 10 }}
+            >
+              了解する
+            </button>
+            <button
+              onClick={handleDecline}
+              style={{ width: '100%', padding: 10, background: 'transparent', border: 'none', color: '#aeaeb2', fontSize: 14, fontWeight: 500, fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", cursor: 'pointer' }}
+            >
+              対応できない
+            </button>
+          </div>
         </div>
       )}
 
       {isMoving && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '8px 16px 36px', background: 'linear-gradient(0deg, #f5f5f5 60%, rgba(245,245,245,0))', zIndex: 100 }}>
-          <button
-            onClick={handleComplete}
-            style={{ width: '100%', padding: 18, background: '#1c1c1e', border: 'none', borderRadius: 14, color: '#ffffff', fontSize: 18, fontWeight: 700, fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", cursor: 'pointer', letterSpacing: '-0.01em' }}
-          >
-            完了する
-          </button>
+          <div style={{ maxWidth: 390, margin: '0 auto' }}>
+            <button
+              onClick={handleComplete}
+              style={{ width: '100%', padding: 18, background: '#1c1c1e', border: 'none', borderRadius: 14, color: '#ffffff', fontSize: 18, fontWeight: 700, fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", cursor: 'pointer', letterSpacing: '-0.01em' }}
+            >
+              完了する
+            </button>
+          </div>
         </div>
       )}
     </div>

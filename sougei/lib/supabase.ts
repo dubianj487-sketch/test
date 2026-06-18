@@ -10,7 +10,16 @@ export type Driver = {
   name: string
   capacity: number
   note: string | null
-  status: '待機' | '移動中' | '終了'
+  status: '待機' | 'お店前' | '移動中' | '終了'
+  created_at: string
+}
+
+export type GirlDailyOverride = {
+  id: string
+  girl_id: string
+  date: string
+  use_usual: boolean
+  today_destination: string | null
   created_at: string
 }
 

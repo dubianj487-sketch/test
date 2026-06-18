@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase, type Girl, type Driver } from '@/lib/supabase'
+import { supabase, type Girl, type Driver, type GirlDailyOverride } from '@/lib/supabase'
 
 type Run = {
   id: number
@@ -27,6 +27,7 @@ export default function DispatchPage() {
   const [busyDriverIds, setBusyDriverIds] = useState<string[]>([])
   const [selectedGirls, setSelectedGirls] = useState<string[]>([])
   const [runs, setRuns] = useState<Run[]>([])
+  const [overrides, setOverrides] = useState<Record<string, GirlDailyOverride>>({})
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -34,14 +35,27 @@ export default function DispatchPage() {
   }, [])
 
   async function fetchData() {
-    const [girlsRes, driversRes, activeRes] = await Promise.all([
+    const today = new Date().toISOString().split('T')[0]
+    const [girlsRes, driversRes, activeRes, overridesRes] = await Promise.all([
       supabase.from('girls').select('*').order('created_at', { ascending: true }),
       supabase.from('drivers').select('*').order('created_at', { ascending: true }),
       supabase.from('dispatches').select('driver_id').in('status', ['待機', '移動中']),
+      supabase.from('girl_daily_overrides').select('*').eq('date', today),
     ])
     if (girlsRes.data) setGirls(girlsRes.data)
     if (driversRes.data) setDrivers(driversRes.data)
     if (activeRes.data) setBusyDriverIds(activeRes.data.map(d => d.driver_id).filter(Boolean) as string[])
+    if (overridesRes.data) {
+      const map: Record<string, GirlDailyOverride> = {}
+      overridesRes.data.forEach(o => { map[o.girl_id] = o })
+      setOverrides(map)
+    }
+  }
+
+  function getEffectiveDest(g: Girl): string {
+    const ov = overrides[g.id]
+    if (ov && !ov.use_usual && ov.today_destination) return ov.today_destination
+    return g.address || g.area || ''
   }
 
   function toggleGirl(id: string) {
@@ -58,7 +72,7 @@ export default function DispatchPage() {
       if (prev.length === 1) {
         const girl = girls.find(g => g.id === girlId)
         const newRun = makeRun([girlId])
-        newRun.dest = girl?.area || ''
+        newRun.dest = girl ? getEffectiveDest(girl) : ''
         return [
           { ...prev[0], girlIds: prev[0].girlIds.filter(id => id !== girlId) },
           newRun,
@@ -88,11 +102,11 @@ export default function DispatchPage() {
     for (const run of runs) {
       if (!run.driverId || !run.urgency) continue
       const girlObjs = run.girlIds.map(id => girls.find(g => g.id === id)).filter(Boolean) as Girl[]
-      const dest = run.dest || girlObjs.map(g => g.area).join('・')
+      const dest = run.dest || girlObjs.map(g => getEffectiveDest(g)).filter(Boolean).join('・')
 
       const estimatedReturn = new Date(Date.now() + 60 * 60 * 1000).toISOString()
 
-      const { error } = await supabase.from('dispatches').insert({
+      const { data: dispatchData, error } = await supabase.from('dispatches').insert({
         driver_id: run.driverId,
         destination: dest,
         urgency: run.urgency === 'now' ? '今すぐ' : '時間指定',
@@ -100,8 +114,18 @@ export default function DispatchPage() {
         status: '待機',
         estimated_return: estimatedReturn,
         date: today,
-      })
-      if (error) console.error('dispatch insert error:', error)
+      }).select('id').single()
+
+      if (error) {
+        console.error('dispatch insert error:', error)
+        continue
+      }
+
+      if (dispatchData && run.girlIds.length > 0) {
+        await supabase.from('dispatch_girls').insert(
+          run.girlIds.map(girlId => ({ dispatch_id: dispatchData.id, girl_id: girlId }))
+        )
+      }
     }
     setSaving(false)
     router.push('/')
@@ -134,7 +158,7 @@ export default function DispatchPage() {
       nextRunId = 1
       const girlObjs = selectedGirls.map(id => girls.find(g => g.id === id)).filter(Boolean) as Girl[]
       const run1 = makeRun([...selectedGirls])
-      run1.dest = girlObjs.map(g => g.area).join('・')
+      run1.dest = girlObjs.map(g => getEffectiveDest(g)).filter(Boolean).join('・')
       setRuns([run1])
       setStep(2)
     } else if (step === 2) {
@@ -207,6 +231,9 @@ export default function DispatchPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
               {girls.map(g => {
                 const sel = selectedGirls.includes(g.id)
+                const ov = overrides[g.id]
+                const hasTodayDiff = ov && !ov.use_usual && ov.today_destination
+                const destLabel = hasTodayDiff ? ov.today_destination! : (g.area || '')
                 return (
                   <button
                     key={g.id}
@@ -221,9 +248,9 @@ export default function DispatchPage() {
                       fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
                     }}
                   >
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: sel ? '#1a9e50' : '#e5e5ea', marginBottom: 2 }} />
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: sel ? '#1a9e50' : hasTodayDiff ? '#3478f6' : '#e5e5ea', marginBottom: 2 }} />
                     <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.2 }}>{g.name}</span>
-                    <span style={{ fontSize: 10, opacity: 0.6, marginTop: 1 }}>{g.area || ''}</span>
+                    <span style={{ fontSize: 10, opacity: 0.6, marginTop: 1 }}>{destLabel}</span>
                   </button>
                 )
               })}
@@ -239,7 +266,7 @@ export default function DispatchPage() {
             </div>
             {runs.map((run, idx) => {
               const girlObjs = run.girlIds.map(id => girls.find(g => g.id === id)).filter(Boolean) as Girl[]
-              const autoAreas = girlObjs.map(g => g.area)
+              const autoAreas = girlObjs.map(g => getEffectiveDest(g)).filter(Boolean)
               return (
                 <div key={run.id} style={{ background: '#ffffff', borderRadius: 14, padding: 14, marginBottom: 8, border: '1.5px solid rgba(0,0,0,0.1)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -294,7 +321,7 @@ export default function DispatchPage() {
           <div className="animate-fade-in">
             {runs.map((run, idx) => {
               const girlObjs = run.girlIds.map(id => girls.find(g => g.id === id)).filter(Boolean) as Girl[]
-              const dest = run.dest || girlObjs.map(g => g.area).join('・')
+              const dest = run.dest || girlObjs.map(g => getEffectiveDest(g)).filter(Boolean).join('・')
 
               return (
                 <div key={run.id} style={{ background: '#ffffff', borderRadius: 14, padding: 14, marginBottom: 10, border: '1.5px solid rgba(0,0,0,0.1)' }}>
@@ -345,7 +372,7 @@ export default function DispatchPage() {
                     const isSel = run.driverId === d.id
                     const assignedElsewhere = allAssignedDriverIds.includes(d.id) && !isSel
                     const isBusy = busyDriverIds.includes(d.id)
-                    const isAvail = d.status === '待機' && !isBusy
+                    const isAvail = (d.status === '待機' || d.status === 'お店前') && !isBusy
                     const canSelect = isAvail && !assignedElsewhere
                     const statusLabel = isBusy && d.status === '待機' ? '承諾待ち' : d.status
 
@@ -367,10 +394,10 @@ export default function DispatchPage() {
                       >
                         <div style={{
                           width: 30, height: 30, borderRadius: '50%',
-                          background: isAvail ? 'rgba(26,158,80,0.1)' : 'rgba(0,0,0,0.05)',
+                          background: isAvail ? (d.status === 'お店前' ? 'rgba(88,86,214,0.1)' : 'rgba(26,158,80,0.1)') : 'rgba(0,0,0,0.05)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 12, fontWeight: 700,
-                          color: isAvail ? '#1a9e50' : '#aeaeb2', flexShrink: 0,
+                          color: isAvail ? (d.status === 'お店前' ? '#5856d6' : '#1a9e50') : '#aeaeb2', flexShrink: 0,
                         }}>
                           {d.name.charAt(0)}
                         </div>
@@ -383,8 +410,8 @@ export default function DispatchPage() {
                           </div>
                         </div>
                         <div style={{
-                          background: isAvail ? '#1a9e50' : d.status === '移動中' ? '#c2750a' : isBusy ? '#3478f6' : '#e5e5ea',
-                          color: isAvail || d.status === '移動中' || isBusy ? '#ffffff' : '#8e8e93',
+                          background: d.status === 'お店前' ? '#5856d6' : isAvail ? '#1a9e50' : d.status === '移動中' ? '#c2750a' : isBusy ? '#3478f6' : '#e5e5ea',
+                          color: isAvail || d.status === '移動中' || isBusy || d.status === 'お店前' ? '#ffffff' : '#8e8e93',
                           borderRadius: 20, padding: '3px 10px',
                           fontSize: 11, fontWeight: 700,
                         }}>
