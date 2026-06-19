@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import TabBar from "@/components/TabBar";
 
 export const metadata: Metadata = {
   title: "LUMINA 送迎",
@@ -26,7 +25,6 @@ export default function RootLayout({
         <div className="mx-auto min-h-dvh" style={{ maxWidth: 390 }}>
           {children}
         </div>
-        <TabBar />
       </body>
     </html>
   );

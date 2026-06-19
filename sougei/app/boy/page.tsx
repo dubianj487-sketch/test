@@ -1,126 +1,116 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase, type Driver } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
-type DriverWithDispatch = Driver & {
-  currentDispatch?: {
-    destination: string | null
-    estimated_return: string | null
-    status: string
-  }
+const COLORS = ['#F5A623', '#7B61FF', '#06C167', '#E84855', '#276EF1', '#00A8B5', '#FF7A45']
+
+type TripData = {
+  area: string
+  status: string
+  departTime: string
+  assignedCount: number
+  driverName: string
+  dropsDone: number
+  girls: { name: string; color: string }[]
 }
 
 export default function BoyHomePage() {
-  const [drivers, setDrivers] = useState<DriverWithDispatch[]>([])
+  const router = useRouter()
+  const [trip, setTrip] = useState<TripData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchDrivers()
-    const timer = setInterval(() => fetchDrivers(false), 5000)
-    return () => clearInterval(timer)
+    fetchTrip()
+    const t = setInterval(fetchTrip, 5000)
+    return () => clearInterval(t)
   }, [])
 
-  async function fetchDrivers(showLoading = true) {
-    if (showLoading) setLoading(true)
-    const { data, error } = await supabase
-      .from('drivers')
-      .select('*, dispatches(destination, estimated_return, status)')
-      .order('created_at', { ascending: true })
-    if (!error && data) {
-      const withDispatch = data.map((d: Driver & { dispatches?: { destination: string | null, estimated_return: string | null, status: string }[] }) => {
-        const active = d.dispatches?.find(dp => dp.status === '移動中')
-        const pending = d.dispatches?.find(dp => dp.status === '待機')
-        return { ...d, currentDispatch: active || pending || undefined }
+  async function fetchTrip() {
+    const today = new Date().toISOString().split('T')[0]
+    const { data } = await supabase
+      .from('dispatches')
+      .select('id, destination, status, scheduled_time, drivers(name), dispatch_girls(girls(name))')
+      .eq('date', today)
+      .in('status', ['待機', '移動中'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (data) {
+      const girls = ((data.dispatch_girls as any[]) || []).map((dg, i) => ({
+        name: dg.girls?.name || '?',
+        color: COLORS[i % COLORS.length],
+      }))
+      setTrip({
+        area: data.destination || '—',
+        status: data.status === '移動中' ? '移動中' : '承諾待ち',
+        departTime: data.scheduled_time || '—',
+        assignedCount: girls.length,
+        driverName: (data.drivers as any)?.name || '未定',
+        dropsDone: 0,
+        girls,
       })
-      setDrivers(withDispatch)
+    } else {
+      setTrip(null)
     }
     setLoading(false)
   }
 
-  const getDisplayStatus = (d: DriverWithDispatch) => {
-    const ds = d.currentDispatch?.status
-    return ds === '待機' ? '承諾待ち' : d.status
-  }
-
-  const statusOrder: Record<string, number> = { '移動中': 0, '承諾待ち': 1, 'お店前': 2, '待機': 3, '終了': 4 }
-  const sorted = [...drivers].sort((a, b) => (statusOrder[getDisplayStatus(a)] ?? 4) - (statusOrder[getDisplayStatus(b)] ?? 4))
-
-  function getStatusColor(status: string): string {
-    switch (status) {
-      case '移動中': return '#c77700'
-      case '待機': return '#06c167'
-      case '承諾待ち': return '#3478f6'
-      case 'お店前': return '#8b5cf6'
-      default: return '#9a9a9a'
-    }
-  }
-
-  function getStatusBg(status: string): string {
-    switch (status) {
-      case '移動中': return '#fff7ed'
-      case '待機': return '#f0fdf4'
-      case '承諾待ち': return '#eff6ff'
-      case 'お店前': return '#f5f3ff'
-      default: return '#f4f4f4'
-    }
-  }
-
-  const availableCount = drivers.filter(d => d.status === '待機' || d.status === 'お店前').length
-  const movingCount = drivers.filter(d => d.status === '移動中').length
-  const doneCount = drivers.filter(d => d.status === '終了').length
+  const pct =
+    trip && trip.girls.length > 0
+      ? Math.round((trip.dropsDone / trip.girls.length) * 100) + '%'
+      : '0%'
 
   return (
-    <div style={{
-      minHeight: '100dvh',
-      background: '#fff',
-      fontFamily: "'Hanken Grotesk', 'Noto Sans JP', sans-serif",
-      color: '#0a0a0a',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
-      {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'space-between',
-        padding: '52px 20px 14px',
-      }}>
+    <div
+      style={{
+        minHeight: '100dvh',
+        background: '#fff',
+        fontFamily: "'Hanken Grotesk','Noto Sans JP',sans-serif",
+        color: '#0a0a0a',
+        paddingBottom: 110,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          padding: '52px 20px 14px',
+        }}
+      >
         <div>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>
             CLUB LUMINA ・ ボーイ
           </p>
-          <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>
-            配車
-          </h1>
+          <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>配車</h1>
         </div>
         <Link
           href="/"
           style={{
             height: 38, padding: '0 14px', borderRadius: 10,
-            background: '#f4f4f4', border: 'none',
-            color: '#5a5a5a', fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', textDecoration: 'none',
-            display: 'flex', alignItems: 'center',
-            whiteSpace: 'nowrap', flexShrink: 0,
+            background: '#f4f4f4', color: '#5a5a5a',
+            fontSize: 13, fontWeight: 600, textDecoration: 'none',
+            display: 'flex', alignItems: 'center', whiteSpace: 'nowrap',
           }}
         >
           ログアウト
         </Link>
       </div>
 
-      {/* Dispatch CTA */}
-      <div style={{ padding: '0 20px 16px' }}>
+      <div style={{ padding: '0 20px' }}>
         <Link
           href="/dispatch"
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
             width: '100%', height: 58, borderRadius: 16,
             background: '#0a0a0a', color: '#fff',
-            fontSize: 16, fontWeight: 700,
-            textDecoration: 'none',
+            fontSize: 16, fontWeight: 700, textDecoration: 'none',
             boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)',
+            boxSizing: 'border-box',
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -128,166 +118,170 @@ export default function BoyHomePage() {
           </svg>
           配車を依頼する
         </Link>
-      </div>
 
-      {/* Stats */}
-      <div style={{ padding: '0 20px 20px', display: 'flex', gap: 10 }}>
-        <div style={{
-          flex: 1, background: '#f0fdf4', borderRadius: 14,
-          padding: '12px 14px', border: '1px solid #bbf7d0',
-        }}>
-          <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#16a34a', letterSpacing: '.04em' }}>待機中</p>
-          <p style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 800, color: '#16a34a', lineHeight: 1 }}>{availableCount}</p>
-        </div>
-        <div style={{
-          flex: 1, background: '#fff7ed', borderRadius: 14,
-          padding: '12px 14px', border: '1px solid #fed7aa',
-        }}>
-          <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#c77700', letterSpacing: '.04em' }}>移動中</p>
-          <p style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 800, color: '#c77700', lineHeight: 1 }}>{movingCount}</p>
-        </div>
-        <div style={{
-          flex: 1, background: '#f7f7f7', borderRadius: 14,
-          padding: '12px 14px', border: '1px solid #e5e5e5',
-        }}>
-          <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#9a9a9a', letterSpacing: '.04em' }}>終了</p>
-          <p style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 800, color: '#9a9a9a', lineHeight: 1 }}>{doneCount}</p>
-        </div>
-      </div>
-
-      {/* Driver list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 120px' }}>
-        <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
-          ドライバー一覧
+        <p style={{ margin: '26px 4px 10px', fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+          本日の便
         </p>
 
-        {loading && (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: '#9a9a9a', fontSize: 14 }}>
+        {loading ? (
+          <div
+            style={{
+              height: 120, border: '1px solid #ededed', borderRadius: 18,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#9a9a9a', fontSize: 14,
+            }}
+          >
             読み込み中...
           </div>
-        )}
-
-        {!loading && sorted.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: '#9a9a9a', fontSize: 14 }}>
-            ドライバーが登録されていません
+        ) : trip ? (
+          <div
+            role="button"
+            onClick={() => router.push('/boy/status')}
+            style={{ border: '1px solid #ededed', borderRadius: 18, padding: 16, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,.04)' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span
+                  style={{ width: 8, height: 8, borderRadius: '50%', background: '#06c167', display: 'block' }}
+                />
+                <span style={{ fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap' }}>{trip.area}</span>
+              </div>
+              <span
+                style={{
+                  fontSize: 12, fontWeight: 700, color: '#fff',
+                  background: '#0a0a0a', padding: '5px 10px', borderRadius: 999, whiteSpace: 'nowrap',
+                }}
+              >
+                {trip.status}
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 18, marginTop: 14 }}>
+              <div>
+                <p style={{ margin: 0, fontSize: 11, color: '#9a9a9a', fontWeight: 600 }}>出発予定</p>
+                <p style={{ margin: '2px 0 0', fontSize: 17, fontWeight: 700 }}>{trip.departTime}</p>
+              </div>
+              <div style={{ width: 1, background: '#eee' }} />
+              <div>
+                <p style={{ margin: 0, fontSize: 11, color: '#9a9a9a', fontWeight: 600 }}>乗車人数</p>
+                <p style={{ margin: '2px 0 0', fontSize: 17, fontWeight: 700 }}>{trip.assignedCount} 名</p>
+              </div>
+              <div style={{ width: 1, background: '#eee' }} />
+              <div>
+                <p style={{ margin: 0, fontSize: 11, color: '#9a9a9a', fontWeight: 600 }}>ドライバー</p>
+                <p style={{ margin: '2px 0 0', fontSize: 17, fontWeight: 700, whiteSpace: 'nowrap' }}>{trip.driverName}</p>
+              </div>
+            </div>
+            <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ flex: 1, height: 6, borderRadius: 3, background: '#f0f0f0', overflow: 'hidden' }}>
+                <div style={{ height: '100%', background: '#0a0a0a', borderRadius: 3, width: pct }} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#6a6a6a' }}>
+                降車 {trip.dropsDone}/{trip.girls.length}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              border: '1px solid #ededed', borderRadius: 18, padding: '24px 16px',
+              textAlign: 'center', color: '#9a9a9a', fontSize: 14,
+            }}
+          >
+            本日の便はありません
           </div>
         )}
 
-        {sorted.map(driver => {
-          const displayStatus = getDisplayStatus(driver)
-          const statusColor = getStatusColor(displayStatus)
-          const statusBg = getStatusBg(displayStatus)
-          const isDone = driver.status === '終了'
-          const isMoving = driver.status === '移動中'
-          const isPending = displayStatus === '承諾待ち'
-          const destination = driver.currentDispatch?.destination || null
-          const estimatedReturnRaw = driver.currentDispatch?.estimated_return || null
-          const estimatedReturn = estimatedReturnRaw
-            ? (() => {
-                const d = new Date(estimatedReturnRaw)
-                return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-              })()
-            : null
-
-          return (
+        {trip && trip.girls.length > 0 && (
+          <>
+            <p style={{ margin: '24px 4px 10px', fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+              乗車キャスト
+            </p>
             <div
-              key={driver.id}
-              style={{
-                borderRadius: 18,
-                padding: '14px 16px',
-                marginBottom: 10,
-                border: '1px solid #ededed',
-                opacity: isDone ? 0.55 : 1,
-                background: '#fff',
-                boxShadow: '0 1px 3px rgba(0,0,0,.04)',
-              }}
+              role="button"
+              onClick={() => router.push('/dispatch')}
+              style={{ border: '1px solid #ededed', borderRadius: 18, padding: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: 12,
-                  background: isDone ? '#f4f4f4' : statusBg,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18, fontWeight: 800,
-                  color: isDone ? '#9a9a9a' : statusColor,
-                  flexShrink: 0,
-                }}>
-                  {driver.name.charAt(0)}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 17, fontWeight: 700, color: isDone ? '#9a9a9a' : '#0a0a0a', letterSpacing: '-.01em' }}>
-                    {driver.name}
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                {trip.girls.map((g, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      width: 38, height: 38, borderRadius: '50%',
+                      background: g.color, color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 700, fontSize: 15,
+                      border: '2px solid #fff',
+                      marginLeft: i === 0 ? 0 : -8,
+                    }}
+                  >
+                    {g.name[0]}
                   </div>
-                  <div style={{ fontSize: 12, color: '#9a9a9a', marginTop: 2, fontWeight: 500 }}>
-                    {driver.capacity}人乗り
-                  </div>
-                </div>
-                <div
-                  style={{
-                    background: statusBg,
-                    color: statusColor,
-                    border: `1px solid ${statusColor}40`,
-                    borderRadius: 999,
-                    padding: '5px 12px',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    whiteSpace: 'nowrap',
-                  }}
-                  className={(isMoving || isPending) ? 'animate-badge-pulse' : ''}
-                >
-                  {displayStatus}
-                </div>
+                ))}
+                <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 600, color: '#5a5a5a' }}>
+                  {trip.assignedCount}名を編集
+                </span>
               </div>
-
-              {(isMoving || isDone || isPending) && destination && (
-                <div style={{
-                  display: 'flex', alignItems: 'flex-end',
-                  justifyContent: 'space-between',
-                  marginTop: 12, paddingTop: 12,
-                  borderTop: '1px solid #f0f0f0',
-                }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#9a9a9a', letterSpacing: '.06em', marginBottom: 3 }}>
-                      送り先
-                    </div>
-                    <div style={{
-                      fontSize: 15, fontWeight: 600,
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      color: isDone ? '#9a9a9a' : '#0a0a0a',
-                    }}>
-                      {destination}
-                    </div>
-                  </div>
-                  {(isMoving || isDone) && estimatedReturn && (
-                    <div style={{ flexShrink: 0, textAlign: 'right', paddingLeft: 16 }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: '#9a9a9a', letterSpacing: '.06em', marginBottom: 2 }}>
-                        戻り
-                      </div>
-                      <div style={{
-                        fontSize: 26, fontWeight: 800,
-                        letterSpacing: '-.02em', lineHeight: 1,
-                        color: isDone ? '#9a9a9a' : '#0a0a0a',
-                        fontVariantNumeric: 'tabular-nums',
-                      }}>
-                        {estimatedReturn}
-                      </div>
-                    </div>
-                  )}
-                  {isPending && (
-                    <div style={{ flexShrink: 0, textAlign: 'right', paddingLeft: 16 }}>
-                      <div style={{
-                        fontSize: 12, fontWeight: 700, color: '#3478f6',
-                        background: '#eff6ff', borderRadius: 8, padding: '4px 10px',
-                      }}>
-                        未承諾
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+              <svg width="9" height="15" viewBox="0 0 9 15">
+                <path d="M1 1l6 6.5L1 14" stroke="#bdbdbd" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
-          )
-        })}
+          </>
+        )}
       </div>
+
+      <BoyNav active="home" />
+    </div>
+  )
+}
+
+function BoyNav({ active }: { active: 'home' | 'edit' | 'status' }) {
+  const router = useRouter()
+  return (
+    <div
+      style={{
+        position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: 390,
+        background: '#fff', borderTop: '1px solid #efefef',
+        padding: '10px 14px 28px',
+        display: 'flex', justifyContent: 'space-around',
+        zIndex: 40, boxSizing: 'border-box',
+      }}
+    >
+      <NavBtn onClick={() => router.push('/boy')} active={active === 'home'} label="配車">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M5 13l1.6-4.5A2 2 0 0 1 8.5 7h7a2 2 0 0 1 1.9 1.5L19 13m-14 0h14v4a1 1 0 0 1-1 1h-1.2a1.8 1.8 0 1 1-3.6 0H9.8a1.8 1.8 0 1 1-3.6 0H5a1 1 0 0 1-1-1v-4h1Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        </svg>
+      </NavBtn>
+      <NavBtn onClick={() => router.push('/dispatch')} active={active === 'edit'} label="便を編集">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M9 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 2c-3 0-5 1.7-5 4v2h7m6-9 2 2-6 6H11v-2l6-6Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </NavBtn>
+      <NavBtn onClick={() => router.push('/boy/status')} active={active === 'status'} label="送迎状況">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M6 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 0h6a4 4 0 0 0 0-8H9a4 4 0 0 1 0-8h3m6 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </NavBtn>
+    </div>
+  )
+}
+
+function NavBtn({
+  onClick, active, label, children,
+}: {
+  onClick: () => void
+  active?: boolean
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      onClick={onClick}
+      role="button"
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: active ? '#0a0a0a' : '#b5b5b5' }}
+    >
+      {children}
+      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
     </div>
   )
 }
