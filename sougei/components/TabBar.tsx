@@ -5,17 +5,17 @@ import { usePathname } from 'next/navigation'
 
 const TABS = [
   {
-    label: '送り',
-    href: '/',
+    label: '配車',
+    href: '/boy',
     icon: (active: boolean) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M5 12l1.5-4h11l1.5 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <rect x="2" y="12" width="20" height="6" rx="2" stroke="currentColor" strokeWidth="1.8" />
-        <circle cx="7" cy="18" r="1.5" fill={active ? '#1c1c1e' : '#aeaeb2'} />
-        <circle cx="17" cy="18" r="1.5" fill={active ? '#1c1c1e' : '#aeaeb2'} />
+        <path d="M5 13l1.5-4h11l1.5 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="2" y="13" width="20" height="6" rx="2" stroke="currentColor" strokeWidth="1.8" />
+        <circle cx="7" cy="19" r="1.5" fill={active ? '#0a0a0a' : '#b5b5b5'} />
+        <circle cx="17" cy="19" r="1.5" fill={active ? '#0a0a0a' : '#b5b5b5'} />
       </svg>
     ),
-    match: (p: string) => p === '/',
+    match: (p: string) => p === '/boy',
   },
   {
     label: '迎え',
@@ -40,7 +40,7 @@ const TABS = [
   },
 ]
 
-const SHOW_ON = ['/', '/mukae']
+const SHOW_ON = ['/boy', '/mukae']
 const SHOW_PREFIX = ['/masters']
 
 export default function TabBar() {
@@ -58,16 +58,17 @@ export default function TabBar() {
       background: 'rgba(255,255,255,0.95)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
-      borderTop: '1px solid rgba(0,0,0,0.08)',
+      borderTop: '1px solid #efefef',
       paddingBottom: 'env(safe-area-inset-bottom, 0px)',
     }}>
       <div style={{
         display: 'flex',
-        height: 56,
+        height: 60,
         alignItems: 'center',
         justifyContent: 'space-around',
         maxWidth: 390,
         margin: '0 auto',
+        padding: '8px 14px 0',
       }}>
         {TABS.map(tab => {
           const active = tab.match(pathname)
@@ -81,14 +82,14 @@ export default function TabBar() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 3,
+                gap: 4,
                 textDecoration: 'none',
-                color: active ? '#1c1c1e' : '#aeaeb2',
+                color: active ? '#0a0a0a' : '#b5b5b5',
                 transition: 'color 0.15s',
               }}
             >
               {tab.icon(active)}
-              <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, letterSpacing: '0.02em' }}>
+              <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 500, letterSpacing: '.02em' }}>
                 {tab.label}
               </span>
             </Link>

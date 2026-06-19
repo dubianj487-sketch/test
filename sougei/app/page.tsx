@@ -1,248 +1,131 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { supabase, type Driver } from '@/lib/supabase'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-type DriverWithDispatch = Driver & {
-  currentDispatch?: {
-    destination: string | null
-    estimated_return: string | null
-    status: string
-  }
-}
+export default function LoginPage() {
+  const router = useRouter()
+  const [loginCode, setLoginCode] = useState('')
+  const [loginErr, setLoginErr] = useState('')
 
-export default function DashboardPage() {
-  const [drivers, setDrivers] = useState<DriverWithDispatch[]>([])
-  const [loading, setLoading] = useState(true)
-  const [now, setNow] = useState(new Date())
-
-  useEffect(() => {
-    fetchDrivers()
-    const timer = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  async function fetchDrivers() {
-    const { data, error } = await supabase
-      .from('drivers')
-      .select('*, dispatches(destination, estimated_return, status)')
-      .order('created_at', { ascending: true })
-    if (!error && data) {
-      const withDispatch = data.map((d: Driver & { dispatches?: { destination: string | null, estimated_return: string | null, status: string }[] }) => {
-        const active = d.dispatches?.find(dp => dp.status === '移動中')
-        const pending = d.dispatches?.find(dp => dp.status === '待機')
-        return { ...d, currentDispatch: active || pending || undefined }
-      })
-      setDrivers(withDispatch)
-    }
-    setLoading(false)
-  }
-
-  const days = ['日', '月', '火', '水', '木', '金', '土']
-  const dateStr = `${now.getMonth() + 1}月${now.getDate()}日（${days[now.getDay()]}）`
-
-  const availableCount = drivers.filter(d => d.status === '待機' || d.status === 'お店前').length
-  const movingCount = drivers.filter(d => d.status === '移動中').length
-  const doneCount = drivers.filter(d => d.status === '終了').length
-
-  const getDisplayStatus = (d: DriverWithDispatch) => {
-    const ds = d.currentDispatch?.status
-    return ds === '待機' ? '承諾待ち' : d.status
-  }
-  const statusOrder: Record<string, number> = { '移動中': 0, '承諾待ち': 1, 'お店前': 2, '待機': 3, '終了': 4 }
-  const sorted = [...drivers].sort((a, b) => (statusOrder[getDisplayStatus(a)] ?? 4) - (statusOrder[getDisplayStatus(b)] ?? 4))
-
-  function getStatusColor(status: string) {
-    switch (status) {
-      case '移動中': return '#c2750a'
-      case '待機': return '#1a9e50'
-      case '承諾待ち': return '#3478f6'
-      case 'お店前': return '#5856d6'
-      default: return '#aeaeb2'
-    }
-  }
-
-  function getAvatarStyle(status: string) {
-    const color = getStatusColor(status)
-    return {
-      background: status === '終了' ? 'rgba(0,0,0,0.05)' : `${color}1e`,
-      color: status === '終了' ? '#aeaeb2' : color,
-    }
-  }
-
-  function getBadgeStyle(status: string) {
-    const color = getStatusColor(status)
-    return {
-      background: status === '終了' ? '#e5e5ea' : color,
-      color: status === '終了' ? '#8e8e93' : '#ffffff',
-    }
+  function doLogin() {
+    const c = loginCode.trim().toLowerCase()
+    if (c === 'boy') router.push('/boy')
+    else if (c === 'driver') router.push('/driver')
+    else if (c === 'cast') router.push('/cast')
+    else setLoginErr(loginCode ? '招待コードが正しくありません' : '招待コードを入力してください')
   }
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#f5f5f5', fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", color: '#1c1c1e', display: 'flex', flexDirection: 'column' }}>
-
-      {/* Header */}
-      <div style={{ background: '#ffffff', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.06)', flexShrink: 0 }}>
-        <div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em', lineHeight: 1 }}>送迎</div>
-          <div style={{ fontSize: 12, color: '#8e8e93', fontWeight: 400, marginTop: 2 }}>{dateStr}</div>
-        </div>
-        <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#e5e5ea', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="7.5" r="3.5" fill="#8e8e93" />
-            <path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-          </svg>
-        </div>
-      </div>
-
-      {/* Summary */}
-      <div style={{ background: '#ffffff', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '12px 16px 14px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#1a9e50', boxShadow: '0 0 6px rgba(26,158,80,0.6)' }} className="animate-live-pulse" />
-          <span style={{ fontSize: 11, fontWeight: 600, color: '#1a9e50', letterSpacing: '0.08em' }}>稼働中</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ flex: 1, textAlign: 'center', padding: '4px 0' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 4 }}>待機</div>
-            <div style={{ fontSize: 40, fontWeight: 700, color: '#1a9e50', lineHeight: 1, fontFamily: "'SF Mono', Menlo, monospace" }}>{availableCount}</div>
+    <div style={{
+      minHeight: '100dvh',
+      background: '#0a0a0a',
+      color: '#fff',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      padding: '0 28px 40px',
+      boxSizing: 'border-box',
+      fontFamily: "'Hanken Grotesk', 'Noto Sans JP', sans-serif",
+    }}>
+      <div className="animate-lm-fade">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: 10,
+            background: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M3 13l2-5h14l2 5M5 13h14v4a1 1 0 0 1-1 1h-1a2 2 0 1 1-4 0H11a2 2 0 1 1-4 0H6a1 1 0 0 1-1-1v-4Z"
+                stroke="#0a0a0a" strokeWidth="1.8" strokeLinejoin="round" />
+            </svg>
           </div>
-          <div style={{ width: 1, height: 48, background: 'rgba(0,0,0,0.07)' }} />
-          <div style={{ flex: 1, textAlign: 'center', padding: '4px 0' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 4 }}>移動中</div>
-            <div style={{ fontSize: 40, fontWeight: 700, color: '#c2750a', lineHeight: 1, fontFamily: "'SF Mono', Menlo, monospace" }}>{movingCount}</div>
-          </div>
-          <div style={{ width: 1, height: 48, background: 'rgba(0,0,0,0.07)' }} />
-          <div style={{ flex: 1, textAlign: 'center', padding: '4px 0' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 4 }}>終了</div>
-            <div style={{ fontSize: 40, fontWeight: 700, color: '#c7c7cc', lineHeight: 1, fontFamily: "'SF Mono', Menlo, monospace" }}>{doneCount}</div>
-          </div>
+          <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '.18em', color: '#8a8a8a' }}>
+            送迎管理システム
+          </span>
         </div>
-      </div>
 
-      {/* Driver list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 140px' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 8, paddingLeft: 2 }}>ドライバー</div>
+        <h1 style={{
+          fontFamily: "'Hanken Grotesk', sans-serif",
+          fontSize: 46, fontWeight: 800,
+          letterSpacing: '-.02em',
+          margin: '0 0 4px',
+          lineHeight: 1,
+        }}>
+          LUMINA
+        </h1>
+        <p style={{ margin: '0 0 34px', color: '#9a9a9a', fontSize: 15, fontWeight: 500 }}>
+          CLUB LUMINA ・ 送迎オペレーション
+        </p>
 
-        {loading && (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: '#aeaeb2', fontSize: 14 }}>読み込み中...</div>
-        )}
-
-        {!loading && sorted.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: '#aeaeb2', fontSize: 14 }}>
-            ドライバーが登録されていません
-          </div>
-        )}
-
-        {sorted.map(driver => {
-          const displayStatus = getDisplayStatus(driver)
-          const isMoving = driver.status === '移動中'
-          const isDone = driver.status === '終了'
-          const isPending = displayStatus === '承諾待ち'
-          const isOmiseMae = displayStatus === 'お店前'
-          const avatarStyle = getAvatarStyle(displayStatus)
-          const badgeStyle = getBadgeStyle(displayStatus)
-          const destination = driver.currentDispatch?.destination || null
-          const estimatedReturnRaw = driver.currentDispatch?.estimated_return || null
-          const estimatedReturn = estimatedReturnRaw
-            ? (() => { const d = new Date(estimatedReturnRaw); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` })()
-            : null
-
-          return (
-            <div
-              key={driver.id}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <input
+              value={loginCode}
+              onChange={e => { setLoginCode(e.target.value); setLoginErr('') }}
+              onKeyDown={e => e.key === 'Enter' && doLogin()}
+              placeholder="招待コード"
+              autoComplete="off"
               style={{
-                background: '#ffffff',
-                borderRadius: 14,
-                padding: '12px 14px',
-                marginBottom: 8,
-                border: '1.5px solid rgba(0,0,0,0.1)',
-                opacity: isDone ? 0.55 : 1,
-                transition: 'opacity 0.3s',
+                height: 54, borderRadius: 14,
+                background: '#161616',
+                border: `1px solid ${loginErr ? '#ff6b6b' : '#2a2a2a'}`,
+                color: '#fff', padding: '0 16px',
+                fontSize: 16, fontFamily: 'inherit', outline: 'none',
+                boxSizing: 'border-box', width: '100%',
               }}
-            >
-              {/* Top row */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{
-                    width: 30, height: 30, borderRadius: '50%',
-                    background: avatarStyle.background,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0, fontSize: 12, fontWeight: 700, color: avatarStyle.color,
-                  }}>
-                    {driver.name.charAt(0)}
-                  </div>
-                  <span style={{ fontSize: 17, fontWeight: 700, color: isDone ? '#aeaeb2' : '#1c1c1e', letterSpacing: '-0.01em' }}>
-                    {driver.name}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div
-                    style={{
-                      background: badgeStyle.background,
-                      color: badgeStyle.color,
-                      borderRadius: 20,
-                      padding: '4px 11px',
-                      fontSize: 11,
-                      fontWeight: 700,
-                    }}
-                    className={isMoving || isPending || isOmiseMae ? 'animate-badge-pulse' : ''}
-                  >
-                    {displayStatus}
-                  </div>
-                  <span style={{ fontSize: 18, color: '#d1d1d6', lineHeight: 1 }}>›</span>
-                </div>
-              </div>
+            />
+            {loginErr && (
+              <p style={{ margin: '8px 4px 0', fontSize: 13, color: '#ff6b6b', fontWeight: 600 }}>
+                {loginErr}
+              </p>
+            )}
+            <p style={{ margin: '8px 4px 0', fontSize: 12.5, color: '#6e6e6e', lineHeight: 1.5 }}>
+              招待コードで利用者の種類が切り替わります：
+              <span style={{ color: '#cfcfcf', fontWeight: 600 }}> boy / driver / cast</span>
+            </p>
+          </div>
 
-              {/* Bottom row - destination */}
-              {(isMoving || isDone || isPending) && destination && (
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.06em', marginBottom: 3 }}>送り先</div>
-                    <div style={{ fontSize: 17, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: isDone ? '#aeaeb2' : '#1c1c1e' }}>
-                      {destination}
-                    </div>
-                  </div>
-                  {isPending && (
-                    <div style={{ flexShrink: 0, textAlign: 'right', paddingLeft: 20 }}>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#3478f6', letterSpacing: '0.06em', marginBottom: 3 }}>承諾待ち</div>
-                      <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1, color: '#3478f6' }}>
-                        未承諾
-                      </div>
-                    </div>
-                  )}
-                  {isMoving && estimatedReturn && (
-                    <div style={{ flexShrink: 0, textAlign: 'right', paddingLeft: 20 }}>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.06em', marginBottom: 3 }}>店戻り</div>
-                      <div style={{ fontSize: 28, fontWeight: 700, fontFamily: "'SF Mono', Menlo, monospace", letterSpacing: '-0.03em', lineHeight: 1, color: '#1c1c1e' }}>
-                        {estimatedReturn}
-                      </div>
-                    </div>
-                  )}
-                  {isDone && estimatedReturn && (
-                    <div style={{ flexShrink: 0, textAlign: 'right', paddingLeft: 20 }}>
-                      <div style={{ fontSize: 10, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.06em', marginBottom: 3 }}>店戻り</div>
-                      <div style={{ fontSize: 26, fontWeight: 700, fontFamily: "'SF Mono', Menlo, monospace", letterSpacing: '-0.03em', lineHeight: 1, color: '#8e8e93' }}>
-                        {estimatedReturn}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Bottom CTA - above tab bar */}
-      <div style={{ position: 'fixed', bottom: 56, left: 0, right: 0, padding: '8px 14px 8px', background: 'linear-gradient(0deg, #f5f5f5 60%, rgba(245,245,245,0))', zIndex: 100, pointerEvents: 'none' }}>
-        <div style={{ maxWidth: 390, margin: '0 auto', pointerEvents: 'auto' }}>
-          <Link
-            href="/dispatch"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 15, background: '#1c1c1e', border: 'none', borderRadius: 14, color: '#ffffff', fontSize: 15, fontWeight: 700, fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", cursor: 'pointer', textDecoration: 'none' }}
+          <button
+            onClick={doLogin}
+            style={{
+              marginTop: 6, height: 56, borderRadius: 14,
+              background: '#fff', color: '#0a0a0a',
+              fontSize: 16, fontWeight: 700, border: 'none', cursor: 'pointer',
+              fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}
           >
-            送り配車
-          </Link>
+            ログイン
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14m-6-6 6 6-6 6" stroke="#0a0a0a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div style={{ marginTop: 30, borderTop: '1px solid #1f1f1f', paddingTop: 18 }}>
+          <p style={{ margin: '0 0 10px', fontSize: 11.5, letterSpacing: '.1em', color: '#6e6e6e', fontWeight: 600 }}>
+            DEMO ── タップで各画面へ
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {(['ボーイ', 'ドライバー', 'キャスト'] as const).map((label, i) => {
+              const hrefs = ['/boy', '/driver', '/cast']
+              return (
+                <button
+                  key={label}
+                  onClick={() => router.push(hrefs[i])}
+                  style={{
+                    flex: 1, height: 44, borderRadius: 11,
+                    background: '#161616', border: '1px solid #2a2a2a',
+                    color: '#fff', fontSize: 13.5, fontWeight: 600,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>

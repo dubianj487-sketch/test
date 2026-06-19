@@ -56,16 +56,24 @@ export default function CastPage({ params }: { params: Promise<{ id: string }> }
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100dvh', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" }}>
-        <div style={{ color: '#aeaeb2', fontSize: 14 }}>読み込み中...</div>
+      <div style={{
+        minHeight: '100dvh', background: '#fff',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'Hanken Grotesk', 'Noto Sans JP', sans-serif",
+      }}>
+        <div style={{ color: '#9a9a9a', fontSize: 14 }}>読み込み中...</div>
       </div>
     )
   }
 
   if (!girl) {
     return (
-      <div style={{ minHeight: '100dvh', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" }}>
-        <div style={{ color: '#aeaeb2', fontSize: 14 }}>見つかりませんでした</div>
+      <div style={{
+        minHeight: '100dvh', background: '#fff',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'Hanken Grotesk', 'Noto Sans JP', sans-serif",
+      }}>
+        <div style={{ color: '#9a9a9a', fontSize: 14 }}>見つかりませんでした</div>
       </div>
     )
   }
@@ -74,61 +82,122 @@ export default function CastPage({ params }: { params: Promise<{ id: string }> }
   const canSave = choice === 'usual' || (choice === 'different' && customDest.trim().length > 0)
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#f5f5f5', fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif", color: '#1c1c1e', display: 'flex', flexDirection: 'column' }}>
-
-      <div style={{ background: '#ffffff', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.06)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button
-            onClick={() => router.push('/cast')}
-            style={{ width: 30, height: 30, borderRadius: '50%', background: '#f5f5f5', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
-          >
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-              <path d="M10 3L5 8l5 5" stroke="#1c1c1e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-          <div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.02em', lineHeight: 1 }}>送迎</div>
-            <div style={{ fontSize: 12, color: '#8e8e93', fontWeight: 400, marginTop: 2 }}>{girl.name}</div>
-          </div>
+    <div style={{
+      minHeight: '100dvh',
+      background: '#fff',
+      fontFamily: "'Hanken Grotesk', 'Noto Sans JP', sans-serif",
+      color: '#0a0a0a',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        padding: '52px 20px 14px',
+      }}>
+        <div>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a' }}>
+            CLUB LUMINA
+          </p>
+          <h1 style={{ margin: '2px 0 0', fontSize: 24, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>
+            こんばんは、{girl.name}さん
+          </h1>
         </div>
+        <button
+          onClick={() => router.push('/cast')}
+          style={{
+            height: 38, padding: '0 14px', borderRadius: 10,
+            background: '#f4f4f4', border: 'none',
+            color: '#5a5a5a', fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+            whiteSpace: 'nowrap', flexShrink: 0,
+          }}
+        >
+          戻る
+        </button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 14px 40px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 40px' }}>
 
-        {/* Profile */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#ffffff', borderRadius: 14, border: '1.5px solid rgba(0,0,0,0.1)', padding: '16px 16px', marginBottom: 20 }}>
-          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(52,120,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700, color: '#3478f6', flexShrink: 0 }}>
-            {girl.name.charAt(0)}
+        {/* Today override alert */}
+        {saved && override && !override.use_usual && override.today_destination && (
+          <div style={{
+            marginBottom: 16,
+            background: '#fff8ed', border: '1px solid #ffe3b8',
+            borderRadius: 16, padding: '14px 16px',
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+              <path d="M12 8v5m0 3h.01M10.3 3.9 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"
+                stroke="#c77700" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <div>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#c77700', letterSpacing: '.04em' }}>
+                本日のみ降車場所を変更
+              </p>
+              <p style={{ margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#8a5a00' }}>
+                {override.today_destination}
+              </p>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#1c1c1e', letterSpacing: '-0.01em' }}>{girl.name}</div>
-            <div style={{ fontSize: 13, color: '#8e8e93', marginTop: 3 }}>いつもの送り先：{effectiveDest}</div>
+        )}
+
+        {/* Registered address */}
+        <div
+          role="button"
+          style={{
+            border: '1px solid #ededed', borderRadius: 18,
+            padding: 16, marginBottom: 16,
+            display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer',
+          }}
+        >
+          <div style={{
+            width: 42, height: 42, borderRadius: 12,
+            background: '#f4f4f4',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"
+                stroke="#0a0a0a" strokeWidth="1.8" strokeLinejoin="round" />
+              <circle cx="12" cy="10" r="2.4" stroke="#0a0a0a" strokeWidth="1.8" />
+            </svg>
           </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 12, color: '#9a9a9a', fontWeight: 600 }}>登録済みの降車場所</p>
+            <p style={{ margin: '2px 0 0', fontSize: 14, fontWeight: 600, lineHeight: 1.4, color: '#0a0a0a' }}>
+              {effectiveDest}
+            </p>
+          </div>
+          <svg width="9" height="15" viewBox="0 0 9 15" style={{ flexShrink: 0 }}>
+            <path d="M1 1l6 6.5L1 14" stroke="#bdbdbd" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
 
-        {/* Choice */}
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 10, paddingLeft: 2 }}>
-          今日の送り先
-        </div>
+        {/* Today choice */}
+        <p style={{ margin: '0 4px 12px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+          今日の降車場所
+        </p>
 
         <button
           onClick={() => { setChoice('usual'); setSaved(false) }}
           style={{
-            display: 'flex', alignItems: 'center', width: '100%',
-            background: '#ffffff',
-            borderRadius: 14,
-            border: choice === 'usual' ? '2px solid #1a9e50' : '1.5px solid rgba(0,0,0,0.1)',
+            display: 'flex', alignItems: 'center', width: '100%', textAlign: 'left',
+            background: '#fff',
+            borderRadius: 16,
+            border: choice === 'usual' ? '2px solid #0a0a0a' : '1px solid #ededed',
             padding: '16px 16px',
-            marginBottom: 8,
+            marginBottom: 10,
             cursor: 'pointer',
             gap: 14,
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
-            textAlign: 'left',
+            fontFamily: 'inherit',
           }}
         >
           <div style={{
             width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-            background: choice === 'usual' ? '#1a9e50' : '#e5e5ea',
+            background: choice === 'usual' ? '#0a0a0a' : '#e5e5ea',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             {choice === 'usual' && (
@@ -138,29 +207,28 @@ export default function CastPage({ params }: { params: Promise<{ id: string }> }
             )}
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#1c1c1e' }}>今日もいつも通り</div>
-            <div style={{ fontSize: 13, color: '#8e8e93', marginTop: 2 }}>{effectiveDest}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#0a0a0a' }}>今日もいつも通り</div>
+            <div style={{ fontSize: 13, color: '#8a8a8a', marginTop: 2 }}>{effectiveDest}</div>
           </div>
         </button>
 
         <button
           onClick={() => { setChoice('different'); setSaved(false) }}
           style={{
-            display: 'flex', alignItems: 'center', width: '100%',
-            background: '#ffffff',
-            borderRadius: 14,
-            border: choice === 'different' ? '2px solid #3478f6' : '1.5px solid rgba(0,0,0,0.1)',
+            display: 'flex', alignItems: 'center', width: '100%', textAlign: 'left',
+            background: '#fff',
+            borderRadius: 16,
+            border: choice === 'different' ? '2px solid #0a0a0a' : '1px solid #ededed',
             padding: '16px 16px',
-            marginBottom: 8,
+            marginBottom: 10,
             cursor: 'pointer',
             gap: 14,
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
-            textAlign: 'left',
+            fontFamily: 'inherit',
           }}
         >
           <div style={{
             width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-            background: choice === 'different' ? '#3478f6' : '#e5e5ea',
+            background: choice === 'different' ? '#0a0a0a' : '#e5e5ea',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             {choice === 'different' && (
@@ -170,27 +238,49 @@ export default function CastPage({ params }: { params: Promise<{ id: string }> }
             )}
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#1c1c1e' }}>今日は違う場所</div>
-            <div style={{ fontSize: 13, color: '#8e8e93', marginTop: 2 }}>住所を入力する</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#0a0a0a' }}>今日は違う場所</div>
+            <div style={{ fontSize: 13, color: '#8a8a8a', marginTop: 2 }}>住所を入力する</div>
           </div>
         </button>
 
         {choice === 'different' && (
-          <div style={{ background: '#ffffff', borderRadius: 14, border: '1.5px solid rgba(52,120,246,0.3)', padding: '14px 16px', marginBottom: 8 }} className="animate-fade-in">
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#aeaeb2', letterSpacing: '0.08em', marginBottom: 8 }}>送り先住所</div>
+          <div style={{
+            background: '#f7f7f7',
+            borderRadius: 14, border: '1px solid #e6e6e6',
+            padding: '14px 16px', marginBottom: 16,
+          }} className="animate-fade-in">
+            <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+              本日の降車場所
+            </p>
             <input
               type="text"
               value={customDest}
               onChange={e => { setCustomDest(e.target.value); setSaved(false) }}
-              placeholder="例：新宿区○○ ×× マンション 101"
+              placeholder="例：新潟市中央区○○ ×× マンション 101"
               autoFocus
               style={{
                 width: '100%', border: 'none', outline: 'none',
-                fontSize: 16, fontWeight: 600, color: '#1c1c1e',
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
+                fontSize: 15, fontWeight: 600, color: '#0a0a0a',
+                fontFamily: 'inherit',
                 background: 'transparent', padding: 0,
               }}
             />
+          </div>
+        )}
+
+        {saved && (
+          <div style={{
+            marginBottom: 16,
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: '#eafaf0', border: '1px solid #bdeccf',
+            borderRadius: 13, padding: '12px 14px',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path d="m5 12 4 4 10-10" stroke="#06c167" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: '#0a7a3f' }}>
+              {choice === 'usual' ? 'いつも通りで保存しました' : '今日の降車場所を保存しました'}
+            </span>
           </div>
         )}
 
@@ -198,17 +288,17 @@ export default function CastPage({ params }: { params: Promise<{ id: string }> }
           onClick={handleSave}
           disabled={!canSave || saving || saved}
           style={{
-            width: '100%', padding: 17, marginTop: 8,
-            background: saved ? 'rgba(26,158,80,0.1)' : canSave ? '#1a9e50' : '#e5e5ea',
-            border: 'none', borderRadius: 14,
-            color: saved ? '#1a9e50' : canSave ? '#ffffff' : '#aeaeb2',
-            fontSize: 17, fontWeight: 700,
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
+            width: '100%', height: 56, borderRadius: 15,
+            background: saved ? '#f0fdf4' : canSave ? '#0a0a0a' : '#f4f4f4',
+            border: 'none',
+            color: saved ? '#06c167' : canSave ? '#fff' : '#9a9a9a',
+            fontSize: 16, fontWeight: 700,
+            fontFamily: 'inherit',
             cursor: canSave && !saved ? 'pointer' : 'default',
             transition: 'all 0.2s',
           }}
         >
-          {saving ? '保存中...' : saved ? '保存済み ✓' : '保存する'}
+          {saving ? '保存中...' : saved ? '保存済み ✓' : 'この内容で保存'}
         </button>
       </div>
     </div>
