@@ -4,6 +4,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "LUMINA 送迎",
   description: "キャバクラ送迎管理アプリ",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "LUMINA",
+  },
 };
 
 export default function RootLayout({
