@@ -234,7 +234,7 @@ export default function BoyHomePage() {
   )
 }
 
-function BoyNav({ active }: { active: 'home' | 'edit' | 'status' }) {
+function BoyNav({ active }: { active: 'home' | 'mukae' | 'status' | 'manage' }) {
   const router = useRouter()
   return (
     <div
@@ -252,14 +252,22 @@ function BoyNav({ active }: { active: 'home' | 'edit' | 'status' }) {
           <path d="M5 13l1.6-4.5A2 2 0 0 1 8.5 7h7a2 2 0 0 1 1.9 1.5L19 13m-14 0h14v4a1 1 0 0 1-1 1h-1.2a1.8 1.8 0 1 1-3.6 0H9.8a1.8 1.8 0 1 1-3.6 0H5a1 1 0 0 1-1-1v-4h1Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
         </svg>
       </NavBtn>
-      <NavBtn onClick={() => router.push('/dispatch')} active={active === 'edit'} label="便を編集">
+      <NavBtn onClick={() => router.push('/mukae')} active={active === 'mukae'} label="迎え">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M9 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 2c-3 0-5 1.7-5 4v2h7m6-9 2 2-6 6H11v-2l6-6Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </NavBtn>
       <NavBtn onClick={() => router.push('/boy/status')} active={active === 'status'} label="送迎状況">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M6 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 0h6a4 4 0 0 0 0-8H9a4 4 0 0 1 0-8h3m6 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+        </svg>
+      </NavBtn>
+      <NavBtn onClick={() => router.push('/masters/drivers')} active={active === 'manage'} label="管理">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M3 20c0-4 2.7-6 6-6s6 2 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M16 11h6m-3-3v6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
       </NavBtn>
     </div>
