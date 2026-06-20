@@ -140,6 +140,7 @@ export default function BoyPage() {
   }
 
   function unassignDriver(tripId: number) {
+    if (!app) return
     const trip = app.trips.find(t => t.id === tripId)
     setApp(s => {
       const newSt = trip?.driverKey ? { ...s.driverStatuses, [trip.driverKey]: '待機中' } : s.driverStatuses
