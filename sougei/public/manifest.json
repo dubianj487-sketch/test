@@ -1,0 +1,18 @@
+{
+  "name": "LUMINA 送迎",
+  "short_name": "LUMINA",
+  "description": "キャバクラ送迎管理アプリ",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

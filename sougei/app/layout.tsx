@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "送迎",
+  title: "LUMINA 送迎",
   description: "キャバクラ送迎管理アプリ",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "LUMINA",
+  },
 };
 
 export default function RootLayout({
@@ -13,7 +19,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className="h-full">
-      <body className="min-h-full" style={{ background: "#f5f5f5", WebkitFontSmoothing: "antialiased" }}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-full" style={{ background: "#0a0a0a", WebkitFontSmoothing: "antialiased" }}>
         <div className="mx-auto min-h-dvh" style={{ maxWidth: 390 }}>
           {children}
         </div>

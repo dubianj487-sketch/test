@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f5f5;
-  --foreground: #1c1c1e;
+  --background: #fff;
+  --foreground: #0a0a0a;
 }
 
 @theme inline {
@@ -12,14 +12,27 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
-  background: #f5f5f5;
+  background: #fff;
   -webkit-font-smoothing: antialiased;
-  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-  color: #1c1c1e;
+  font-family: 'Hanken Grotesk', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #0a0a0a;
+}
+
+::-webkit-scrollbar { width: 0; height: 0; }
+
+@keyframes lmPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+@keyframes lmFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
 }
 
 @keyframes livePulse {
@@ -30,11 +43,6 @@ body {
 @keyframes badgePulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
-}
-
-@keyframes returnBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
 }
 
 @keyframes fadeIn {
@@ -52,16 +60,24 @@ body {
   50%       { box-shadow: 0 0 0 8px rgba(208,48,48,0); }
 }
 
+@keyframes lm-pulse { 0%,100%{ opacity:1 } 50%{ opacity:.35 } }
+@keyframes lm-fade{ from{ opacity:0; transform:translateY(6px) } to{ opacity:1; transform:none } }
+@keyframes sk-shimmer{ 0%{ background-position:-300% 0 } 100%{ background-position:300% 0 } }
+
+.animate-lm-pulse {
+  animation: lmPulse 1.6s infinite;
+}
+
+.animate-lm-fade {
+  animation: lmFade .4s ease both;
+}
+
 .animate-live-pulse {
   animation: livePulse 1.8s ease-in-out infinite;
 }
 
 .animate-badge-pulse {
   animation: badgePulse 2s ease-in-out infinite;
-}
-
-.animate-return-blink {
-  animation: returnBlink 0.9s ease-in-out infinite;
 }
 
 .animate-fade-in {
@@ -74,4 +90,25 @@ body {
 
 .animate-urgent-pulse {
   animation: urgentPulse 2s ease-in-out infinite;
+}
+
+button {
+  transition: transform .1s ease, opacity .1s ease;
+}
+button:active {
+  transform: scale(.95);
+  opacity: .88;
+}
+[role="button"] {
+  transition: transform .1s ease, opacity .1s ease;
+}
+[role="button"]:active {
+  transform: scale(.97);
+  opacity: .82;
+}
+input, textarea {
+  transition: border-color .12s ease;
+}
+input:focus, textarea:focus {
+  border-color: #8a8a8a !important;
 }
