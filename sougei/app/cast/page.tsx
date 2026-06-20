@@ -104,8 +104,8 @@ export default function CastPage() {
 
   /* ====== HOME ====== */
   if (screen === 'home') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
         <div>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a' }}>CLUB VENUS・KING</p>
           <h1 style={{ margin: '2px 0 0', fontSize: 22, fontWeight: 800, letterSpacing: '-.02em' }}>こんばんは、{castGirl.name}さん</h1>
@@ -183,8 +183,8 @@ export default function CastPage() {
 
   /* ====== PLACE ====== */
   if (screen === 'place') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#fff', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => setScreen('home')} />
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>降車場所の登録</h1>
       </div>
@@ -214,8 +214,8 @@ export default function CastPage() {
 
   /* ====== REQUEST ====== */
   return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#fff', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => setScreen('home')} />
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>本日のみ変更申請</h1>
       </div>

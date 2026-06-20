@@ -173,8 +173,8 @@ export default function BoyPage() {
 
   /* ====== HOME ====== */
   if (screen === 'home') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
         <div>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS・KING ・ ボーイ</p>
           <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>配車</h1>
@@ -253,11 +253,13 @@ export default function BoyPage() {
 
   /* ====== NEW ====== */
   if (screen === 'new') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '50%', background: '#0a0a0a', borderRadius: '0 2px 2px 0' }} /></div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
-        <BackBtn onClick={() => go('home')} />
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>配車依頼</h1>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#fff' }}>
+        <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '50%', background: '#0a0a0a', borderRadius: '0 2px 2px 0' }} /></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+          <BackBtn onClick={() => go('home')} />
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>配車依頼</h1>
+        </div>
       </div>
 
       <div style={{ padding: '0 20px' }}>
@@ -319,11 +321,13 @@ export default function BoyPage() {
   if (screen === 'driver-select') {
     const orderedDraft = tripDraftIds.map(id => ({ id: id as GirlKey, ...GIRLS[id as GirlKey], initial: GIRLS[id as GirlKey].name[0] })).sort((a, b) => a.dist - b.dist)
     return (
-      <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-        <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '100%', background: '#0a0a0a' }} /></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
-          <BackBtn onClick={() => go('new')} />
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>ドライバーを指定</h1>
+      <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+        <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#fff' }}>
+          <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '100%', background: '#0a0a0a' }} /></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+            <BackBtn onClick={() => go('new')} />
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>ドライバーを指定</h1>
+          </div>
         </div>
 
         <div style={{ padding: '0 20px' }}>
@@ -390,8 +394,8 @@ export default function BoyPage() {
 
   /* ====== STATUS ====== */
   if (screen === 'status') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#fff', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => go('home')} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: '#9a9a9a' }}>{viewT ? '便 #' + viewT.id : ''}</p>
@@ -478,8 +482,8 @@ export default function BoyPage() {
 
   /* ====== EDIT ====== */
   if (screen === 'edit') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#fff', display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => go('status')} />
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>便を編集</h1>
       </div>
@@ -565,8 +569,8 @@ export default function BoyPage() {
 
   /* ====== ADMIN ====== */
   return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
         <div>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS · KING</p>
           <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>管理</h1>
