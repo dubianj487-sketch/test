@@ -101,7 +101,7 @@ export default function BoyPage() {
   }
 
   function finalizeTrip() {
-    if (!tripDraftIds.length) return
+    if (!tripDraftIds.length || !app) return
     const sorted = [...tripDraftIds].sort((a, b) => GIRLS[a].dist - GIRLS[b].dist)
     const deptStr = draftDepartNow ? '今すぐ' : String(draftDepartHour).padStart(2, '0') + ':' + String(draftDepartMin).padStart(2, '0')
     const newId = app.nextTripId
