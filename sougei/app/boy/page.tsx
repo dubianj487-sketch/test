@@ -69,6 +69,7 @@ export default function BoyPage() {
   const [girls, setGirls] = useState<GirlRow[]>([])
   const [drivers, setDrivers] = useState<DriverRow[]>([])
   const [dispatches, setDispatches] = useState<DispatchRow[]>([])
+  const [rideRequestIds, setRideRequestIds] = useState<Set<string>>(new Set())
   const [screen, setScreen] = useState<Screen>('home')
   const [tripDraftIds, setTripDraftIds] = useState<string[]>([])
   const [draftDriverKey, setDraftDriverKey] = useState<string | null>(null)
@@ -94,14 +95,16 @@ export default function BoyPage() {
 
   const loadData = useCallback(async () => {
     const today = new Date().toISOString().split('T')[0]
-    const [{ data: gData }, { data: dData }, { data: dpData }] = await Promise.all([
+    const [{ data: gData }, { data: dData }, { data: dpData }, { data: rrData }] = await Promise.all([
       supabase.from('girls').select('*').order('name'),
       supabase.from('drivers').select('*').order('name'),
       supabase.from('dispatches').select('*, dispatch_girls(id, girl_id)').eq('date', today).order('created_at'),
+      supabase.from('ride_requests').select('girl_id').eq('date', today),
     ])
     if (gData) setGirls(gData as GirlRow[])
     if (dData) setDrivers(dData as DriverRow[])
     if (dpData) setDispatches(dpData as DispatchRow[])
+    setRideRequestIds(new Set((rrData || []).map((r: { girl_id: string }) => r.girl_id)))
   }, [])
 
   useEffect(() => {
@@ -113,6 +116,7 @@ export default function BoyPage() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'dispatch_girls' }, () => loadData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'drivers' }, () => loadData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'girls' }, () => loadData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_requests' }, () => loadData())
       .subscribe()
     return () => { supabase.removeChannel(ch) }
   }, [router, loadData])
@@ -353,6 +357,45 @@ export default function BoyPage() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" /></svg>
           配車を依頼する
         </button>
+
+        {/* Ride request section */}
+        {(() => {
+          const pendingRideGirls = sortedGirls.filter(g => rideRequestIds.has(g.id) && !activeGirlIds.has(g.id))
+          if (pendingRideGirls.length === 0) return null
+          return (
+            <div style={{ marginTop: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <p style={{ margin: 0, fontSize: rem(13), fontWeight: 700, color: '#0a0a0a', letterSpacing: '.04em' }}>乗車リクエスト</p>
+                  <span style={{ background: '#0a0a0a', color: '#fff', fontSize: rem(11), fontWeight: 700, padding: '2px 8px', borderRadius: 999 }}>{pendingRideGirls.length}件</span>
+                </div>
+                {tripDraftIds.length > 0 && (
+                  <button onClick={() => go('new')} style={{ height: 32, padding: '0 14px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(12.5), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    配車を作成
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {pendingRideGirls.map(g => {
+                  const selected = tripDraftIds.includes(g.id)
+                  return (
+                    <div key={g.id} onClick={() => toggleCastSelect(g.id)} role="button" style={{ borderRadius: 14, padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', border: selected ? '2px solid #0a0a0a' : '1px solid #ededed' }}>
+                      <div style={{ width: 38, height: 38, borderRadius: '50%', background: g.color || strColor(g.id), color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(15), flexShrink: 0 }}>{g.name[0]}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: rem(15), fontWeight: 700 }}>{g.name}</p>
+                        <p style={{ margin: '2px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{g.area || '—'} ・ 店から {(g.dist || 0).toFixed(1)}km</p>
+                      </div>
+                      {selected
+                        ? <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><svg width="13" height="13" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" stroke="#fff" strokeWidth="2.8" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
+                        : <div style={{ width: 26, height: 26, borderRadius: '50%', border: '2px solid #e0e0e0', flexShrink: 0 }} />}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
 
         <p style={{ margin: '26px 4px 10px', fontSize: rem(13), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>本日の便</p>
 
