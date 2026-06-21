@@ -2,95 +2,50 @@
 
 # 送迎アプリ
 
-キャバクラの送迎管理Webアプリ。ボーイ・ドライバー・女の子が使う実務ツール。
+キャバクラの送迎管理Webアプリ。ボーイ・ドライバー・キャストが使う実務ツール。
+渡されたデザインモック（プロトタイプ）を元に、Next.js + Supabase Realtime で再構築したもの。
 
 ## デプロイ・リポジトリ
-- **本番URL**: https://sougei-wine.vercel.app
-- **GitHub**: dubianj487-sketch/test
-- **作業ブランチ**: `claude/ios-safe-area-color-KIkfH` → main にマージ
+- **GitHub**: dubianj487-sketch/test（`sougei/` ディレクトリ）
+- **Vercel**: プロジェクト名 `sougei`（GitHub push で自動デプロイ）
 - **コミットメッセージ**: 必ず日本語、プレフィックス禁止（`feat:` などNG）
 
 ## 技術スタック
-- Next.js 16 (App Router) + TypeScript
-- Supabase (PostgreSQL) — プロジェクトref: `wtobisqxcnomjglpivec`
-- Vercel (GitHub push で自動デプロイ)
+- Next.js 16 (App Router) + React 19 + TypeScript
+- Supabase (PostgreSQL + Realtime) — プロジェクトref: `wtobisqxcnomjglpivec`
+- UI は単一クライアントコンポーネント（`app/page.tsx`）の状態マシン。インラインスタイル。
 
-## 画面一覧
-| パス | 画面 | 状態 |
-|------|------|------|
-| `/` | ボーイ ダッシュボード | 完成 |
-| `/dispatch` | 送り配車（3ステップウィザード） | 完成 |
-| `/masters/drivers` | ドライバー管理CRUD | 完成 |
-| `/masters/girls` | 女の子管理CRUD | 完成 |
-| `/driver/[id]` | ドライバー通知・承諾画面 | 完成 |
-| 迎え管理 | 迎えスケジュール管理 | **未実装** |
+## 構成
+| ファイル | 役割 |
+|----------|------|
+| `app/page.tsx` | 全画面（ログイン/ボーイ/ドライバー/キャスト）と画面遷移ロジック |
+| `lib/supabase.ts` | Supabaseクライアント（env優先、anonキーのフォールバックあり） |
+| `lib/types.ts` | ドメイン型・純粋ヘルパー（距離計算・帰店時刻・降車順など） |
+| `lib/db.ts` | 読み込み（loadSnapshot）と全ミューテーション |
+| `lib/useSnapshot.ts` | 全テーブルを読み込み Realtime 購読するフック |
 
-## DBスキーマ
-```sql
-drivers (id UUID PK, name TEXT, capacity INT DEFAULT 5, note TEXT,
-         status TEXT CHECK IN ('待機','移動中','終了'), created_at TIMESTAMPTZ)
+## ロール / 画面
+- **ログイン**: 招待コード `boy` / `cast` / `driver`、またはDEMOボタンで各ロール・各キャスト/ドライバーに即ログイン
+- **ボーイ**: 配車ホーム / 配車依頼（キャスト選択→時刻→ドライバー指定→確定）/ 便詳細・編集 / 管理（キャスト・ドライバー一覧/詳細）
+- **キャスト**: ホーム（帰り便状況・乗車リクエスト）/ 降車場所登録 / 本日のみ変更申請
+- **ドライバー**: 配車依頼（到着通知→運行開始）/ 運行中（乗車確認→降車完了）/ 稼働ステータス切替
 
-girls (id UUID PK, name TEXT, area TEXT, address TEXT, note TEXT, created_at TIMESTAMPTZ)
-
-dispatches (id UUID PK, driver_id UUID→drivers, destination TEXT,
-            urgency TEXT, scheduled_time TEXT, status TEXT,
-            estimated_return TIMESTAMPTZ, date DATE, created_at TIMESTAMPTZ)
-
-dispatch_girls (id UUID PK, dispatch_id UUID→dispatches CASCADE,
-                girl_id UUID→girls, created_at TIMESTAMPTZ)
+## DBスキーマ（public, RLSは全許可）
 ```
-RLS: 全テーブル allow all
-
-**重要**: `drivers.status` にCHECK制約あり。`'承諾待ち'` は追加不可。
-
-## 配車フロー（実装済み）
+girls(id PK, name, area, dist, addr, color, drop_address, sort)        -- キャスト(マスタ)
+drivers(key PK, name, initial, car, plate, sort)                       -- ドライバー(マスタ)
+driver_status(driver_key PK→drivers, status)                          -- 稼働ステータス
+trips(id PK, assigned_ids text[], depart_time, driver_key, last_trip,
+      boarded, completed, arrived, created_at)                         -- 便
+ride_requests(girl_id PK→girls, status)                                -- 乗車リクエスト
+today_requests(girl_id PK→girls, place, reason, status)                -- 本日のみ変更申請
 ```
-ボーイが配車確定
-  → dispatches INSERT { status: '待機' }  ← '待機' = 承諾前の意味
-  → driver.status は変えない（DB制約のため）
+realtime: trips / ride_requests / today_requests / driver_status / girls / drivers を
+`supabase_realtime` パブリケーションに追加済み。
 
-ドライバーが /driver/[id] で「了解する」
-  → dispatches UPDATE { status: '移動中' }
-  → drivers UPDATE { status: '移動中' }
-
-ドライバーが「完了する」
-  → dispatches UPDATE { status: '完了' }
-  → drivers UPDATE { status: '終了' }
+## ローカル開発
 ```
-
-## ダッシュボードの表示ロジック
-```typescript
-// dispatch.status='待機' → 青バッジ「承諾待ち」として表示
-const active = d.dispatches?.find(dp => dp.status === '移動中')
-const pending = d.dispatches?.find(dp => dp.status === '待機')
-const displayStatus = active ? '移動中' : pending ? '承諾待ち' : driver.status
+npm install
+npm run dev     # http://localhost:3000
 ```
-
-## デザイントークン
-```
-待機:    #1a9e50（緑）
-移動中:  #c2750a（オレンジ）
-承諾待ち: #3478f6（青）
-終了:    #aeaeb2（グレー）
-背景:    #f5f5f5
-カード:  #ffffff, border: 1.5px solid rgba(0,0,0,0.1), borderRadius: 14
-フォント: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif
-```
-
-## 未解決バグ（最優先）
-**配車後もダッシュボードで「承諾待ち」（青）にならず「待機」（緑）のまま**
-
-原因候補:
-1. dispatch の INSERT が失敗してる（エラーは `console.error` で出力済み）
-2. ダッシュボードの Supabase join `select('*, dispatches(...)')` が機能していない
-3. ブラウザキャッシュ
-
-**次にやること**: Supabase MCP で dispatches テーブルを直接 SELECT して原因特定
-```sql
-SELECT id, driver_id, status, destination, created_at
-FROM dispatches ORDER BY created_at DESC LIMIT 10;
-```
-
-## Supabase MCP
-`.mcp.json` 設定済み（gitignore済み）。  
-ネットワークアクセスが「フルネットワークアクセス」の環境でのみ動作する。
+`.env.local` に `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`（未設定でもフォールバックで動作）。

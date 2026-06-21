@@ -1,47 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// 公開可能な anon キー（RLSで保護）。Vercel等の環境変数があれば優先。
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://wtobisqxcnomjglpivec.supabase.co'
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0b2Jpc3F4Y25vbWpnbHBpdmVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MTUzNzUsImV4cCI6MjA5NzE5MTM3NX0.PcgrsR0Fwv4pCVDv8bWpTQe_jlOwHNmkyH5tgimDB54'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-export type Driver = {
-  id: string
-  name: string
-  capacity: number
-  note: string | null
-  status: '待機' | 'お店前' | '移動中' | '終了'
-  created_at: string
-}
-
-export type GirlDailyOverride = {
-  id: string
-  girl_id: string
-  date: string
-  use_usual: boolean
-  today_destination: string | null
-  created_at: string
-}
-
-export type Girl = {
-  id: string
-  name: string
-  area: string | null
-  address: string | null
-  note: string | null
-  created_at: string
-}
-
-export type Dispatch = {
-  id: string
-  driver_id: string | null
-  destination: string | null
-  urgency: '今すぐ' | '時間指定'
-  scheduled_time: string | null
-  status: '待機' | '移動中' | '完了' | '承諾待ち'
-  estimated_return: string | null
-  date: string
-  created_at: string
-  driver?: Driver
-  girls?: Girl[]
-}
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  realtime: { params: { eventsPerSecond: 10 } },
+})
