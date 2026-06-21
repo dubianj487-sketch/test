@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, type Girl, type Driver, type GirlDailyOverride } from '@/lib/supabase'
@@ -196,7 +197,7 @@ export default function DispatchPage() {
             <path d="M8 1 2 7.5 8 14" stroke="#0a0a0a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>
+        <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>
           {stepTitle}
         </h1>
       </div>
@@ -220,7 +221,7 @@ export default function DispatchPage() {
         {/* STEP 1 */}
         {step === 1 && (
           <div className="animate-fade-in">
-            <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+            <p style={{ margin: '0 0 12px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
               乗車キャスト{selectedGirls.length > 0 ? `　${selectedGirls.length}名を選択中` : ''}
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
@@ -247,10 +248,10 @@ export default function DispatchPage() {
                       background: sel ? '#0a0a0a' : hasTodayDiff ? '#c77700' : '#e0e0e0',
                       marginBottom: 2,
                     }} />
-                    <span style={{ fontSize: 15, fontWeight: 700, color: sel ? '#0a0a0a' : '#3a3a3a', lineHeight: 1.2 }}>
+                    <span style={{ fontSize: rem(15), fontWeight: 700, color: sel ? '#0a0a0a' : '#3a3a3a', lineHeight: 1.2 }}>
                       {g.name}
                     </span>
-                    <span style={{ fontSize: 10, color: '#9a9a9a', fontWeight: 500 }}>{destLabel}</span>
+                    <span style={{ fontSize: rem(10), color: '#9a9a9a', fontWeight: 500 }}>{destLabel}</span>
                   </button>
                 )
               })}
@@ -261,7 +262,7 @@ export default function DispatchPage() {
         {/* STEP 2 */}
         {step === 2 && (
           <div className="animate-fade-in">
-            <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+            <p style={{ margin: '0 0 12px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
               便を作る — 「›」で次の便へ移動
             </p>
             {runs.map((run, idx) => {
@@ -273,8 +274,8 @@ export default function DispatchPage() {
                   padding: 16, marginBottom: 10, border: '1px solid #ededed',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a' }}>便 {idx + 1}</span>
-                    <span style={{ fontSize: 12, color: '#9a9a9a', fontWeight: 500 }}>{run.girlIds.length}名</span>
+                    <span style={{ fontSize: rem(14), fontWeight: 700, color: '#0a0a0a' }}>便 {idx + 1}</span>
+                    <span style={{ fontSize: rem(12), color: '#9a9a9a', fontWeight: 500 }}>{run.girlIds.length}名</span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 36 }}>
                     {girlObjs.map(g => (
@@ -284,7 +285,7 @@ export default function DispatchPage() {
                         padding: '5px 6px 5px 12px', gap: 6,
                         border: '1px solid #e8e8e8',
                       }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0a0a0a' }}>{g.name}</span>
+                        <span style={{ fontSize: rem(13), fontWeight: 700, color: '#0a0a0a' }}>{g.name}</span>
                         <button
                           onClick={() => moveGirl(g.id, run.id)}
                           style={{
@@ -301,7 +302,7 @@ export default function DispatchPage() {
                       </div>
                     ))}
                     {run.girlIds.length === 0 && (
-                      <span style={{ fontSize: 12, color: '#c0c0c0', padding: '7px 0' }}>女の子を移してください</span>
+                      <span style={{ fontSize: rem(12), color: '#c0c0c0', padding: '7px 0' }}>女の子を移してください</span>
                     )}
                   </div>
                   <div style={{
@@ -319,7 +320,7 @@ export default function DispatchPage() {
                       placeholder={autoAreas.join('・') || 'エリアを入力'}
                       style={{
                         flex: 1, border: 'none', outline: 'none',
-                        fontSize: 15, fontWeight: 600, color: '#0a0a0a',
+                        fontSize: rem(15), fontWeight: 600, color: '#0a0a0a',
                         fontFamily: font, background: 'transparent', padding: 0,
                       }}
                     />
@@ -332,12 +333,12 @@ export default function DispatchPage() {
               style={{
                 width: '100%', padding: 14,
                 background: 'transparent', border: '1.5px dashed #d0d0d0',
-                borderRadius: 16, color: '#9a9a9a', fontSize: 14, fontWeight: 600,
+                borderRadius: 16, color: '#9a9a9a', fontSize: rem(14), fontWeight: 600,
                 fontFamily: font, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}
             >
-              <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>便を追加
+              <span style={{ fontSize: rem(18), lineHeight: 1 }}>+</span>便を追加
             </button>
           </div>
         )}
@@ -355,15 +356,15 @@ export default function DispatchPage() {
                   padding: 16, marginBottom: 12, border: '1px solid #ededed',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#0a0a0a' }}>便 {idx + 1}</span>
-                    <span style={{ fontSize: 12, color: '#9a9a9a', fontWeight: 500 }}>
+                    <span style={{ fontSize: rem(14), fontWeight: 700, color: '#0a0a0a' }}>便 {idx + 1}</span>
+                    <span style={{ fontSize: rem(12), color: '#9a9a9a', fontWeight: 500 }}>
                       {girlObjs.map(g => g.name).join('・')}
                     </span>
                   </div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: '#0a0a0a', marginBottom: 14 }}>{dest}</div>
+                  <div style={{ fontSize: rem(16), fontWeight: 700, color: '#0a0a0a', marginBottom: 14 }}>{dest}</div>
 
                   {/* Urgency */}
-                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+                  <p style={{ margin: '0 0 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
                     緊急度
                   </p>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
@@ -378,8 +379,8 @@ export default function DispatchPage() {
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                       }}
                     >
-                      <span style={{ fontSize: 16, fontWeight: 700 }}>今すぐ</span>
-                      <span style={{ fontSize: 10, opacity: 0.7 }}>すぐに送る</span>
+                      <span style={{ fontSize: rem(16), fontWeight: 700 }}>今すぐ</span>
+                      <span style={{ fontSize: rem(10), opacity: 0.7 }}>すぐに送る</span>
                     </button>
                     <button
                       onClick={() => updateRun(run.id, { urgency: 'scheduled' })}
@@ -392,8 +393,8 @@ export default function DispatchPage() {
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                       }}
                     >
-                      <span style={{ fontSize: 16, fontWeight: 700 }}>時間指定</span>
-                      <span style={{ fontSize: 10, opacity: 0.7 }}>上がり時間</span>
+                      <span style={{ fontSize: rem(16), fontWeight: 700 }}>時間指定</span>
+                      <span style={{ fontSize: rem(10), opacity: 0.7 }}>上がり時間</span>
                     </button>
                   </div>
 
@@ -408,14 +409,14 @@ export default function DispatchPage() {
                         <circle cx="12" cy="12" r="9" stroke="#9a9a9a" strokeWidth="1.8" />
                         <path d="M12 7v5l3 3" stroke="#9a9a9a" strokeWidth="1.8" strokeLinecap="round" />
                       </svg>
-                      <span style={{ fontSize: 13, color: '#9a9a9a', fontWeight: 600 }}>上がり時間</span>
+                      <span style={{ fontSize: rem(13), color: '#9a9a9a', fontWeight: 600 }}>上がり時間</span>
                       <input
                         type="time"
                         value={run.scheduledTime}
                         onChange={e => updateRun(run.id, { scheduledTime: e.target.value })}
                         style={{
                           marginLeft: 'auto', border: 'none', outline: 'none',
-                          fontSize: 20, fontWeight: 800, color: '#0a0a0a',
+                          fontSize: rem(20), fontWeight: 800, color: '#0a0a0a',
                           fontFamily: font, background: 'transparent',
                           textAlign: 'right', cursor: 'pointer',
                         }}
@@ -424,7 +425,7 @@ export default function DispatchPage() {
                   )}
 
                   {/* Driver */}
-                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+                  <p style={{ margin: '0 0 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
                     ドライバー
                   </p>
                   {drivers.map(d => {
@@ -455,16 +456,16 @@ export default function DispatchPage() {
                           width: 34, height: 34, borderRadius: '50%',
                           background: isAvail ? '#f0f0f0' : '#f7f7f7',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 14, fontWeight: 700,
+                          fontSize: rem(14), fontWeight: 700,
                           color: isAvail ? '#0a0a0a' : '#9a9a9a', flexShrink: 0,
                         }}>
                           {d.name.charAt(0)}
                         </div>
                         <div style={{ flex: 1, textAlign: 'left', paddingLeft: 12 }}>
-                          <div style={{ fontSize: 15, fontWeight: 700, color: canSelect ? '#0a0a0a' : '#9a9a9a' }}>
+                          <div style={{ fontSize: rem(15), fontWeight: 700, color: canSelect ? '#0a0a0a' : '#9a9a9a' }}>
                             {d.name}
                           </div>
-                          <div style={{ fontSize: 11, color: '#9a9a9a', marginTop: 1 }}>
+                          <div style={{ fontSize: rem(11), color: '#9a9a9a', marginTop: 1 }}>
                             {!canSelect && !assignedElsewhere
                               ? (d.status === '移動中' ? '送迎中' : isBusy ? '承諾待ち' : '終了済み')
                               : assignedElsewhere ? '他の便に割当済み' : '配車可能'}
@@ -474,7 +475,7 @@ export default function DispatchPage() {
                           background: d.status === 'お店前' ? '#f5f3ff' : isAvail ? '#f0fdf4' : d.status === '移動中' ? '#fff7ed' : isBusy ? '#eff6ff' : '#f4f4f4',
                           color: d.status === 'お店前' ? '#8b5cf6' : isAvail ? '#06c167' : d.status === '移動中' ? '#c77700' : isBusy ? '#3478f6' : '#9a9a9a',
                           borderRadius: 999, padding: '4px 10px',
-                          fontSize: 11, fontWeight: 700,
+                          fontSize: rem(11), fontWeight: 700,
                         }}>
                           {statusLabel}
                         </div>
@@ -506,7 +507,7 @@ export default function DispatchPage() {
           disabled={ctaDisabled || saving}
           style={{
             width: '100%', height: 56, border: 'none', borderRadius: 15,
-            fontSize: 16, fontWeight: 700, fontFamily: font,
+            fontSize: rem(16), fontWeight: 700, fontFamily: font,
             cursor: ctaDisabled ? 'default' : 'pointer',
             pointerEvents: 'auto',
             transition: 'all 0.2s',

@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, type Girl } from '@/lib/supabase'
@@ -51,7 +52,7 @@ export default function CastPlacePage({ params }: { params: Promise<{ id: string
           fontFamily: "'Hanken Grotesk','Noto Sans JP',sans-serif",
         }}
       >
-        <div style={{ color: '#9a9a9a', fontSize: 14 }}>読み込み中...</div>
+        <div style={{ color: '#9a9a9a', fontSize: rem(14) }}>読み込み中...</div>
       </div>
     )
   }
@@ -79,15 +80,15 @@ export default function CastPlacePage({ params }: { params: Promise<{ id: string
             <path d="M8 1 2 7.5 8 14" stroke="#0a0a0a" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>降車場所の登録</h1>
+        <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>降車場所の登録</h1>
       </div>
 
       <div style={{ padding: '0 20px' }}>
-        <p style={{ margin: '6px 4px 16px', fontSize: 13.5, color: '#7a7a7a', lineHeight: 1.6 }}>
+        <p style={{ margin: '6px 4px 16px', fontSize: rem(13.5), color: '#7a7a7a', lineHeight: 1.6 }}>
           普段、帰りに降りる場所を登録します。送迎の降車ルートはこの住所をもとに組まれます。
         </p>
 
-        <p style={{ margin: '0 4px 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+        <p style={{ margin: '0 4px 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
           住所・目印
         </p>
         <textarea
@@ -98,11 +99,11 @@ export default function CastPlacePage({ params }: { params: Promise<{ id: string
             width: '100%', height: 120, borderRadius: 14,
             background: '#f7f7f7', border: '1px solid #e6e6e6',
             color: '#0a0a0a', padding: '14px 16px',
-            fontSize: 15, fontFamily: 'inherit', lineHeight: 1.6,
+            fontSize: rem(15), fontFamily: 'inherit', lineHeight: 1.6,
             outline: 'none', boxSizing: 'border-box', resize: 'none',
           }}
         />
-        <p style={{ margin: '10px 4px 0', fontSize: 12, color: '#a0a0a0', lineHeight: 1.5 }}>
+        <p style={{ margin: '10px 4px 0', fontSize: rem(12), color: '#a0a0a0', lineHeight: 1.5 }}>
           ※ マンション名・部屋番号・近くの目印まで入れると、ドライバーが迷いません。
         </p>
 
@@ -117,7 +118,7 @@ export default function CastPlacePage({ params }: { params: Promise<{ id: string
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path d="m5 12 4 4 10-10" stroke="#06c167" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span style={{ fontSize: 13.5, fontWeight: 700, color: '#0a7a3f' }}>降車場所を保存しました</span>
+            <span style={{ fontSize: rem(13.5), fontWeight: 700, color: '#0a7a3f' }}>降車場所を保存しました</span>
           </div>
         )}
 
@@ -128,7 +129,7 @@ export default function CastPlacePage({ params }: { params: Promise<{ id: string
             marginTop: 24, width: '100%', height: 56, borderRadius: 15,
             background: saved ? '#f0fdf4' : draft.trim() ? '#0a0a0a' : '#f4f4f4',
             color: saved ? '#06c167' : draft.trim() ? '#fff' : '#9a9a9a',
-            border: 'none', fontSize: 16, fontWeight: 700,
+            border: 'none', fontSize: rem(16), fontWeight: 700,
             cursor: draft.trim() && !saving ? 'pointer' : 'default',
             fontFamily: 'inherit',
           }}
@@ -190,7 +191,7 @@ function NavBtn({
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: active ? '#0a0a0a' : '#b5b5b5' }}
     >
       {children}
-      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>{label}</span>
     </div>
   )
 }

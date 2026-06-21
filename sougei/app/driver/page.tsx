@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { loadAppState, saveAppState, DRIVER_STATUS_CONFIG, buildTripObjs, type AppState, type DriverKey } from '@/lib/appState'
@@ -106,11 +107,11 @@ export default function DriverPage() {
     <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 390, zIndex: 40, background: '#0a0a0a', borderTop: '1px solid #1f1f1f', padding: '10px 14px 24px', display: 'flex', justifyContent: 'space-around', boxSizing: 'border-box' }}>
       <div onClick={() => setScreen('offer')} role="button" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: screen === 'offer' ? '#fff' : '#6e6e6e' }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" /><path d="M8 3v4m8-4v4M4 10h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
-        <span style={{ fontSize: 10.5, fontWeight: 700 }}>依頼</span>
+        <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>依頼</span>
       </div>
       <div onClick={() => setScreen('trip')} role="button" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: screen === 'trip' ? '#fff' : '#6e6e6e' }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 20 3 17V4l6 3m0 13 6-3m-6 3V7m6 10 6 3V7l-6-3m0 13V4m0 0L9 7" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></svg>
-        <span style={{ fontSize: 10.5, fontWeight: 700 }}>運行</span>
+        <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>運行</span>
       </div>
     </div>
   )
@@ -120,18 +121,18 @@ export default function DriverPage() {
     <div style={{ minHeight: '100dvh', background: '#0a0a0a', color: '#fff', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
         <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#6e6e6e', letterSpacing: '.04em' }}>{myDrv.name}</p>
-          <h1 style={{ margin: '2px 0 0', fontSize: 28, fontWeight: 800, letterSpacing: '-.02em' }}>配車依頼</h1>
+          <p style={{ margin: 0, fontSize: rem(12), fontWeight: 600, color: '#6e6e6e', letterSpacing: '.04em' }}>{myDrv.name}</p>
+          <h1 style={{ margin: '2px 0 0', fontSize: rem(28), fontWeight: 800, letterSpacing: '-.02em' }}>配車依頼</h1>
         </div>
-        <button onClick={logout} style={{ height: 38, padding: '0 14px', borderRadius: 10, background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#9a9a9a', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>ログアウト</button>
+        <button onClick={logout} style={{ height: 38, padding: '0 14px', borderRadius: 10, background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#9a9a9a', fontSize: rem(13), fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>ログアウト</button>
       </div>
 
       <div style={{ padding: '0 20px 18px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <p style={{ margin: 0, fontSize: 11.5, fontWeight: 700, color: '#6e6e6e', letterSpacing: '.06em' }}>自分のステータス</p>
+          <p style={{ margin: 0, fontSize: rem(11.5), fontWeight: 700, color: '#6e6e6e', letterSpacing: '.06em' }}>自分のステータス</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: myStatusCfg.color, display: 'inline-block' }} />
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: myStatusCfg.color }}>現在：{myStatus}</span>
+            <span style={{ fontSize: rem(12.5), fontWeight: 700, color: myStatusCfg.color }}>現在：{myStatus}</span>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -139,13 +140,13 @@ export default function DriverPage() {
             <div key={st.label} onClick={st.onSelect} role="button" style={{ borderRadius: 12, padding: '11px 12px', cursor: 'pointer', border: st.isActive ? '2px solid ' + st.color : '1px solid #262626', background: st.isActive ? '#1c1c1c' : '#111' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: st.color, display: 'inline-block' }} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: st.isActive ? st.color : '#7a7a7a' }}>{st.label}</span>
+                <span style={{ fontSize: rem(14), fontWeight: 700, color: st.isActive ? st.color : '#7a7a7a' }}>{st.label}</span>
               </div>
-              <p style={{ margin: 0, fontSize: 11, color: '#6e6e6e' }}>{st.sub}</p>
+              <p style={{ margin: 0, fontSize: rem(11), color: '#6e6e6e' }}>{st.sub}</p>
             </div>
           ))}
         </div>
-        <p style={{ margin: '8px 0 0', fontSize: 11, color: '#5a5a5a', lineHeight: 1.5 }}>「移動中」は乗車確認時に自動変更。「終了」は最後の便の送迎完了時に自動変更されます。</p>
+        <p style={{ margin: '8px 0 0', fontSize: rem(11), color: '#5a5a5a', lineHeight: 1.5 }}>「移動中」は乗車確認時に自動変更。「終了」は最後の便の送迎完了時に自動変更されます。</p>
       </div>
       <div style={{ height: 1, background: '#1f1f1f', margin: '0 20px 18px' }} />
 
@@ -155,31 +156,31 @@ export default function DriverPage() {
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#1a1a1a', border: '1px solid #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l1.6-4.5A2 2 0 0 1 8.5 7h7a2 2 0 0 1 1.9 1.5L19 13m-14 0h14v4a1 1 0 0 1-1 1h-1.2a1.8 1.8 0 1 1-3.6 0H9.8a1.8 1.8 0 1 1-3.6 0H5a1 1 0 0 1-1-1v-4h1Z" stroke="#6e6e6e" strokeWidth="1.8" strokeLinejoin="round" /></svg>
             </div>
-            <p style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>待機中</p>
-            <p style={{ margin: '8px 0 0', fontSize: 13.5, color: '#8a8a8a' }}>ボーイからの配車指示をお待ちください。</p>
+            <p style={{ margin: 0, fontSize: rem(18), fontWeight: 800 }}>待機中</p>
+            <p style={{ margin: '8px 0 0', fontSize: rem(13.5), color: '#8a8a8a' }}>ボーイからの配車指示をお待ちください。</p>
           </div>
         ) : myAssignedTrips.map(trip => (
           <div key={trip.id} style={{ border: '1px solid #262626', borderRadius: 22, overflow: 'hidden', background: '#141414', marginBottom: 16 }}>
             <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid #222' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.06em', color: '#06c167' }}>担当便</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', background: '#222', padding: '4px 11px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>{trip.departTime} 出発</span>
+                <span style={{ fontSize: rem(12), fontWeight: 700, letterSpacing: '.06em', color: '#06c167' }}>担当便</span>
+                <span style={{ fontSize: rem(13), fontWeight: 700, color: '#fff', background: '#222', padding: '4px 11px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>{trip.departTime} 出発</span>
               </div>
-              <p style={{ margin: '10px 0 0', fontSize: 26, fontWeight: 800, letterSpacing: '-.01em' }}>{trip.label}</p>
-              <p style={{ margin: '4px 0 0', fontSize: 13.5, color: '#9a9a9a' }}>店前で乗車 ・ {trip.assignedCount}名 ・ {trip.status}</p>
+              <p style={{ margin: '10px 0 0', fontSize: rem(26), fontWeight: 800, letterSpacing: '-.01em' }}>{trip.label}</p>
+              <p style={{ margin: '4px 0 0', fontSize: rem(13.5), color: '#9a9a9a' }}>店前で乗車 ・ {trip.assignedCount}名 ・ {trip.status}</p>
             </div>
             <div style={{ padding: '16px 18px', display: 'flex', gap: 18 }}>
-              <div><p style={{ margin: 0, fontSize: 11, color: '#8a8a8a', fontWeight: 600 }}>乗車</p><p style={{ margin: '3px 0 0', fontSize: 18, fontWeight: 800, whiteSpace: 'nowrap' }}>{trip.assignedCount} 名</p></div>
+              <div><p style={{ margin: 0, fontSize: rem(11), color: '#8a8a8a', fontWeight: 600 }}>乗車</p><p style={{ margin: '3px 0 0', fontSize: rem(18), fontWeight: 800, whiteSpace: 'nowrap' }}>{trip.assignedCount} 名</p></div>
               <div style={{ width: 1, background: '#262626' }} />
-              <div><p style={{ margin: 0, fontSize: 11, color: '#8a8a8a', fontWeight: 600 }}>降車地</p><p style={{ margin: '3px 0 0', fontSize: 18, fontWeight: 800, whiteSpace: 'nowrap' }}>{trip.dropsTotal} 箇所</p></div>
+              <div><p style={{ margin: 0, fontSize: rem(11), color: '#8a8a8a', fontWeight: 600 }}>降車地</p><p style={{ margin: '3px 0 0', fontSize: rem(18), fontWeight: 800, whiteSpace: 'nowrap' }}>{trip.dropsTotal} 箇所</p></div>
               <div style={{ width: 1, background: '#262626' }} />
-              <div><p style={{ margin: 0, fontSize: 11, color: '#8a8a8a', fontWeight: 600 }}>推定距離</p><p style={{ margin: '3px 0 0', fontSize: 18, fontWeight: 800, whiteSpace: 'nowrap' }}>{trip.estimatedDist}</p></div>
+              <div><p style={{ margin: 0, fontSize: rem(11), color: '#8a8a8a', fontWeight: 600 }}>推定距離</p><p style={{ margin: '3px 0 0', fontSize: rem(18), fontWeight: 800, whiteSpace: 'nowrap' }}>{trip.estimatedDist}</p></div>
             </div>
             <div style={{ padding: '0 18px 16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-                {trip.castObjs.map((oc, i) => <div key={i} style={{ width: 34, height: 34, borderRadius: '50%', background: oc.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, border: '2px solid #141414', marginLeft: i === 0 ? 0 : -6 }}>{oc.initial}</div>)}
+                {trip.castObjs.map((oc, i) => <div key={i} style={{ width: 34, height: 34, borderRadius: '50%', background: oc.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(13), border: '2px solid #141414', marginLeft: i === 0 ? 0 : -6 }}>{oc.initial}</div>)}
               </div>
-              <button onClick={() => boardTrip(trip.id)} style={{ width: '100%', height: 52, borderRadius: 14, background: '#06c167', color: '#fff', border: 'none', fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px -8px rgba(6,193,103,.7)' }}>運行を開始する</button>
+              <button onClick={() => boardTrip(trip.id)} style={{ width: '100%', height: 52, borderRadius: 14, background: '#06c167', color: '#fff', border: 'none', fontSize: rem(16), fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px -8px rgba(6,193,103,.7)' }}>運行を開始する</button>
             </div>
           </div>
         ))}
@@ -195,10 +196,10 @@ export default function DriverPage() {
     <div style={{ minHeight: '100dvh', background: '#0a0a0a', color: '#fff', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 10px' }}>
         <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#06c167', letterSpacing: '.04em' }}>{activeT ? '運行中' : '運行'}</p>
-          <h1 style={{ margin: '2px 0 0', fontSize: 24, fontWeight: 800, letterSpacing: '-.01em', whiteSpace: 'nowrap' }}>{activeT ? '便 #' + activeT.id : '担当便なし'}</h1>
+          <p style={{ margin: 0, fontSize: rem(12), fontWeight: 600, color: '#06c167', letterSpacing: '.04em' }}>{activeT ? '運行中' : '運行'}</p>
+          <h1 style={{ margin: '2px 0 0', fontSize: rem(24), fontWeight: 800, letterSpacing: '-.01em', whiteSpace: 'nowrap' }}>{activeT ? '便 #' + activeT.id : '担当便なし'}</h1>
         </div>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', background: '#1a1a1a', border: '1px solid #2a2a2a', padding: '7px 12px', borderRadius: 999, whiteSpace: 'nowrap' }}>降車 {aDone}/{aTotal}</span>
+        <span style={{ fontSize: rem(13), fontWeight: 700, color: '#fff', background: '#1a1a1a', border: '1px solid #2a2a2a', padding: '7px 12px', borderRadius: 999, whiteSpace: 'nowrap' }}>降車 {aDone}/{aTotal}</span>
       </div>
 
       {myTrips.length > 1 && (
@@ -209,8 +210,8 @@ export default function DriverPage() {
             const isActive = activeT?.id === t.id
             return (
               <div key={t.id} onClick={() => setActiveTripId(t.id)} role="button" style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 999, cursor: 'pointer', border: isActive ? '2px solid #06c167' : '1px solid #2a2a2a', background: isActive ? '#1a1a1a' : '#111', display: 'flex', alignItems: 'center', gap: 7 }}>
-                <span style={{ fontSize: 13.5, fontWeight: 700, color: isActive ? '#06c167' : '#7a7a7a' }}>便 #{t.id}</span>
-                <span style={{ fontSize: 11.5, color: '#5a5a5a' }}>{t.departTime} ・ {st}</span>
+                <span style={{ fontSize: rem(13.5), fontWeight: 700, color: isActive ? '#06c167' : '#7a7a7a' }}>便 #{t.id}</span>
+                <span style={{ fontSize: rem(11.5), color: '#5a5a5a' }}>{t.departTime} ・ {st}</span>
               </div>
             )
           })}
@@ -222,49 +223,49 @@ export default function DriverPage() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z" stroke="#06c167" strokeWidth="1.8" strokeLinejoin="round" /><circle cx="12" cy="10" r="2.2" fill="#06c167" /></svg>
-              <span style={{ fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap' }}>店前で乗車</span>
+              <span style={{ fontSize: rem(15), fontWeight: 700, whiteSpace: 'nowrap' }}>店前で乗車</span>
             </div>
-            {activeT?.boarded && <span style={{ fontSize: 11.5, fontWeight: 700, color: '#06c167' }}>乗車済み</span>}
+            {activeT?.boarded && <span style={{ fontSize: rem(11.5), fontWeight: 700, color: '#06c167' }}>乗車済み</span>}
           </div>
-          <p style={{ margin: '8px 0 12px 27px', fontSize: 12.5, color: '#9a9a9a' }}>乗車順（奥詰め）：番号順に着席</p>
+          <p style={{ margin: '8px 0 12px 27px', fontSize: rem(12.5), color: '#9a9a9a' }}>乗車順（奥詰め）：番号順に着席</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7, paddingLeft: 27 }}>
             {aBoardOrder.map(g => (
               <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ width: 20, height: 20, borderRadius: 6, background: '#222', color: '#cfcfcf', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{g.boardNo}</span>
-                <div style={{ width: 30, height: 30, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13 }}>{g.initial}</div>
-                <span style={{ fontSize: 14, fontWeight: 600 }}>{g.name}</span>
-                <span style={{ fontSize: 11.5, color: '#7a7a7a', marginLeft: 'auto' }}>{g.area}</span>
+                <span style={{ width: 20, height: 20, borderRadius: 6, background: '#222', color: '#cfcfcf', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: rem(11), fontWeight: 700 }}>{g.boardNo}</span>
+                <div style={{ width: 30, height: 30, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(13) }}>{g.initial}</div>
+                <span style={{ fontSize: rem(14), fontWeight: 600 }}>{g.name}</span>
+                <span style={{ fontSize: rem(11.5), color: '#7a7a7a', marginLeft: 'auto' }}>{g.area}</span>
               </div>
             ))}
           </div>
           {!activeT?.boarded && activeT && (
-            <button onClick={() => boardTrip(activeT.id)} style={{ marginTop: 14, width: '100%', height: 48, borderRadius: 13, background: '#fff', color: '#0a0a0a', border: 'none', fontSize: 14.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>全員の乗車を確認</button>
+            <button onClick={() => boardTrip(activeT.id)} style={{ marginTop: 14, width: '100%', height: 48, borderRadius: 13, background: '#fff', color: '#0a0a0a', border: 'none', fontSize: rem(14.5), fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>全員の乗車を確認</button>
           )}
         </div>
 
-        <p style={{ margin: '24px 4px 12px', fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>降車順（お店から近い順）</p>
+        <p style={{ margin: '24px 4px 12px', fontSize: rem(13), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>降車順（お店から近い順）</p>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {aObjs.map((g, i) => (
             <div key={g.id} style={{ display: 'flex', gap: 13 }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 26 }}>
                 {g.done ? <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#06c167', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><svg width="13" height="13" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" stroke="#0a0a0a" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-                  : g.current ? <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0a0a0a', fontSize: 13, fontWeight: 800, flexShrink: 0, animation: 'lm-pulse 1.3s infinite' }}>{g.dropNo}</div>
-                  : <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#141414', border: '2px solid #2c2c2c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6e6e6e', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{g.dropNo}</div>}
+                  : g.current ? <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0a0a0a', fontSize: rem(13), fontWeight: 800, flexShrink: 0, animation: 'lm-pulse 1.3s infinite' }}>{g.dropNo}</div>
+                  : <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#141414', border: '2px solid #2c2c2c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6e6e6e', fontSize: rem(13), fontWeight: 700, flexShrink: 0 }}>{g.dropNo}</div>}
                 {i < aObjs.length - 1 && <div style={{ width: 2, flex: 1, background: '#222', minHeight: 24 }} />}
               </div>
               <div style={{ flex: 1, paddingBottom: 20, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 16, fontWeight: 700 }}>{g.name}</span>
-                  <span style={{ fontSize: 11.5, color: '#7a7a7a' }}>{g.area} ・ {g.distLabel}</span>
+                  <span style={{ fontSize: rem(16), fontWeight: 700 }}>{g.name}</span>
+                  <span style={{ fontSize: rem(11.5), color: '#7a7a7a' }}>{g.area} ・ {g.distLabel}</span>
                 </div>
-                <p style={{ margin: '3px 0 0', fontSize: 13, color: '#bdbdbd', lineHeight: 1.4 }}>{g.addr}</p>
+                <p style={{ margin: '3px 0 0', fontSize: rem(13), color: '#bdbdbd', lineHeight: 1.4 }}>{g.addr}</p>
                 {g.current && (
-                  <button onClick={() => activeT && completeStop(activeT.id)} style={{ marginTop: 10, width: '100%', height: 46, borderRadius: 12, background: '#06c167', color: '#fff', border: 'none', fontSize: 14.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+                  <button onClick={() => activeT && completeStop(activeT.id)} style={{ marginTop: 10, width: '100%', height: 46, borderRadius: 12, background: '#06c167', color: '#fff', border: 'none', fontSize: rem(14.5), fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
                     <svg width="16" height="16" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" stroke="#fff" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     到着・降車完了
                   </button>
                 )}
-                {g.done && <span style={{ display: 'inline-block', marginTop: 4, fontSize: 11.5, fontWeight: 700, color: '#06c167' }}>降車完了</span>}
+                {g.done && <span style={{ display: 'inline-block', marginTop: 4, fontSize: rem(11.5), fontWeight: 700, color: '#06c167' }}>降車完了</span>}
               </div>
             </div>
           ))}
@@ -275,8 +276,8 @@ export default function DriverPage() {
             <div style={{ width: 54, height: 54, borderRadius: '50%', background: '#06c167', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
               <svg width="26" height="26" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
-            <p style={{ margin: 0, fontSize: 19, fontWeight: 800 }}>全員の送迎が完了しました</p>
-            <button onClick={() => setScreen('offer')} style={{ marginTop: 18, height: 48, padding: '0 24px', borderRadius: 13, background: '#fff', color: '#0a0a0a', border: 'none', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>依頼一覧に戻る</button>
+            <p style={{ margin: 0, fontSize: rem(19), fontWeight: 800 }}>全員の送迎が完了しました</p>
+            <button onClick={() => setScreen('offer')} style={{ marginTop: 18, height: 48, padding: '0 24px', borderRadius: 13, background: '#fff', color: '#0a0a0a', border: 'none', fontSize: rem(14), fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>依頼一覧に戻る</button>
           </div>
         )}
       </div>

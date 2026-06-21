@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, type Girl, type GirlDailyOverride } from '@/lib/supabase'
@@ -89,7 +90,7 @@ export default function CastHomePage({ params }: { params: Promise<{ id: string 
           fontFamily: "'Hanken Grotesk','Noto Sans JP',sans-serif",
         }}
       >
-        <div style={{ color: '#9a9a9a', fontSize: 14 }}>読み込み中...</div>
+        <div style={{ color: '#9a9a9a', fontSize: rem(14) }}>読み込み中...</div>
       </div>
     )
   }
@@ -103,7 +104,7 @@ export default function CastHomePage({ params }: { params: Promise<{ id: string 
           fontFamily: "'Hanken Grotesk','Noto Sans JP',sans-serif",
         }}
       >
-        <div style={{ color: '#9a9a9a', fontSize: 14 }}>見つかりませんでした</div>
+        <div style={{ color: '#9a9a9a', fontSize: rem(14) }}>見つかりませんでした</div>
       </div>
     )
   }
@@ -128,8 +129,8 @@ export default function CastHomePage({ params }: { params: Promise<{ id: string 
         }}
       >
         <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a' }}>CLUB LUMINA</p>
-          <h1 style={{ margin: '2px 0 0', fontSize: 22, fontWeight: 800, letterSpacing: '-.02em' }}>
+          <p style={{ margin: 0, fontSize: rem(12), fontWeight: 600, color: '#8a8a8a' }}>CLUB LUMINA</p>
+          <h1 style={{ margin: '2px 0 0', fontSize: rem(22), fontWeight: 800, letterSpacing: '-.02em' }}>
             こんばんは、{girl.name}さん
           </h1>
         </div>
@@ -138,7 +139,7 @@ export default function CastHomePage({ params }: { params: Promise<{ id: string 
           style={{
             height: 38, padding: '0 14px', borderRadius: 10,
             background: '#f4f4f4', border: 'none', color: '#5a5a5a',
-            fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+            fontSize: rem(13), fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
           }}
         >
           ログアウト
@@ -150,15 +151,15 @@ export default function CastHomePage({ params }: { params: Promise<{ id: string 
           <div style={{ background: '#0a0a0a', borderRadius: 20, padding: 20, color: '#fff' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#06c167', display: 'block' }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#cfcfcf' }}>
+              <span style={{ fontSize: rem(13), fontWeight: 700, color: '#cfcfcf' }}>
                 本日の帰り便 ・ {dispatchInfo.tripStatus}
               </span>
             </div>
             <div style={{ marginTop: 16, display: 'flex', alignItems: 'flex-end', gap: 6 }}>
-              <span style={{ fontSize: 44, fontWeight: 800, lineHeight: 1, letterSpacing: '-.02em' }}>
+              <span style={{ fontSize: rem(44), fontWeight: 800, lineHeight: 1, letterSpacing: '-.02em' }}>
                 {dispatchInfo.castDropNo}
               </span>
-              <span style={{ fontSize: 15, fontWeight: 600, color: '#a8a8a8', paddingBottom: 6 }}>
+              <span style={{ fontSize: rem(15), fontWeight: 600, color: '#a8a8a8', paddingBottom: 6 }}>
                 / {dispatchInfo.dropsTotal} 番目に降車
               </span>
             </div>
@@ -172,16 +173,16 @@ export default function CastHomePage({ params }: { params: Promise<{ id: string 
                 style={{
                   width: 40, height: 40, borderRadius: '50%', background: '#333',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 700, fontSize: 15,
+                  fontWeight: 700, fontSize: rem(15),
                 }}
               >
                 {dispatchInfo.driverInitial}
               </div>
               <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{dispatchInfo.driverName}</p>
-                <p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a' }}>ドライバー</p>
+                <p style={{ margin: 0, fontSize: rem(14), fontWeight: 700 }}>{dispatchInfo.driverName}</p>
+                <p style={{ margin: '1px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>ドライバー</p>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#06c167', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <span style={{ fontSize: rem(13), fontWeight: 700, color: '#06c167', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {dispatchInfo.departTime} 出発
               </span>
             </div>
@@ -200,23 +201,23 @@ export default function CastHomePage({ params }: { params: Promise<{ id: string 
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#c77700' }}>本日のみ降車場所を変更</span>
+              <span style={{ fontSize: rem(12), fontWeight: 700, color: '#c77700' }}>本日のみ降車場所を変更</span>
               <span
                 style={{
-                  fontSize: 11, fontWeight: 700, background: '#ffe3b8',
+                  fontSize: rem(11), fontWeight: 700, background: '#ffe3b8',
                   color: '#8a5a00', padding: '2px 8px', borderRadius: 999,
                 }}
               >
                 承認待ち
               </span>
             </div>
-            <p style={{ margin: '6px 0 0', fontSize: 13.5, fontWeight: 600, color: '#8a5a00' }}>
+            <p style={{ margin: '6px 0 0', fontSize: rem(13.5), fontWeight: 600, color: '#8a5a00' }}>
               {override!.today_destination}
             </p>
           </div>
         )}
 
-        <p style={{ margin: '24px 4px 10px', fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+        <p style={{ margin: '24px 4px 10px', fontSize: rem(13), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
           降車場所
         </p>
         <div
@@ -239,8 +240,8 @@ export default function CastHomePage({ params }: { params: Promise<{ id: string 
             </svg>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 12, color: '#9a9a9a', fontWeight: 600 }}>登録済みの降車場所</p>
-            <p style={{ margin: '2px 0 0', fontSize: 14, fontWeight: 600, lineHeight: 1.4 }}>{effectiveDest}</p>
+            <p style={{ margin: 0, fontSize: rem(12), color: '#9a9a9a', fontWeight: 600 }}>登録済みの降車場所</p>
+            <p style={{ margin: '2px 0 0', fontSize: rem(14), fontWeight: 600, lineHeight: 1.4 }}>{effectiveDest}</p>
           </div>
           <svg width="9" height="15" viewBox="0 0 9 15" style={{ flexShrink: 0 }}>
             <path d="M1 1l6 6.5L1 14" stroke="#bdbdbd" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -252,7 +253,7 @@ export default function CastHomePage({ params }: { params: Promise<{ id: string 
           style={{
             marginTop: 14, width: '100%', height: 56, borderRadius: 15,
             background: '#0a0a0a', color: '#fff', border: 'none',
-            fontSize: 15.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+            fontSize: rem(15.5), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
         >
@@ -317,7 +318,7 @@ function NavBtn({
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: active ? '#0a0a0a' : '#b5b5b5' }}
     >
       {children}
-      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>{label}</span>
     </div>
   )
 }

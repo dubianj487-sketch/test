@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -93,21 +94,21 @@ export default function BoyStatusPage() {
             <path d="M8 1 2 7.5 8 14" stroke="#0a0a0a" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>送迎状況</h1>
+        <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>送迎状況</h1>
       </div>
 
       <div style={{ padding: '0 20px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#9a9a9a', fontSize: 14 }}>読み込み中...</div>
+          <div style={{ textAlign: 'center', padding: 40, color: '#9a9a9a', fontSize: rem(14) }}>読み込み中...</div>
         ) : !trip ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#9a9a9a', fontSize: 14 }}>本日の便はありません</div>
+          <div style={{ textAlign: 'center', padding: 40, color: '#9a9a9a', fontSize: rem(14) }}>本日の便はありません</div>
         ) : (
           <>
             <div style={{ background: '#0a0a0a', borderRadius: 18, padding: 18, color: '#fff' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: 12, color: '#a8a8a8', fontWeight: 600 }}>{trip.area}</p>
-                  <p style={{ margin: '3px 0 0', fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>{trip.status}</p>
+                  <p style={{ margin: 0, fontSize: rem(12), color: '#a8a8a8', fontWeight: 600 }}>{trip.area}</p>
+                  <p style={{ margin: '3px 0 0', fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>{trip.status}</p>
                 </div>
                 <span
                   style={{ width: 10, height: 10, borderRadius: '50%', background: '#06c167', display: 'block' }}
@@ -122,27 +123,27 @@ export default function BoyStatusPage() {
                 <div
                   style={{
                     width: 42, height: 42, borderRadius: '50%', background: '#333', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(16),
                   }}
                 >
                   {trip.driverInitial}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{trip.driverName}</p>
-                  <p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a' }}>{trip.departTime} 出発予定</p>
+                  <p style={{ margin: 0, fontSize: rem(14), fontWeight: 700 }}>{trip.driverName}</p>
+                  <p style={{ margin: '1px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{trip.departTime} 出発予定</p>
                 </div>
               </div>
               <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ flex: 1, height: 6, borderRadius: 3, background: '#2a2a2a', overflow: 'hidden' }}>
                   <div style={{ height: '100%', background: '#06c167', borderRadius: 3, width: pct }} />
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#cfcfcf' }}>
+                <span style={{ fontSize: rem(12), fontWeight: 700, color: '#cfcfcf' }}>
                   降車 {trip.dropsDone}/{trip.girls.length}
                 </span>
               </div>
             </div>
 
-            <p style={{ margin: '24px 4px 10px', fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+            <p style={{ margin: '24px 4px 10px', fontSize: rem(13), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
               降車ルート
             </p>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -165,7 +166,7 @@ export default function BoyStatusPage() {
                         style={{
                           width: 24, height: 24, borderRadius: '50%', background: '#0a0a0a',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#fff', fontSize: 12, fontWeight: 700, flexShrink: 0,
+                          color: '#fff', fontSize: rem(12), fontWeight: 700, flexShrink: 0,
                         }}
                       >
                         {g.dropNo}
@@ -176,7 +177,7 @@ export default function BoyStatusPage() {
                           width: 24, height: 24, borderRadius: '50%', background: '#fff',
                           border: '2px solid #e0e0e0',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#b0b0b0', fontSize: 12, fontWeight: 700, flexShrink: 0,
+                          color: '#b0b0b0', fontSize: rem(12), fontWeight: 700, flexShrink: 0,
                         }}
                       >
                         {g.dropNo}
@@ -188,11 +189,11 @@ export default function BoyStatusPage() {
                   </div>
                   <div style={{ flex: 1, paddingBottom: 18 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 15, fontWeight: 700 }}>{g.name}</span>
-                      {g.done && <span style={{ fontSize: 11, fontWeight: 700, color: '#06c167' }}>降車済み</span>}
-                      {g.current && <span style={{ fontSize: 11, fontWeight: 700, color: '#0a0a0a' }}>次の降車</span>}
+                      <span style={{ fontSize: rem(15), fontWeight: 700 }}>{g.name}</span>
+                      {g.done && <span style={{ fontSize: rem(11), fontWeight: 700, color: '#06c167' }}>降車済み</span>}
+                      {g.current && <span style={{ fontSize: rem(11), fontWeight: 700, color: '#0a0a0a' }}>次の降車</span>}
                     </div>
-                    <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{g.addr}</p>
+                    <p style={{ margin: '2px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{g.addr}</p>
                   </div>
                 </div>
               ))}
@@ -261,7 +262,7 @@ function NavBtn({
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: active ? '#0a0a0a' : '#b5b5b5' }}
     >
       {children}
-      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>{label}</span>
     </div>
   )
 }

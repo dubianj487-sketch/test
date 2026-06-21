@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -50,7 +51,7 @@ export default function CastRequestPage({ params }: { params: Promise<{ id: stri
             <path d="M8 1 2 7.5 8 14" stroke="#0a0a0a" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>本日のみ変更申請</h1>
+        <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>本日のみ変更申請</h1>
       </div>
 
       <div style={{ padding: '0 20px' }}>
@@ -64,12 +65,12 @@ export default function CastRequestPage({ params }: { params: Promise<{ id: stri
             <circle cx="12" cy="12" r="9" stroke="#fff" strokeWidth="1.7" />
             <path d="M12 7v5l3 2" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" />
           </svg>
-          <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.6, color: '#dcdcdc' }}>
+          <p style={{ margin: 0, fontSize: rem(13.5), lineHeight: 1.6, color: '#dcdcdc' }}>
             今日だけ、いつもと違う場所で降りたいときに申請できます。ボーイが確認後に降車ルートへ反映されます。
           </p>
         </div>
 
-        <p style={{ margin: '22px 4px 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+        <p style={{ margin: '22px 4px 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
           本日の降車場所
         </p>
         <input
@@ -80,11 +81,11 @@ export default function CastRequestPage({ params }: { params: Promise<{ id: stri
             height: 54, width: '100%', borderRadius: 14,
             background: '#f7f7f7', border: '1px solid #e6e6e6',
             color: '#0a0a0a', padding: '0 16px',
-            fontSize: 15, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+            fontSize: rem(15), fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
           }}
         />
 
-        <p style={{ margin: '18px 4px 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+        <p style={{ margin: '18px 4px 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
           理由（任意）
         </p>
         <textarea
@@ -95,7 +96,7 @@ export default function CastRequestPage({ params }: { params: Promise<{ id: stri
             width: '100%', height: 90, borderRadius: 14,
             background: '#f7f7f7', border: '1px solid #e6e6e6',
             color: '#0a0a0a', padding: '14px 16px',
-            fontSize: 15, fontFamily: 'inherit', lineHeight: 1.6,
+            fontSize: rem(15), fontFamily: 'inherit', lineHeight: 1.6,
             outline: 'none', boxSizing: 'border-box', resize: 'none',
           }}
         />
@@ -107,14 +108,14 @@ export default function CastRequestPage({ params }: { params: Promise<{ id: stri
             marginTop: 24, width: '100%', height: 56, borderRadius: 15,
             background: reqPlace.trim() ? '#0a0a0a' : '#f4f4f4',
             color: reqPlace.trim() ? '#fff' : '#9a9a9a',
-            border: 'none', fontSize: 16, fontWeight: 700,
+            border: 'none', fontSize: rem(16), fontWeight: 700,
             cursor: reqPlace.trim() && !saving ? 'pointer' : 'default',
             fontFamily: 'inherit',
           }}
         >
           {saving ? '申請中...' : 'この内容で申請する'}
         </button>
-        <p style={{ margin: '12px 4px 0', fontSize: 12, color: '#a0a0a0', textAlign: 'center' }}>
+        <p style={{ margin: '12px 4px 0', fontSize: rem(12), color: '#a0a0a0', textAlign: 'center' }}>
           申請は本日の送迎のみに適用されます。
         </p>
       </div>
@@ -172,7 +173,7 @@ function NavBtn({
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: active ? '#0a0a0a' : '#b5b5b5' }}
     >
       {children}
-      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>{label}</span>
     </div>
   )
 }

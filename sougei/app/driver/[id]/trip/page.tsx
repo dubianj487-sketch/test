@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -96,7 +97,7 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
           fontFamily: "'Hanken Grotesk','Noto Sans JP',sans-serif",
         }}
       >
-        <div style={{ color: '#6e6e6e', fontSize: 14 }}>読み込み中...</div>
+        <div style={{ color: '#6e6e6e', fontSize: rem(14) }}>読み込み中...</div>
       </div>
     )
   }
@@ -118,14 +119,14 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
         }}
       >
         <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#06c167', letterSpacing: '.04em' }}>運行中</p>
-          <h1 style={{ margin: '2px 0 0', fontSize: 24, fontWeight: 800, letterSpacing: '-.01em', whiteSpace: 'nowrap' }}>
+          <p style={{ margin: 0, fontSize: rem(12), fontWeight: 700, color: '#06c167', letterSpacing: '.04em' }}>運行中</p>
+          <h1 style={{ margin: '2px 0 0', fontSize: rem(24), fontWeight: 800, letterSpacing: '-.01em', whiteSpace: 'nowrap' }}>
             {trip?.area || '—'}
           </h1>
         </div>
         <span
           style={{
-            fontSize: 13, fontWeight: 700, color: '#fff',
+            fontSize: rem(13), fontWeight: 700, color: '#fff',
             background: '#1a1a1a', border: '1px solid #2a2a2a',
             padding: '7px 12px', borderRadius: 999,
           }}
@@ -142,8 +143,8 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
               padding: 28, textAlign: 'center',
             }}
           >
-            <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#6e6e6e' }}>現在移動中の便はありません</p>
-            <p style={{ margin: '8px 0 0', fontSize: 13, color: '#4a4a4a' }}>依頼タブから承諾してください</p>
+            <p style={{ margin: 0, fontSize: rem(16), fontWeight: 700, color: '#6e6e6e' }}>現在移動中の便はありません</p>
+            <p style={{ margin: '8px 0 0', fontSize: rem(13), color: '#4a4a4a' }}>依頼タブから承諾してください</p>
           </div>
         ) : (
           <>
@@ -155,9 +156,9 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
                     <path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z" stroke="#06c167" strokeWidth="1.8" strokeLinejoin="round" />
                     <circle cx="12" cy="10" r="2.2" fill="#06c167" />
                   </svg>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>店前で乗車</span>
+                  <span style={{ fontSize: rem(15), fontWeight: 700 }}>店前で乗車</span>
                 </div>
-                {boarded && <span style={{ fontSize: 11.5, fontWeight: 700, color: '#06c167' }}>乗車済み</span>}
+                {boarded && <span style={{ fontSize: rem(11.5), fontWeight: 700, color: '#06c167' }}>乗車済み</span>}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginTop: 12 }}>
                 {trip.girls.map((g, i) => (
@@ -166,12 +167,12 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
                       style={{
                         width: 20, height: 20, borderRadius: 6, background: '#222', color: '#cfcfcf',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 11, fontWeight: 700, flexShrink: 0,
+                        fontSize: rem(11), fontWeight: 700, flexShrink: 0,
                       }}
                     >
                       {trip.girls.length - i}
                     </span>
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>{g.name}</span>
+                    <span style={{ fontSize: rem(14), fontWeight: 600 }}>{g.name}</span>
                   </div>
                 ))}
               </div>
@@ -181,7 +182,7 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
                   style={{
                     marginTop: 14, width: '100%', height: 48, borderRadius: 13,
                     background: '#fff', color: '#0a0a0a', border: 'none',
-                    fontSize: 14.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                    fontSize: rem(14.5), fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
                   }}
                 >
                   全員の乗車を確認
@@ -189,7 +190,7 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
               )}
             </div>
 
-            <p style={{ margin: '24px 4px 12px', fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+            <p style={{ margin: '24px 4px 12px', fontSize: rem(13), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
               降車順
             </p>
 
@@ -213,7 +214,7 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
                         style={{
                           width: 26, height: 26, borderRadius: '50%', background: '#fff',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#0a0a0a', fontSize: 13, fontWeight: 800, flexShrink: 0,
+                          color: '#0a0a0a', fontSize: rem(13), fontWeight: 800, flexShrink: 0,
                         }}
                       >
                         {g.dropNo}
@@ -224,7 +225,7 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
                           width: 26, height: 26, borderRadius: '50%', background: '#141414',
                           border: '2px solid #2c2c2c',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#6e6e6e', fontSize: 13, fontWeight: 700, flexShrink: 0,
+                          color: '#6e6e6e', fontSize: rem(13), fontWeight: 700, flexShrink: 0,
                         }}
                       >
                         {g.dropNo}
@@ -236,16 +237,16 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
                   </div>
                   <div style={{ flex: 1, paddingBottom: 20, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 16, fontWeight: 700 }}>{g.name}</span>
+                      <span style={{ fontSize: rem(16), fontWeight: 700 }}>{g.name}</span>
                     </div>
-                    <p style={{ margin: '3px 0 0', fontSize: 13, color: '#bdbdbd', lineHeight: 1.4 }}>{g.addr}</p>
+                    <p style={{ margin: '3px 0 0', fontSize: rem(13), color: '#bdbdbd', lineHeight: 1.4 }}>{g.addr}</p>
                     {g.current && (
                       <button
                         onClick={handleComplete}
                         style={{
                           marginTop: 10, width: '100%', height: 46, borderRadius: 12,
                           background: '#06c167', color: '#fff', border: 'none',
-                          fontSize: 14.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                          fontSize: rem(14.5), fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
                           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                         }}
                       >
@@ -256,7 +257,7 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
                       </button>
                     )}
                     {g.done && (
-                      <span style={{ display: 'inline-block', marginTop: 4, fontSize: 11.5, fontWeight: 700, color: '#06c167' }}>
+                      <span style={{ display: 'inline-block', marginTop: 4, fontSize: rem(11.5), fontWeight: 700, color: '#06c167' }}>
                         降車完了
                       </span>
                     )}
@@ -282,13 +283,13 @@ export default function DriverTripPage({ params }: { params: Promise<{ id: strin
                     <path d="m5 12 4 4 10-10" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <p style={{ margin: 0, fontSize: 19, fontWeight: 800 }}>全員の送迎が完了しました</p>
+                <p style={{ margin: 0, fontSize: rem(19), fontWeight: 800 }}>全員の送迎が完了しました</p>
                 <button
                   onClick={() => driverId && router.push(`/driver/${driverId}`)}
                   style={{
                     marginTop: 18, height: 48, padding: '0 24px', borderRadius: 13,
                     background: '#fff', color: '#0a0a0a', border: 'none',
-                    fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                    fontSize: rem(14), fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
                   }}
                 >
                   依頼一覧に戻る
@@ -341,7 +342,7 @@ function NavBtn({
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: active ? '#fff' : '#6e6e6e' }}
     >
       {children}
-      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>{label}</span>
     </div>
   )
 }

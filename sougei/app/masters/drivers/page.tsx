@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -125,8 +126,8 @@ export default function DriversPage() {
             </Link>
           )}
           <div>
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>管理</p>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em', lineHeight: 1 }}>
+            <p style={{ margin: 0, fontSize: rem(12), fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>管理</p>
+            <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em', lineHeight: 1 }}>
               {headerSub}
             </h1>
           </div>
@@ -138,7 +139,7 @@ export default function DriversPage() {
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 14px',
               background: '#0a0a0a', border: 'none', borderRadius: 999,
-              color: '#fff', fontSize: 13, fontWeight: 700,
+              color: '#fff', fontSize: rem(13), fontWeight: 700,
               fontFamily: font, cursor: 'pointer',
             }}
           >
@@ -156,7 +157,7 @@ export default function DriversPage() {
         {/* List */}
         {view === 'list' && (
           <div className="animate-fade-in">
-            <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+            <p style={{ margin: '0 0 12px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
               {drivers.length}人登録中
             </p>
             {drivers.map(d => (
@@ -170,21 +171,21 @@ export default function DriversPage() {
                     width: 44, height: 44, borderRadius: 12,
                     background: '#f0fdf4',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 18, fontWeight: 800, color: '#06c167', flexShrink: 0,
+                    fontSize: rem(18), fontWeight: 800, color: '#06c167', flexShrink: 0,
                   }}>
                     {d.name.charAt(0)}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: '#0a0a0a', letterSpacing: '-.01em' }}>
+                    <div style={{ fontSize: rem(17), fontWeight: 700, color: '#0a0a0a', letterSpacing: '-.01em' }}>
                       {d.name}
                     </div>
-                    <div style={{ fontSize: 12, color: '#9a9a9a', marginTop: 2, fontWeight: 500 }}>
+                    <div style={{ fontSize: rem(12), color: '#9a9a9a', marginTop: 2, fontWeight: 500 }}>
                       {d.capacity}人乗り
                     </div>
                   </div>
                   {d.note && d.note.trim().length > 0 && (
                     <div style={{
-                      fontSize: 11, color: '#9a9a9a',
+                      fontSize: rem(11), color: '#9a9a9a',
                       background: '#f4f4f4', borderRadius: 8,
                       padding: '3px 8px', maxWidth: 90,
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -199,7 +200,7 @@ export default function DriversPage() {
                       style={{
                         padding: '5px 10px', borderRadius: 999,
                         background: '#fff7ed', border: 'none',
-                        color: '#c77700', fontSize: 11, fontWeight: 700,
+                        color: '#c77700', fontSize: rem(11), fontWeight: 700,
                         cursor: 'pointer', flexShrink: 0, fontFamily: font,
                       }}
                     >
@@ -223,12 +224,12 @@ export default function DriversPage() {
               </div>
             ))}
             {drivers.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#9a9a9a', fontSize: 14 }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#9a9a9a', fontSize: rem(14) }}>
                 ドライバーが登録されていません
               </div>
             )}
             <div style={{ marginTop: 24, padding: '0 2px' }}>
-              <Link href="/masters/girls" style={{ fontSize: 13, color: '#9a9a9a', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+              <Link href="/masters/girls" style={{ fontSize: rem(13), color: '#9a9a9a', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
                 女の子管理 →
               </Link>
             </div>
@@ -238,7 +239,7 @@ export default function DriversPage() {
         {/* Form */}
         {view === 'form' && (
           <div className="animate-fade-in">
-            <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>名前</p>
+            <p style={{ margin: '0 0 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>名前</p>
             <div style={{
               background: '#f7f7f7', borderRadius: 14,
               border: '1px solid #e6e6e6',
@@ -251,20 +252,20 @@ export default function DriversPage() {
                 placeholder="例：田中"
                 style={{
                   width: '100%', border: 'none', outline: 'none',
-                  fontSize: 18, fontWeight: 700, color: '#0a0a0a',
+                  fontSize: rem(18), fontWeight: 700, color: '#0a0a0a',
                   fontFamily: font, background: 'transparent', padding: 0,
                 }}
               />
             </div>
 
-            <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>車の定員</p>
+            <p style={{ margin: '0 0 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>車の定員</p>
             <div style={{
               background: '#f7f7f7', borderRadius: 14,
               border: '1px solid #e6e6e6',
               padding: '12px 16px', marginBottom: 16,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: '#0a0a0a' }}>{formCapacity} 人乗り</span>
+              <span style={{ fontSize: rem(18), fontWeight: 700, color: '#0a0a0a' }}>{formCapacity} 人乗り</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <button
                   onClick={() => setFormCapacity(v => Math.max(v - 1, 1))}
@@ -281,7 +282,7 @@ export default function DriversPage() {
                 </button>
                 <div style={{
                   width: 44, textAlign: 'center',
-                  fontSize: 22, fontWeight: 800, color: '#0a0a0a',
+                  fontSize: rem(22), fontWeight: 800, color: '#0a0a0a',
                   fontVariantNumeric: 'tabular-nums',
                 }}>
                   {formCapacity}
@@ -302,7 +303,7 @@ export default function DriversPage() {
               </div>
             </div>
 
-            <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+            <p style={{ margin: '0 0 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
               メモ <span style={{ fontWeight: 400 }}>（任意）</span>
             </p>
             <div style={{
@@ -317,7 +318,7 @@ export default function DriversPage() {
                 rows={3}
                 style={{
                   width: '100%', border: 'none', outline: 'none',
-                  fontSize: 15, color: '#0a0a0a',
+                  fontSize: rem(15), color: '#0a0a0a',
                   fontFamily: font, background: 'transparent',
                   padding: 0, resize: 'none', lineHeight: 1.6,
                 }}
@@ -332,7 +333,7 @@ export default function DriversPage() {
                 background: canSave ? '#06c167' : '#f0f0f0',
                 border: 'none',
                 color: canSave ? '#fff' : '#b0b0b0',
-                fontSize: 17, fontWeight: 700, fontFamily: font,
+                fontSize: rem(17), fontWeight: 700, fontFamily: font,
                 cursor: canSave ? 'pointer' : 'default',
                 transition: 'all 0.2s',
                 boxShadow: canSave ? '0 8px 20px -8px rgba(6,193,103,.6)' : 'none',
@@ -344,7 +345,7 @@ export default function DriversPage() {
               onClick={() => setView('list')}
               style={{
                 width: '100%', padding: 12, background: 'transparent',
-                border: 'none', color: '#9a9a9a', fontSize: 14, fontWeight: 500,
+                border: 'none', color: '#9a9a9a', fontSize: rem(14), fontWeight: 500,
                 fontFamily: font, cursor: 'pointer', marginTop: 4,
               }}
             >
@@ -414,7 +415,7 @@ function NavBtn({
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: active ? '#0a0a0a' : '#b5b5b5' }}
     >
       {children}
-      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>{label}</span>
     </div>
   )
 }

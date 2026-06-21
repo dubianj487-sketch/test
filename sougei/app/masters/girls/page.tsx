@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -123,8 +124,8 @@ export default function GirlsPage() {
             </Link>
           )}
           <div>
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>管理</p>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em', lineHeight: 1 }}>
+            <p style={{ margin: 0, fontSize: rem(12), fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>管理</p>
+            <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em', lineHeight: 1 }}>
               {headerSub}
             </h1>
           </div>
@@ -136,7 +137,7 @@ export default function GirlsPage() {
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 14px',
               background: '#0a0a0a', border: 'none', borderRadius: 999,
-              color: '#fff', fontSize: 13, fontWeight: 700,
+              color: '#fff', fontSize: rem(13), fontWeight: 700,
               fontFamily: font, cursor: 'pointer',
             }}
           >
@@ -154,7 +155,7 @@ export default function GirlsPage() {
         {/* List */}
         {view === 'list' && (
           <div className="animate-fade-in">
-            <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+            <p style={{ margin: '0 0 12px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
               {girls.length}人登録中
             </p>
             {girls.map(g => (
@@ -168,21 +169,21 @@ export default function GirlsPage() {
                     width: 44, height: 44, borderRadius: 12,
                     background: '#fdf4ff',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 18, fontWeight: 800, color: '#a855f7', flexShrink: 0,
+                    fontSize: rem(18), fontWeight: 800, color: '#a855f7', flexShrink: 0,
                   }}>
                     {g.name.charAt(0)}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: '#0a0a0a', letterSpacing: '-.01em' }}>
+                    <div style={{ fontSize: rem(17), fontWeight: 700, color: '#0a0a0a', letterSpacing: '-.01em' }}>
                       {g.name}
                     </div>
-                    <div style={{ fontSize: 12, color: '#9a9a9a', marginTop: 2, fontWeight: 500 }}>
+                    <div style={{ fontSize: rem(12), color: '#9a9a9a', marginTop: 2, fontWeight: 500 }}>
                       {g.area || '—'}
                     </div>
                   </div>
                   {g.note && g.note.trim().length > 0 && (
                     <div style={{
-                      fontSize: 11, color: '#9a9a9a',
+                      fontSize: rem(11), color: '#9a9a9a',
                       background: '#f4f4f4', borderRadius: 8,
                       padding: '3px 8px', maxWidth: 90,
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -208,7 +209,7 @@ export default function GirlsPage() {
               </div>
             ))}
             {girls.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#9a9a9a', fontSize: 14 }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#9a9a9a', fontSize: rem(14) }}>
                 女の子が登録されていません
               </div>
             )}
@@ -218,7 +219,7 @@ export default function GirlsPage() {
         {/* Form */}
         {view === 'form' && (
           <div className="animate-fade-in">
-            <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>名前（源氏名）</p>
+            <p style={{ margin: '0 0 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>名前（源氏名）</p>
             <div style={{
               background: '#f7f7f7', borderRadius: 14,
               border: '1px solid #e6e6e6',
@@ -231,13 +232,13 @@ export default function GirlsPage() {
                 placeholder="例：さくら"
                 style={{
                   width: '100%', border: 'none', outline: 'none',
-                  fontSize: 18, fontWeight: 700, color: '#0a0a0a',
+                  fontSize: rem(18), fontWeight: 700, color: '#0a0a0a',
                   fontFamily: font, background: 'transparent', padding: 0,
                 }}
               />
             </div>
 
-            <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>自宅エリア</p>
+            <p style={{ margin: '0 0 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>自宅エリア</p>
             <div style={{
               background: '#f7f7f7', borderRadius: 14,
               border: '1px solid #e6e6e6',
@@ -250,13 +251,13 @@ export default function GirlsPage() {
                 placeholder="例：女池、駅前、新発田"
                 style={{
                   width: '100%', border: 'none', outline: 'none',
-                  fontSize: 18, fontWeight: 700, color: '#0a0a0a',
+                  fontSize: rem(18), fontWeight: 700, color: '#0a0a0a',
                   fontFamily: font, background: 'transparent', padding: 0,
                 }}
               />
             </div>
 
-            <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+            <p style={{ margin: '0 0 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
               自宅住所 <span style={{ fontWeight: 400 }}>（任意）</span>
             </p>
             <div style={{
@@ -271,13 +272,13 @@ export default function GirlsPage() {
                 placeholder="例：新潟市中央区女池1-2-3"
                 style={{
                   width: '100%', border: 'none', outline: 'none',
-                  fontSize: 16, fontWeight: 500, color: '#0a0a0a',
+                  fontSize: rem(16), fontWeight: 500, color: '#0a0a0a',
                   fontFamily: font, background: 'transparent', padding: 0,
                 }}
               />
             </div>
 
-            <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
+            <p style={{ margin: '0 0 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>
               メモ <span style={{ fontWeight: 400 }}>（任意）</span>
             </p>
             <div style={{
@@ -292,7 +293,7 @@ export default function GirlsPage() {
                 rows={3}
                 style={{
                   width: '100%', border: 'none', outline: 'none',
-                  fontSize: 15, color: '#0a0a0a',
+                  fontSize: rem(15), color: '#0a0a0a',
                   fontFamily: font, background: 'transparent',
                   padding: 0, resize: 'none', lineHeight: 1.6,
                 }}
@@ -307,7 +308,7 @@ export default function GirlsPage() {
                 background: canSave ? '#06c167' : '#f0f0f0',
                 border: 'none',
                 color: canSave ? '#fff' : '#b0b0b0',
-                fontSize: 17, fontWeight: 700, fontFamily: font,
+                fontSize: rem(17), fontWeight: 700, fontFamily: font,
                 cursor: canSave ? 'pointer' : 'default',
                 transition: 'all 0.2s',
                 boxShadow: canSave ? '0 8px 20px -8px rgba(6,193,103,.6)' : 'none',
@@ -319,7 +320,7 @@ export default function GirlsPage() {
               onClick={() => setView('list')}
               style={{
                 width: '100%', padding: 12, background: 'transparent',
-                border: 'none', color: '#9a9a9a', fontSize: 14, fontWeight: 500,
+                border: 'none', color: '#9a9a9a', fontSize: rem(14), fontWeight: 500,
                 fontFamily: font, cursor: 'pointer', marginTop: 4,
               }}
             >
@@ -389,7 +390,7 @@ function NavBtn({
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: active ? '#0a0a0a' : '#b5b5b5' }}
     >
       {children}
-      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>{label}</span>
     </div>
   )
 }

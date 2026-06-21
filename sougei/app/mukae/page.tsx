@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useRouter } from 'next/navigation'
 
 const font = "'Hanken Grotesk', 'Noto Sans JP', sans-serif"
@@ -21,10 +22,10 @@ export default function MukaePage() {
         borderBottom: '1px solid #f0f0f0',
         flexShrink: 0,
       }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>
+        <p style={{ margin: 0, fontSize: rem(12), fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>
           CLUB LUMINA
         </p>
-        <h1 style={{ margin: '2px 0 0', fontSize: 26, fontWeight: 800, letterSpacing: '-.01em', lineHeight: 1 }}>
+        <h1 style={{ margin: '2px 0 0', fontSize: rem(26), fontWeight: 800, letterSpacing: '-.01em', lineHeight: 1 }}>
           迎え
         </h1>
       </div>
@@ -50,10 +51,10 @@ export default function MukaePage() {
             <path d="M12 7v5l3 3" stroke="#c0c0c0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <p style={{ margin: 0, fontSize: 20, fontWeight: 800, letterSpacing: '-.01em' }}>
+        <p style={{ margin: 0, fontSize: rem(20), fontWeight: 800, letterSpacing: '-.01em' }}>
           迎え機能
         </p>
-        <p style={{ margin: '8px 0 0', fontSize: 14, color: '#9a9a9a', lineHeight: 1.7, fontWeight: 500 }}>
+        <p style={{ margin: '8px 0 0', fontSize: rem(14), color: '#9a9a9a', lineHeight: 1.7, fontWeight: 500 }}>
           準備中です。<br />しばらくお待ちください。
         </p>
       </div>
@@ -118,7 +119,7 @@ function NavBtn({
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: active ? '#0a0a0a' : '#b5b5b5' }}
     >
       {children}
-      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>{label}</span>
     </div>
   )
 }

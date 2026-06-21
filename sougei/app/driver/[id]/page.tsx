@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, type Driver } from '@/lib/supabase'
@@ -121,7 +122,7 @@ export default function DriverNotificationPage({
           fontFamily: "'Hanken Grotesk','Noto Sans JP',sans-serif",
         }}
       >
-        <div style={{ color: '#6e6e6e', fontSize: 14 }}>読み込み中...</div>
+        <div style={{ color: '#6e6e6e', fontSize: rem(14) }}>読み込み中...</div>
       </div>
     )
   }
@@ -145,14 +146,14 @@ export default function DriverNotificationPage({
       >
         <div>
           {isMoving && (
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#06c167', letterSpacing: '.04em' }}>
+            <p style={{ margin: 0, fontSize: rem(12), fontWeight: 700, color: '#06c167', letterSpacing: '.04em' }}>
               運行中
             </p>
           )}
           <h1
             style={{
               margin: isMoving ? '2px 0 0' : 0,
-              fontSize: 30, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1,
+              fontSize: rem(30), fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1,
             }}
           >
             {isRequest ? '配車依頼' : isMoving ? (dispatch?.destination || '移動中') : isDone ? '完了' : driver?.name || 'ドライバー'}
@@ -163,7 +164,7 @@ export default function DriverNotificationPage({
           style={{
             height: 38, padding: '0 14px', borderRadius: 10,
             background: '#1a1a1a', border: '1px solid #2a2a2a',
-            color: '#9a9a9a', fontSize: 13, fontWeight: 600,
+            color: '#9a9a9a', fontSize: rem(13), fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
           }}
         >
@@ -182,33 +183,33 @@ export default function DriverNotificationPage({
             >
               <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid #222' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.06em', color: '#06c167' }}>
+                  <span style={{ fontSize: rem(12), fontWeight: 700, letterSpacing: '.06em', color: '#06c167' }}>
                     新着の依頼
                   </span>
                   <span
                     style={{
-                      fontSize: 13, fontWeight: 700, color: '#fff',
+                      fontSize: rem(13), fontWeight: 700, color: '#fff',
                       background: '#222', padding: '4px 11px', borderRadius: 999, whiteSpace: 'nowrap',
                     }}
                   >
                     {dispatch.urgency === '今すぐ' ? '今すぐ' : dispatch.scheduled_time || '—'}
                   </span>
                 </div>
-                <p style={{ margin: '12px 0 0', fontSize: 26, fontWeight: 800, letterSpacing: '-.01em' }}>
+                <p style={{ margin: '12px 0 0', fontSize: rem(26), fontWeight: 800, letterSpacing: '-.01em' }}>
                   {dispatch.destination || '—'}
                 </p>
-                <p style={{ margin: '4px 0 0', fontSize: 13.5, color: '#9a9a9a' }}>
+                <p style={{ margin: '4px 0 0', fontSize: rem(13.5), color: '#9a9a9a' }}>
                   {girlNames || 'キャスト未定'}
                 </p>
               </div>
               <div style={{ padding: '14px 18px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#6a6a6a', letterSpacing: '.06em', marginBottom: 8 }}>
+                <div style={{ fontSize: rem(11), fontWeight: 700, color: '#6a6a6a', letterSpacing: '.06em', marginBottom: 8 }}>
                   緊急度
                 </div>
                 <div
                   style={{
                     display: 'inline-flex', alignItems: 'center', padding: '8px 18px', borderRadius: 30,
-                    fontSize: 17, fontWeight: 700,
+                    fontSize: rem(17), fontWeight: 700,
                     background: dispatch.urgency === '今すぐ' ? 'rgba(255,80,80,0.12)' : '#1a1a1a',
                     color: dispatch.urgency === '今すぐ' ? '#ff6b6b' : '#cfcfcf',
                   }}
@@ -223,7 +224,7 @@ export default function DriverNotificationPage({
               style={{
                 marginTop: 18, width: '100%', height: 58, borderRadius: 16,
                 background: '#06c167', color: '#fff', border: 'none',
-                fontSize: 17, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: rem(17), fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
                 boxShadow: '0 10px 24px -10px rgba(6,193,103,.7)',
               }}
             >
@@ -234,7 +235,7 @@ export default function DriverNotificationPage({
                 onClick={declining ? undefined : handleDecline}
                 role="button"
                 style={{
-                  display: 'inline-block', fontSize: 13,
+                  display: 'inline-block', fontSize: rem(13),
                   color: declining ? '#4a4a4a' : '#7a7a7a',
                   cursor: declining ? 'default' : 'pointer',
                   textDecoration: 'underline', textUnderlineOffset: 3,
@@ -256,15 +257,15 @@ export default function DriverNotificationPage({
               }}
             >
               <div style={{ padding: '18px 18px 14px', borderBottom: '1px solid #222' }}>
-                <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#9a9a9a', letterSpacing: '.04em' }}>
+                <p style={{ margin: 0, fontSize: rem(12), fontWeight: 700, color: '#9a9a9a', letterSpacing: '.04em' }}>
                   担当キャスト
                 </p>
-                <p style={{ margin: '6px 0 0', fontSize: 28, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.1 }}>
+                <p style={{ margin: '6px 0 0', fontSize: rem(28), fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.1 }}>
                   {girlNames || '—'}
                 </p>
               </div>
               <div style={{ padding: '14px 18px 18px' }}>
-                <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: '#9a9a9a', letterSpacing: '.04em' }}>
+                <p style={{ margin: '0 0 6px', fontSize: rem(12), fontWeight: 700, color: '#9a9a9a', letterSpacing: '.04em' }}>
                   送り先
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -272,7 +273,7 @@ export default function DriverNotificationPage({
                     <path d="M9 21s8-6.5 8-13a8 8 0 1 0-16 0c0 6.5 8 13 8 13Z" stroke="#06c167" strokeWidth="1.8" strokeLinejoin="round" />
                     <circle cx="9" cy="8" r="2.5" fill="#06c167" />
                   </svg>
-                  <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-.02em', lineHeight: 1 }}>
+                  <span style={{ fontSize: rem(22), fontWeight: 800, color: '#fff', letterSpacing: '-.02em', lineHeight: 1 }}>
                     {dispatch.destination || '—'}
                   </span>
                 </div>
@@ -284,7 +285,7 @@ export default function DriverNotificationPage({
               style={{
                 width: '100%', height: 58, borderRadius: 16,
                 background: '#fff', color: '#0a0a0a', border: 'none',
-                fontSize: 17, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: rem(17), fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
               完了する
@@ -312,8 +313,8 @@ export default function DriverNotificationPage({
                 <path d="m5 12 4 4 10-10" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <p style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>全員の送迎が完了</p>
-            <p style={{ margin: '8px 0 0', fontSize: 14, color: '#8a8a8a' }}>お疲れ様でした</p>
+            <p style={{ margin: 0, fontSize: rem(22), fontWeight: 800 }}>全員の送迎が完了</p>
+            <p style={{ margin: '8px 0 0', fontSize: rem(14), color: '#8a8a8a' }}>お疲れ様でした</p>
           </div>
         )}
 
@@ -328,7 +329,7 @@ export default function DriverNotificationPage({
                     borderRadius: 22, padding: '20px 18px', marginBottom: 16,
                   }}
                 >
-                  <p style={{ margin: '0 0 4px', fontSize: 12, fontWeight: 600, color: '#6e6e6e', letterSpacing: '.04em' }}>
+                  <p style={{ margin: '0 0 4px', fontSize: rem(12), fontWeight: 600, color: '#6e6e6e', letterSpacing: '.04em' }}>
                     現在の状態
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -339,16 +340,16 @@ export default function DriverNotificationPage({
                         display: 'block', flexShrink: 0,
                       }}
                     />
-                    <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-.01em' }}>
+                    <span style={{ fontSize: rem(24), fontWeight: 800, letterSpacing: '-.01em' }}>
                       {driver.status === 'お店前' ? 'お店前に到着' : '待機中'}
                     </span>
                   </div>
-                  <p style={{ margin: '8px 0 0', fontSize: 13, color: '#6e6e6e', lineHeight: 1.5 }}>
+                  <p style={{ margin: '8px 0 0', fontSize: rem(13), color: '#6e6e6e', lineHeight: 1.5 }}>
                     配車依頼が届くまでお待ちください。
                   </p>
                 </div>
 
-                <p style={{ margin: '0 4px 12px', fontSize: 12, fontWeight: 700, color: '#6e6e6e', letterSpacing: '.04em' }}>
+                <p style={{ margin: '0 4px 12px', fontSize: rem(12), fontWeight: 700, color: '#6e6e6e', letterSpacing: '.04em' }}>
                   待機場所を変更
                 </p>
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -362,10 +363,10 @@ export default function DriverNotificationPage({
                       fontFamily: 'inherit',
                     }}
                   >
-                    <div style={{ fontSize: 15, fontWeight: 700, color: driver.status === '待機' ? '#fff' : '#6e6e6e' }}>
+                    <div style={{ fontSize: rem(15), fontWeight: 700, color: driver.status === '待機' ? '#fff' : '#6e6e6e' }}>
                       近場待機
                     </div>
-                    <div style={{ fontSize: 11, color: driver.status === '待機' ? 'rgba(255,255,255,.7)' : '#4a4a4a', marginTop: 3 }}>
+                    <div style={{ fontSize: rem(11), color: driver.status === '待機' ? 'rgba(255,255,255,.7)' : '#4a4a4a', marginTop: 3 }}>
                       コンビニ等
                     </div>
                   </button>
@@ -379,10 +380,10 @@ export default function DriverNotificationPage({
                       fontFamily: 'inherit',
                     }}
                   >
-                    <div style={{ fontSize: 15, fontWeight: 700, color: driver.status === 'お店前' ? '#fff' : '#6e6e6e' }}>
+                    <div style={{ fontSize: rem(15), fontWeight: 700, color: driver.status === 'お店前' ? '#fff' : '#6e6e6e' }}>
                       お店前
                     </div>
-                    <div style={{ fontSize: 11, color: driver.status === 'お店前' ? 'rgba(255,255,255,.7)' : '#4a4a4a', marginTop: 3 }}>
+                    <div style={{ fontSize: rem(11), color: driver.status === 'お店前' ? 'rgba(255,255,255,.7)' : '#4a4a4a', marginTop: 3 }}>
                       到着済み
                     </div>
                   </button>
@@ -397,8 +398,8 @@ export default function DriverNotificationPage({
                   borderRadius: 22, padding: '24px 18px', textAlign: 'center',
                 }}
               >
-                <p style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>本日の送迎終了</p>
-                <p style={{ margin: '8px 0 0', fontSize: 14, color: '#8a8a8a' }}>お疲れ様でした</p>
+                <p style={{ margin: 0, fontSize: rem(20), fontWeight: 800 }}>本日の送迎終了</p>
+                <p style={{ margin: '8px 0 0', fontSize: rem(14), color: '#8a8a8a' }}>お疲れ様でした</p>
               </div>
             )}
           </>
@@ -447,7 +448,7 @@ function NavBtn({
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: active ? '#fff' : '#6e6e6e' }}
     >
       {children}
-      <span style={{ fontSize: 10.5, fontWeight: 700 }}>{label}</span>
+      <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>{label}</span>
     </div>
   )
 }

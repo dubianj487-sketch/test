@@ -1,5 +1,6 @@
 'use client'
 
+import { rem } from '@/lib/rem'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
@@ -17,13 +18,13 @@ function DeleteOverlay({ name, color, initial, onDelete, onCancel }: { name: str
       <div style={{ background: '#fff', borderRadius: '26px 26px 0 0', padding: '22px 22px 48px' }}>
         <div style={{ width: 36, height: 4, borderRadius: 2, background: '#e0e0e0', margin: '0 auto 24px' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-          <div style={{ width: 52, height: 52, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 22, flexShrink: 0 }}>{initial}</div>
-          <p style={{ margin: 0, fontSize: 22, fontWeight: 800, lineHeight: 1.2 }}>{name}を<br />削除しますか？</p>
+          <div style={{ width: 52, height: 52, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(22), flexShrink: 0 }}>{initial}</div>
+          <p style={{ margin: 0, fontSize: rem(22), fontWeight: 800, lineHeight: 1.2 }}>{name}を<br />削除しますか？</p>
         </div>
-        <p style={{ margin: '0 0 28px', fontSize: 14, color: '#8a8a8a', lineHeight: 1.65 }}>削除すると元に戻せません。<br />過去の便の記録には影響しません。</p>
+        <p style={{ margin: '0 0 28px', fontSize: rem(14), color: '#8a8a8a', lineHeight: 1.65 }}>削除すると元に戻せません。<br />過去の便の記録には影響しません。</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button onClick={onDelete} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>削除する</button>
-          <button onClick={onCancel} style={{ width: '100%', height: 52, borderRadius: 15, background: '#f4f4f4', color: '#0a0a0a', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>キャンセル</button>
+          <button onClick={onDelete} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(16), fontWeight: 700, cursor: 'pointer', fontFamily: font }}>削除する</button>
+          <button onClick={onCancel} style={{ width: '100%', height: 52, borderRadius: 15, background: '#f4f4f4', color: '#0a0a0a', border: 'none', fontSize: rem(15), fontWeight: 700, cursor: 'pointer', fontFamily: font }}>キャンセル</button>
         </div>
       </div>
     </div>
@@ -44,13 +45,13 @@ const BackBtn = ({ onClick }: { onClick: () => void }) => (
 
 const InfoRow = ({ label, last, children }: { label: string; last?: boolean; children: React.ReactNode }) => (
   <div style={{ padding: '14px 0', borderBottom: last ? 'none' : '1px solid #f0f0f0' }}>
-    <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#9a9a9a', letterSpacing: '.06em', textTransform: 'uppercase' as const }}>{label}</p>
+    <p style={{ margin: 0, fontSize: rem(11), fontWeight: 700, color: '#9a9a9a', letterSpacing: '.06em', textTransform: 'uppercase' as const }}>{label}</p>
     <div style={{ marginTop: 4 }}>{children}</div>
   </div>
 )
 
-const fieldInput: React.CSSProperties = { height: 54, width: '100%', borderRadius: 14, background: '#fafafa', border: '1.5px solid #e8e8e8', color: '#0a0a0a', padding: '0 16px', fontSize: 18, fontWeight: 600, fontFamily: font, outline: 'none', boxSizing: 'border-box' }
-const fieldLabel: React.CSSProperties = { margin: '0 0 8px 2px', fontSize: 11, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.08em', textTransform: 'uppercase' as const, display: 'block' }
+const fieldInput: React.CSSProperties = { height: 54, width: '100%', borderRadius: 14, background: '#fafafa', border: '1.5px solid #e8e8e8', color: '#0a0a0a', padding: '0 16px', fontSize: rem(18), fontWeight: 600, fontFamily: font, outline: 'none', boxSizing: 'border-box' }
+const fieldLabel: React.CSSProperties = { margin: '0 0 8px 2px', fontSize: rem(11), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.08em', textTransform: 'uppercase' as const, display: 'block' }
 
 export default function BoyPage() {
   const router = useRouter()
@@ -285,11 +286,11 @@ export default function BoyPage() {
     <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 390, zIndex: 40, background: '#ffffff', borderTop: '1px solid #efefef', padding: '10px 14px max(10px, env(safe-area-inset-bottom))', display: 'flex', justifyContent: 'space-around', boxSizing: 'border-box' }}>
       <div onClick={() => go('home')} role="button" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: !isAdminScreen ? '#0a0a0a' : '#b5b5b5', flex: 1 }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13l1.6-4.5A2 2 0 0 1 8.5 7h7a2 2 0 0 1 1.9 1.5L19 13m-14 0h14v4a1 1 0 0 1-1 1h-1.2a1.8 1.8 0 1 1-3.6 0H9.8a1.8 1.8 0 1 1-3.6 0H5a1 1 0 0 1-1-1v-4h1Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
-        <span style={{ fontSize: 10.5, fontWeight: 700 }}>配車</span>
+        <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>配車</span>
       </div>
       <div onClick={() => go('admin')} role="button" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: isAdminScreen ? '#0a0a0a' : '#b5b5b5', flex: 1 }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.8" /><rect x="13" y="3" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.8" /><rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.8" /><rect x="13" y="13" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.8" /></svg>
-        <span style={{ fontSize: 10.5, fontWeight: 700 }}>管理</span>
+        <span style={{ fontSize: rem(10.5), fontWeight: 700 }}>管理</span>
       </div>
     </div>
   )
@@ -299,73 +300,73 @@ export default function BoyPage() {
     <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
         <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS・KING ・ ボーイ</p>
-          <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>配車</h1>
+          <p style={{ margin: 0, fontSize: rem(12), fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS・KING ・ ボーイ</p>
+          <h1 style={{ margin: '2px 0 0', fontSize: rem(30), fontWeight: 800, letterSpacing: '-.02em' }}>配車</h1>
         </div>
-        <button onClick={logout} style={{ height: 38, padding: '0 14px', borderRadius: 10, background: '#f4f4f4', border: 'none', color: '#5a5a5a', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>ログアウト</button>
+        <button onClick={logout} style={{ height: 38, padding: '0 14px', borderRadius: 10, background: '#f4f4f4', border: 'none', color: '#5a5a5a', fontSize: rem(13), fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>ログアウト</button>
       </div>
 
       <div style={{ padding: '0 20px' }}>
-        <button onClick={() => go('new')} style={{ width: '100%', height: 58, borderRadius: 16, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>
+        <button onClick={() => go('new')} style={{ width: '100%', height: 58, borderRadius: 16, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(16), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" /></svg>
           配車を依頼する
         </button>
 
-        <p style={{ margin: '26px 4px 10px', fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>本日の便</p>
+        <p style={{ margin: '26px 4px 10px', fontSize: rem(13), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>本日の便</p>
 
         {tripsList.length > 0 ? tripsList.map(trip => (
           <div key={trip.id} onClick={() => { setViewingTripId(trip.id); go('status') }} role="button" style={{ border: '1px solid #ededed', borderRadius: 18, padding: 16, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,.04)', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#06c167', animation: 'lm-pulse 1.6s infinite', flexShrink: 0, display: 'inline-block' }} />
-                <span style={{ fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap' }}>{trip.label}</span>
+                <span style={{ fontSize: rem(15), fontWeight: 700, whiteSpace: 'nowrap' }}>{trip.label}</span>
               </div>
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', background: '#0a0a0a', padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>{trip.status}</span>
+              <span style={{ fontSize: rem(12), fontWeight: 700, color: '#fff', background: '#0a0a0a', padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>{trip.status}</span>
             </div>
             <div style={{ display: 'flex', gap: 14, marginTop: 12 }}>
-              <div><p style={{ margin: 0, fontSize: 10, color: '#9a9a9a', fontWeight: 600 }}>出発</p><p style={{ margin: '2px 0 0', fontSize: 15, fontWeight: 700 }}>{trip.departTime}</p></div>
+              <div><p style={{ margin: 0, fontSize: rem(10), color: '#9a9a9a', fontWeight: 600 }}>出発</p><p style={{ margin: '2px 0 0', fontSize: rem(15), fontWeight: 700 }}>{trip.departTime}</p></div>
               <div style={{ width: 1, background: '#eee' }} />
-              <div><p style={{ margin: 0, fontSize: 10, color: '#9a9a9a', fontWeight: 600 }}>乗車</p><p style={{ margin: '2px 0 0', fontSize: 15, fontWeight: 700 }}>{trip.assignedCount}名</p></div>
+              <div><p style={{ margin: 0, fontSize: rem(10), color: '#9a9a9a', fontWeight: 600 }}>乗車</p><p style={{ margin: '2px 0 0', fontSize: rem(15), fontWeight: 700 }}>{trip.assignedCount}名</p></div>
               <div style={{ width: 1, background: '#eee' }} />
-              <div style={{ minWidth: 0, flex: 1 }}><p style={{ margin: 0, fontSize: 10, color: '#9a9a9a', fontWeight: 600 }}>ドライバー</p><p style={{ margin: '2px 0 0', fontSize: 15, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trip.driverName}</p></div>
+              <div style={{ minWidth: 0, flex: 1 }}><p style={{ margin: 0, fontSize: rem(10), color: '#9a9a9a', fontWeight: 600 }}>ドライバー</p><p style={{ margin: '2px 0 0', fontSize: rem(15), fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trip.driverName}</p></div>
             </div>
             <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                {trip.castObjs.map((co, i) => <div key={i} style={{ width: 28, height: 28, borderRadius: '50%', background: co.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 11, border: '2px solid #fff', marginLeft: i === 0 ? 0 : -6, flexShrink: 0 }}>{co.initial}</div>)}
+                {trip.castObjs.map((co, i) => <div key={i} style={{ width: 28, height: 28, borderRadius: '50%', background: co.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(11), border: '2px solid #fff', marginLeft: i === 0 ? 0 : -6, flexShrink: 0 }}>{co.initial}</div>)}
               </div>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ flex: 1, height: 5, borderRadius: 3, background: '#f0f0f0', overflow: 'hidden' }}><div style={{ height: '100%', background: '#0a0a0a', borderRadius: 3, width: trip.progressPct }} /></div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#6a6a6a', whiteSpace: 'nowrap' }}>{trip.dropsDone}/{trip.dropsTotal}</span>
+                <span style={{ fontSize: rem(11), fontWeight: 700, color: '#6a6a6a', whiteSpace: 'nowrap' }}>{trip.dropsDone}/{trip.dropsTotal}</span>
               </div>
             </div>
           </div>
         )) : (
           <div style={{ border: '1px solid #ededed', borderRadius: 18, padding: 28, textAlign: 'center' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 10, opacity: .3 }}><path d="M5 13l1.6-4.5A2 2 0 0 1 8.5 7h7a2 2 0 0 1 1.9 1.5L19 13m-14 0h14v4a1 1 0 0 1-1 1h-1.2a1.8 1.8 0 1 1-3.6 0H9.8a1.8 1.8 0 1 1-3.6 0H5a1 1 0 0 1-1-1v-4h1Z" stroke="#0a0a0a" strokeWidth="1.8" strokeLinejoin="round" /></svg>
-            <p style={{ margin: 0, fontSize: 14, color: '#b0b0b0', fontWeight: 600 }}>まだ配車依頼がありません</p>
-            <p style={{ margin: '6px 0 0', fontSize: 12, color: '#c8c8c8' }}>上の「配車を依頼する」から作成してください</p>
+            <p style={{ margin: 0, fontSize: rem(14), color: '#b0b0b0', fontWeight: 600 }}>まだ配車依頼がありません</p>
+            <p style={{ margin: '6px 0 0', fontSize: rem(12), color: '#c8c8c8' }}>上の「配車を依頼する」から作成してください</p>
           </div>
         )}
 
         {todayReqList.map(req => (
           <div key={req.castId} style={{ marginTop: 10, border: '1px solid #ffe3b8', background: '#fff8ed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: req.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, flexShrink: 0 }}>{req.initial}</div>
-            <div style={{ flex: 1, minWidth: 0 }}><p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#8a5a00' }}>{req.castName} ：{req.place}</p><p style={{ margin: '2px 0 0', fontSize: 11, color: '#c77700' }}>{req.status}</p></div>
-            <button onClick={() => approveTodayReq(req.castId)} style={{ height: 32, padding: '0 12px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>承認</button>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: req.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(13), flexShrink: 0 }}>{req.initial}</div>
+            <div style={{ flex: 1, minWidth: 0 }}><p style={{ margin: 0, fontSize: rem(13), fontWeight: 700, color: '#8a5a00' }}>{req.castName} ：{req.place}</p><p style={{ margin: '2px 0 0', fontSize: rem(11), color: '#c77700' }}>{req.status}</p></div>
+            <button onClick={() => approveTodayReq(req.castId)} style={{ height: 32, padding: '0 12px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(12), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>承認</button>
           </div>
         ))}
 
         {pendingRequests.length > 0 && (
           <div style={{ marginTop: 12, background: '#0a0a0a', borderRadius: 14, padding: '14px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#fff' }}>{pendingRequests.length}名の乗車リクエスト</p>
-              <button onClick={() => go('new')} style={{ height: 32, padding: '0 13px', borderRadius: 999, background: '#fff', color: '#0a0a0a', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>配車を作成 →</button>
+              <p style={{ margin: 0, fontSize: rem(14), fontWeight: 700, color: '#fff' }}>{pendingRequests.length}名の乗車リクエスト</p>
+              <button onClick={() => go('new')} style={{ height: 32, padding: '0 13px', borderRadius: 999, background: '#fff', color: '#0a0a0a', border: 'none', fontSize: rem(12), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>配車を作成 →</button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                {pendingRequests.map((r, i) => <div key={r.id} style={{ width: 28, height: 28, borderRadius: '50%', background: r.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12, border: '2px solid #0a0a0a', marginLeft: i === 0 ? 0 : -5 }}>{r.initial}</div>)}
+                {pendingRequests.map((r, i) => <div key={r.id} style={{ width: 28, height: 28, borderRadius: '50%', background: r.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(12), border: '2px solid #0a0a0a', marginLeft: i === 0 ? 0 : -5 }}>{r.initial}</div>)}
               </div>
-              <p style={{ margin: 0, fontSize: 11.5, color: '#9a9a9a', lineHeight: 1.4 }}>配車依頼作成時に選択できます</p>
+              <p style={{ margin: 0, fontSize: rem(11.5), color: '#9a9a9a', lineHeight: 1.4 }}>配車依頼作成時に選択できます</p>
             </div>
           </div>
         )}
@@ -380,21 +381,21 @@ export default function BoyPage() {
       <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '50%', background: '#0a0a0a', borderRadius: '0 2px 2px 0' }} /></div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => go('home')} />
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>配車依頼</h1>
+        <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>配車依頼</h1>
       </div>
 
       <div style={{ padding: '0 20px' }}>
-        <p style={{ margin: '8px 4px 8px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>乗車するキャストを選択</p>
+        <p style={{ margin: '8px 4px 8px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>乗車するキャストを選択</p>
 
         {pendingRequests.length > 0 ? (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {pendingRequests.map(r => (
                 <div key={r.id} onClick={() => toggleCastSelect(r.id)} role="button" style={{ borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', border: r.selected ? '2px solid #0a0a0a' : '1px solid #ededed' }}>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: r.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>{r.initial}</div>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: r.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(16), flexShrink: 0 }}>{r.initial}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{r.name}</p>
-                    <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{r.area} ・ {r.distLabel}</p>
+                    <p style={{ margin: 0, fontSize: rem(15), fontWeight: 700 }}>{r.name}</p>
+                    <p style={{ margin: '2px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{r.area} ・ {r.distLabel}</p>
                   </div>
                   {r.selected
                     ? <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><svg width="13" height="13" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" stroke="#fff" strokeWidth="2.8" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
@@ -402,34 +403,34 @@ export default function BoyPage() {
                 </div>
               ))}
             </div>
-            <p style={{ margin: '10px 4px 0', fontSize: 12.5, color: '#9a9a9a' }}>{tripDraftIds.length}名を選択中　・　お店から近い順に降車ルートを自動設定します</p>
+            <p style={{ margin: '10px 4px 0', fontSize: rem(12.5), color: '#9a9a9a' }}>{tripDraftIds.length}名を選択中　・　お店から近い順に降車ルートを自動設定します</p>
           </>
         ) : (
           <div style={{ border: '1px solid #ededed', borderRadius: 14, padding: 24, textAlign: 'center' }}>
-            <p style={{ margin: 0, fontSize: 14, color: '#b0b0b0', fontWeight: 600 }}>乗車リクエストがありません</p>
-            <p style={{ margin: '6px 0 0', fontSize: 12, color: '#c8c8c8' }}>キャストがリクエストを送ると<br />ここに表示されます</p>
+            <p style={{ margin: 0, fontSize: rem(14), color: '#b0b0b0', fontWeight: 600 }}>乗車リクエストがありません</p>
+            <p style={{ margin: '6px 0 0', fontSize: rem(12), color: '#c8c8c8' }}>キャストがリクエストを送ると<br />ここに表示されます</p>
           </div>
         )}
 
-        <p style={{ margin: '24px 4px 10px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>出発予定時刻</p>
+        <p style={{ margin: '24px 4px 10px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>出発予定時刻</p>
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
-            <span style={{ fontSize: 52, fontWeight: 800, letterSpacing: '-.03em', lineHeight: 1, color: '#0a0a0a' }}>{draftDepartStr}</span>
+            <span style={{ fontSize: rem(52), fontWeight: 800, letterSpacing: '-.03em', lineHeight: 1, color: '#0a0a0a' }}>{draftDepartStr}</span>
             {draftDepartNow
-              ? <span onClick={() => setDraftDepartNow(false)} role="button" style={{ fontSize: 13, fontWeight: 700, color: '#0a0a0a', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}>時間を指定する</span>
-              : <span onClick={() => setDraftDepartNow(true)} role="button" style={{ fontSize: 13, fontWeight: 600, color: '#9a9a9a', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}>今すぐに戻す</span>}
+              ? <span onClick={() => setDraftDepartNow(false)} role="button" style={{ fontSize: rem(13), fontWeight: 700, color: '#0a0a0a', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}>時間を指定する</span>
+              : <span onClick={() => setDraftDepartNow(true)} role="button" style={{ fontSize: rem(13), fontWeight: 600, color: '#9a9a9a', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}>今すぐに戻す</span>}
           </div>
           <div style={{ height: 1, background: '#efefef', margin: '14px 0' }} />
           {draftDepartNow
-            ? <p style={{ margin: 0, fontSize: 12.5, color: '#c0c0c0', fontWeight: 500 }}>出発準備ができ次第すぐに出発します</p>
+            ? <p style={{ margin: 0, fontSize: rem(12.5), color: '#c0c0c0', fontWeight: 500 }}>出発準備ができ次第すぐに出発します</p>
             : <div style={{ display: 'flex', gap: 8 }}>
               {([[-15, '−15分'], [-5, '−5分'], [5, '+5分'], [15, '+15分']] as [number, string][]).map(([d, l]) => (
-                <button key={l} onClick={() => addMinutes(d)} style={{ flex: 1, height: 40, borderRadius: 999, background: '#f2f2f2', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', color: '#3a3a3a' }}>{l}</button>
+                <button key={l} onClick={() => addMinutes(d)} style={{ flex: 1, height: 40, borderRadius: 999, background: '#f2f2f2', border: 'none', fontSize: rem(13), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', color: '#3a3a3a' }}>{l}</button>
               ))}
             </div>}
         </div>
 
-        <button onClick={confirmTrip} style={{ marginTop: 28, width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        <button onClick={confirmTrip} style={{ marginTop: 28, width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(16), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           <span>ドライバーを選ぶ</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
@@ -448,35 +449,35 @@ export default function BoyPage() {
         <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '100%', background: '#0a0a0a' }} /></div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
           <BackBtn onClick={() => go('new')} />
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>ドライバーを指定</h1>
+          <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>ドライバーを指定</h1>
         </div>
 
         <div style={{ padding: '0 20px' }}>
           <div style={{ background: '#f7f7f7', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
             <div>
-              <p style={{ margin: 0, fontSize: 12, color: '#9a9a9a', fontWeight: 600 }}>作成した便</p>
-              <p style={{ margin: '2px 0 0', fontSize: 18, fontWeight: 800 }}>{orderedDraft.length ? orderedDraft.map(g => g.area.split('（')[0]).join('・') : '（未選択）'}</p>
+              <p style={{ margin: 0, fontSize: rem(12), color: '#9a9a9a', fontWeight: 600 }}>作成した便</p>
+              <p style={{ margin: '2px 0 0', fontSize: rem(18), fontWeight: 800 }}>{orderedDraft.length ? orderedDraft.map(g => g.area.split('（')[0]).join('・') : '（未選択）'}</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              {orderedDraft.map((g, i) => <div key={g.id} style={{ width: 32, height: 32, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13, border: '2px solid #f7f7f7', marginLeft: i === 0 ? 0 : -7 }}>{g.initial}</div>)}
-              <span style={{ marginLeft: 10, fontSize: 13, fontWeight: 700, color: '#5a5a5a' }}>{orderedDraft.length}名</span>
+              {orderedDraft.map((g, i) => <div key={g.id} style={{ width: 32, height: 32, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(13), border: '2px solid #f7f7f7', marginLeft: i === 0 ? 0 : -7 }}>{g.initial}</div>)}
+              <span style={{ marginLeft: 10, fontSize: rem(13), fontWeight: 700, color: '#5a5a5a' }}>{orderedDraft.length}名</span>
             </div>
           </div>
 
-          <p style={{ margin: '0 4px 12px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>担当ドライバーを選んでください</p>
+          <p style={{ margin: '0 4px 12px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>担当ドライバーを選んでください</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {Object.keys(drivers).map(key => {
               const drv = drivers[key]; const st = app.driverStatuses[key] || '待機中'; const cfg = DRIVER_STATUS_CONFIG[st] || DRIVER_STATUS_CONFIG['待機中']; const isCurrent = draftDriverKey === key; const canAssign = cfg.available
               return (
                 <div key={key} onClick={() => { if (canAssign) setDraftDriverKey(key) }} role="button" style={{ borderRadius: 16, padding: 16, display: 'flex', alignItems: 'center', gap: 14, cursor: canAssign ? 'pointer' : 'not-allowed', border: isCurrent ? '2px solid #0a0a0a' : '1px solid #ededed', background: !canAssign ? '#f9f9f9' : '#fff', opacity: !canAssign ? 0.55 : 1 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#1a1a1a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, flexShrink: 0 }}>{drv.initial}</div>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#1a1a1a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(18), flexShrink: 0 }}>{drv.initial}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>{drv.name}</p>
-                    <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#9a9a9a' }}>{drv.car}{drv.carColor ? `（${drv.carColor}）` : ''}</p>
+                    <p style={{ margin: 0, fontSize: rem(16), fontWeight: 700 }}>{drv.name}</p>
+                    <p style={{ margin: '3px 0 0', fontSize: rem(12.5), color: '#9a9a9a' }}>{drv.car}{drv.carColor ? `（${drv.carColor}）` : ''}</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5 }}>
                       <span style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.color, flexShrink: 0, display: 'inline-block' }} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: cfg.color }}>{st}</span>
-                      {!canAssign && <span style={{ fontSize: 11, color: '#b0b0b0' }}>・ 依頼不可</span>}
+                      <span style={{ fontSize: rem(12), fontWeight: 700, color: cfg.color }}>{st}</span>
+                      {!canAssign && <span style={{ fontSize: rem(11), color: '#b0b0b0' }}>・ 依頼不可</span>}
                     </div>
                   </div>
                   {isCurrent
@@ -493,8 +494,8 @@ export default function BoyPage() {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ marginTop: 2, flexShrink: 0 }}><path d="M4 4v16m0-12h12l-3 4 3 4H4" stroke={draftLastTrip ? '#0a0a0a' : '#c0c0c0'} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>
               <div>
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>最後の便にする</p>
-                <p style={{ margin: '3px 0 0', fontSize: 12, color: '#9a9a9a' }}>送迎完了後、ドライバーを自動で「終了」に変更します</p>
+                <p style={{ margin: 0, fontSize: rem(15), fontWeight: 700 }}>最後の便にする</p>
+                <p style={{ margin: '3px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>送迎完了後、ドライバーを自動で「終了」に変更します</p>
               </div>
             </div>
             <div style={{ width: 44, height: 26, borderRadius: 999, background: draftLastTrip ? '#0a0a0a' : '#e0e0e0', position: 'relative', flexShrink: 0 }}>
@@ -502,11 +503,11 @@ export default function BoyPage() {
             </div>
           </div>
 
-          <button onClick={finalizeTrip} style={{ marginTop: 20, width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <button onClick={finalizeTrip} style={{ marginTop: 20, width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(16), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
             配車依頼を確定する
           </button>
-          <p style={{ margin: '10px 4px 0', fontSize: 12, color: '#a0a0a0', textAlign: 'center' }}>ドライバー未選択でも確定できます。あとで変更可能。</p>
+          <p style={{ margin: '10px 4px 0', fontSize: rem(12), color: '#a0a0a0', textAlign: 'center' }}>ドライバー未選択でも確定できます。あとで変更可能。</p>
         </div>
         {nav}
       </div>
@@ -519,10 +520,10 @@ export default function BoyPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => go('home')} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: '#9a9a9a' }}>{viewT ? '便 #' + viewT.id : ''}</p>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>便の詳細</h1>
+          <p style={{ margin: 0, fontSize: rem(11), fontWeight: 600, color: '#9a9a9a' }}>{viewT ? '便 #' + viewT.id : ''}</p>
+          <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>便の詳細</h1>
         </div>
-        <button onClick={() => go('edit')} style={{ height: 36, padding: '0 14px', borderRadius: 10, background: '#f4f4f4', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button onClick={() => go('edit')} style={{ height: 36, padding: '0 14px', borderRadius: 10, background: '#f4f4f4', border: 'none', fontSize: rem(13), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7m-1.5-9.5a2.1 2.1 0 0 1 3 3L12 16l-4 1 1-4 8.5-8.5Z" stroke="#0a0a0a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           編集
         </button>
@@ -532,29 +533,29 @@ export default function BoyPage() {
         <div style={{ background: '#0a0a0a', borderRadius: 18, padding: 18, color: '#fff' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <p style={{ margin: 0, fontSize: 12, color: '#a8a8a8', fontWeight: 600 }}>{viewT ? '便 #' + viewT.id : ''}</p>
-              <p style={{ margin: '3px 0 0', fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>{vStatus}</p>
+              <p style={{ margin: 0, fontSize: rem(12), color: '#a8a8a8', fontWeight: 600 }}>{viewT ? '便 #' + viewT.id : ''}</p>
+              <p style={{ margin: '3px 0 0', fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>{vStatus}</p>
             </div>
             <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#06c167', animation: 'lm-pulse 1.6s infinite', display: 'inline-block' }} />
           </div>
           {vDrv ? (
             <div style={{ marginTop: 16, background: '#1a1a1a', borderRadius: 13, padding: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 42, height: 42, borderRadius: '50%', background: '#333', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16 }}>{vDrv.initial}</div>
-                <div style={{ flex: 1, minWidth: 0 }}><p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{vDrv.name}</p><p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{vDrv.car}{vDrv.carColor ? `（${vDrv.carColor}）` : ''} ・ {vDrv.plate}</p></div>
-                <span onClick={() => viewT && unassignDriver(viewT.id)} role="button" style={{ fontSize: 11.5, color: '#6e6e6e', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}>変更</span>
+                <div style={{ width: 42, height: 42, borderRadius: '50%', background: '#333', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(16) }}>{vDrv.initial}</div>
+                <div style={{ flex: 1, minWidth: 0 }}><p style={{ margin: 0, fontSize: rem(14), fontWeight: 700 }}>{vDrv.name}</p><p style={{ margin: '1px 0 0', fontSize: rem(12), color: '#9a9a9a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{vDrv.car}{vDrv.carColor ? `（${vDrv.carColor}）` : ''} ・ {vDrv.plate}</p></div>
+                <span onClick={() => viewT && unassignDriver(viewT.id)} role="button" style={{ fontSize: rem(11.5), color: '#6e6e6e', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}>変更</span>
               </div>
             </div>
           ) : (
             <div style={{ marginTop: 16, background: '#1a1a1a', borderRadius: 13, padding: 12 }}>
-              <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: '#9a9a9a', letterSpacing: '.04em' }}>ドライバーを指定</p>
+              <p style={{ margin: '0 0 10px', fontSize: rem(12), fontWeight: 700, color: '#9a9a9a', letterSpacing: '.04em' }}>ドライバーを指定</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {Object.keys(drivers).map(key => {
                   const drv = drivers[key]; const st = app.driverStatuses[key] || '待機中'; const cfg = DRIVER_STATUS_CONFIG[st] || DRIVER_STATUS_CONFIG['待機中']; const isCurrent = viewT?.driverKey === key; const canAssign = cfg.available
                   return (
                     <div key={key} onClick={() => { if (canAssign && viewT) assignDriver(viewT.id, key) }} role="button" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 11, background: '#252525', cursor: 'pointer', border: isCurrent ? '2px solid #06c167' : '1px solid #333' }}>
-                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#3a3a3a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{drv.initial}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}><p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#fff' }}>{drv.name}</p><p style={{ margin: '1px 0 0', fontSize: 11.5, color: '#9a9a9a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{drv.car}</p></div>
+                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#3a3a3a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(14), flexShrink: 0 }}>{drv.initial}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}><p style={{ margin: 0, fontSize: rem(14), fontWeight: 700, color: '#fff' }}>{drv.name}</p><p style={{ margin: '1px 0 0', fontSize: rem(11.5), color: '#9a9a9a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{drv.car}</p></div>
                       {isCurrent ? <svg width="16" height="16" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" stroke="#06c167" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg> : <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid #444' }} />}
                     </div>
                   )
@@ -564,34 +565,34 @@ export default function BoyPage() {
           )}
           <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ flex: 1, height: 6, borderRadius: 3, background: '#2a2a2a', overflow: 'hidden' }}><div style={{ height: '100%', background: '#06c167', borderRadius: 3, width: vTotal ? Math.round(vDone / vTotal * 100) + '%' : '0%' }} /></div>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#cfcfcf' }}>降車 {vDone}/{vTotal}</span>
+            <span style={{ fontSize: rem(12), fontWeight: 700, color: '#cfcfcf' }}>降車 {vDone}/{vTotal}</span>
           </div>
         </div>
 
         {vTodayReq && (
           <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10, background: '#fff8ed', border: '1px solid #ffe3b8', borderRadius: 14, padding: '12px 14px' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 8v5m0 3h.01M10.3 3.9 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="#c77700" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            <p style={{ margin: 0, fontSize: 13, color: '#8a5a00', lineHeight: 1.4, flex: 1 }}><b>{vTodayCastId ? girls[vTodayCastId]?.name : ''}</b>：本日のみ「{vTodayReq.place}」へ変更申請（{vTodayReq.status}）</p>
+            <p style={{ margin: 0, fontSize: rem(13), color: '#8a5a00', lineHeight: 1.4, flex: 1 }}><b>{vTodayCastId ? girls[vTodayCastId]?.name : ''}</b>：本日のみ「{vTodayReq.place}」へ変更申請（{vTodayReq.status}）</p>
           </div>
         )}
 
-        <p style={{ margin: '24px 4px 10px', fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>降車ルート</p>
+        <p style={{ margin: '24px 4px 10px', fontSize: rem(13), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>降車ルート</p>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {vObjs.map((g, i) => (
             <div key={g.id} style={{ display: 'flex', gap: 13 }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 24 }}>
                 {g.done ? <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#06c167', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><svg width="12" height="12" viewBox="0 0 24 24"><path d="m5 12 4 4 10-10" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
-                  : g.current ? <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, flexShrink: 0, animation: 'lm-pulse 1.4s infinite' }}>{g.dropNo}</div>
-                  : <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#fff', border: '2px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b0b0b0', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{g.dropNo}</div>}
+                  : g.current ? <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: rem(12), fontWeight: 700, flexShrink: 0, animation: 'lm-pulse 1.4s infinite' }}>{g.dropNo}</div>
+                  : <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#fff', border: '2px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b0b0b0', fontSize: rem(12), fontWeight: 700, flexShrink: 0 }}>{g.dropNo}</div>}
                 {i < vObjs.length - 1 && <div style={{ width: 2, flex: 1, background: '#eee', minHeight: 18 }} />}
               </div>
               <div style={{ flex: 1, paddingBottom: 18 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>{g.name}</span>
-                  {g.done && <span style={{ fontSize: 11, fontWeight: 700, color: '#06c167' }}>降車済み</span>}
-                  {g.current && <span style={{ fontSize: 11, fontWeight: 700, color: '#0a0a0a' }}>次の降車</span>}
+                  <span style={{ fontSize: rem(15), fontWeight: 700 }}>{g.name}</span>
+                  {g.done && <span style={{ fontSize: rem(11), fontWeight: 700, color: '#06c167' }}>降車済み</span>}
+                  {g.current && <span style={{ fontSize: rem(11), fontWeight: 700, color: '#0a0a0a' }}>次の降車</span>}
                 </div>
-                <p style={{ margin: '2px 0 0', fontSize: 12.5, color: '#9a9a9a' }}>{g.addr}</p>
+                <p style={{ margin: '2px 0 0', fontSize: rem(12.5), color: '#9a9a9a' }}>{g.addr}</p>
               </div>
             </div>
           ))}
@@ -606,7 +607,7 @@ export default function BoyPage() {
     <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => go('status')} />
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>便を編集</h1>
+        <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>便を編集</h1>
       </div>
 
       {app.trips.length > 0 && (
@@ -615,8 +616,8 @@ export default function BoyPage() {
             const isActive = viewingTripId === t.id
             return (
               <div key={t.id} onClick={() => setViewingTripId(t.id)} role="button" style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 999, cursor: 'pointer', border: isActive ? '2px solid #0a0a0a' : '1px solid #e0e0e0', background: isActive ? '#0a0a0a' : '#fff', display: 'flex', alignItems: 'center', gap: 7 }}>
-                <span style={{ fontSize: 13.5, fontWeight: 700, color: isActive ? '#fff' : '#3a3a3a' }}>便 #{t.id}</span>
-                <span style={{ fontSize: 11.5, fontWeight: 600, color: isActive ? '#a8a8a8' : '#b0b0b0' }}>{t.departTime}</span>
+                <span style={{ fontSize: rem(13.5), fontWeight: 700, color: isActive ? '#fff' : '#3a3a3a' }}>便 #{t.id}</span>
+                <span style={{ fontSize: rem(11.5), fontWeight: 600, color: isActive ? '#a8a8a8' : '#b0b0b0' }}>{t.departTime}</span>
               </div>
             )
           })}
@@ -625,15 +626,15 @@ export default function BoyPage() {
 
       {app.trips.length === 0 && (
         <div style={{ margin: '0 20px 16px', border: '1px solid #ededed', borderRadius: 14, padding: 20, textAlign: 'center' }}>
-          <p style={{ margin: 0, fontSize: 14, color: '#b0b0b0', fontWeight: 600 }}>まだ便がありません</p>
-          <p style={{ margin: '6px 0 0', fontSize: 12, color: '#c8c8c8' }}>配車タブから便を作成してください</p>
+          <p style={{ margin: 0, fontSize: rem(14), color: '#b0b0b0', fontWeight: 600 }}>まだ便がありません</p>
+          <p style={{ margin: '6px 0 0', fontSize: rem(12), color: '#c8c8c8' }}>配車タブから便を作成してください</p>
         </div>
       )}
 
       <div style={{ padding: '0 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '6px 0 10px' }}>
-          <p style={{ margin: '0 4px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>降車順（{vTotal}名）</p>
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: '#06c167', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <p style={{ margin: '0 4px', fontSize: rem(12), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>降車順（{vTotal}名）</p>
+          <span style={{ fontSize: rem(11.5), fontWeight: 700, color: '#06c167', display: 'flex', alignItems: 'center', gap: 4 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="#06c167" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
             近い順 適用済み
           </span>
@@ -642,11 +643,11 @@ export default function BoyPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {vObjs.map(g => (
             <div key={g.id} style={{ border: '1px solid #ededed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ width: 24, height: 24, borderRadius: 8, background: '#0a0a0a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{g.dropNo}</span>
-              <div style={{ width: 38, height: 38, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{g.initial}</div>
+              <span style={{ width: 24, height: 24, borderRadius: 8, background: '#0a0a0a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: rem(13), fontWeight: 700, flexShrink: 0 }}>{g.dropNo}</span>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(15), flexShrink: 0 }}>{g.initial}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{g.name}</p>
-                <p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a', fontWeight: 500 }}>{g.area} ・ 店から {g.dist.toFixed(1)}km</p>
+                <p style={{ margin: 0, fontSize: rem(15), fontWeight: 700 }}>{g.name}</p>
+                <p style={{ margin: '1px 0 0', fontSize: rem(12), color: '#9a9a9a', fontWeight: 500 }}>{g.area} ・ 店から {g.dist.toFixed(1)}km</p>
               </div>
               <button onClick={() => viewT && removeGirlFromTrip(viewT.id, g.id)} style={{ width: 30, height: 30, borderRadius: '50%', background: '#f4f4f4', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="12" height="12" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="#8a8a8a" strokeWidth="2.2" strokeLinecap="round" /></svg>
@@ -655,7 +656,7 @@ export default function BoyPage() {
           ))}
         </div>
 
-        <button onClick={applySort} style={{ marginTop: 12, width: '100%', height: 48, borderRadius: 13, background: '#f4f4f4', border: 'none', color: '#0a0a0a', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        <button onClick={applySort} style={{ marginTop: 12, width: '100%', height: 48, borderRadius: 13, background: '#f4f4f4', border: 'none', color: '#0a0a0a', fontSize: rem(14), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 7h13M3 12h9M3 17h5m11-9v11m0 0 3-3m-3 3-3-3" stroke="#0a0a0a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           お店から近い順に自動で並び替え
         </button>
@@ -664,25 +665,25 @@ export default function BoyPage() {
           <div style={{ marginTop: 22, background: '#0a0a0a', borderRadius: 18, padding: 16, color: '#fff' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4m0-13.2-1.4 1.4m-10 10-1.4 1.4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" /></svg>
-              <span style={{ fontSize: 14, fontWeight: 700 }}>自動提案</span>
+              <span style={{ fontSize: rem(14), fontWeight: 700 }}>自動提案</span>
             </div>
-            <p style={{ margin: '0 0 12px', fontSize: 12, color: '#a8a8a8', lineHeight: 1.5 }}>同じ方面・お店から近いキャストの同乗をおすすめします。</p>
+            <p style={{ margin: '0 0 12px', fontSize: rem(12), color: '#a8a8a8', lineHeight: 1.5 }}>同じ方面・お店から近いキャストの同乗をおすすめします。</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {suggestions.slice(0, 3).map(s => (
                 <div key={s.id} style={{ background: '#1a1a1a', borderRadius: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 11 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: s.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{s.initial}</div>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: s.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(14), flexShrink: 0 }}>{s.initial}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{s.name}</p>
-                    <p style={{ margin: '1px 0 0', fontSize: 11.5, color: '#9a9a9a' }}>{s.area} ・ {s.distLabel}</p>
+                    <p style={{ margin: 0, fontSize: rem(14), fontWeight: 700 }}>{s.name}</p>
+                    <p style={{ margin: '1px 0 0', fontSize: rem(11.5), color: '#9a9a9a' }}>{s.area} ・ {s.distLabel}</p>
                   </div>
-                  <button onClick={() => addGirlToTrip(viewT?.id ?? null, s.id)} style={{ height: 34, padding: '0 14px', borderRadius: 999, background: '#fff', color: '#0a0a0a', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>＋ 追加</button>
+                  <button onClick={() => addGirlToTrip(viewT?.id ?? null, s.id)} style={{ height: 34, padding: '0 14px', borderRadius: 999, background: '#fff', color: '#0a0a0a', border: 'none', fontSize: rem(13), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>＋ 追加</button>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        <button onClick={() => go('status')} style={{ marginTop: 24, width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>編集を完了</button>
+        <button onClick={() => go('status')} style={{ marginTop: 24, width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(16), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>編集を完了</button>
       </div>
       {nav}
     </div>
@@ -697,28 +698,28 @@ export default function BoyPage() {
       <div style={{ position: 'relative', minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
           <BackBtn onClick={() => go('admin')} />
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>キャスト詳細</h1>
+          <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>キャスト詳細</h1>
         </div>
         <div style={{ padding: '0 20px' }}>
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
-              <div style={{ width: 68, height: 68, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 28, flexShrink: 0 }}>{g.name[0]}</div>
+              <div style={{ width: 68, height: 68, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(28), flexShrink: 0 }}>{g.name[0]}</div>
               <div>
-                <p style={{ margin: 0, fontSize: 36, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>{g.name}</p>
+                <p style={{ margin: 0, fontSize: rem(36), fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>{g.name}</p>
                 <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', background: onTrip ? '#0a0a0a' : '#f0f0f0', padding: '5px 13px', borderRadius: 999 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: onTrip ? '#fff' : '#8a8a8a' }}>{onTrip ? '乗車中' : '待機中'}</span>
+                  <span style={{ fontSize: rem(12), fontWeight: 700, color: onTrip ? '#fff' : '#8a8a8a' }}>{onTrip ? '乗車中' : '待機中'}</span>
                 </div>
               </div>
             </div>
           </div>
           <div style={{ borderTop: '1px solid #f0f0f0' }}>
-            <InfoRow label="エリア"><p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{g.area || '未登録'}</p></InfoRow>
-            <InfoRow label="店からの距離"><p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{g.dist.toFixed(1)} <span style={{ fontSize: 14, fontWeight: 600, color: '#6a6a6a' }}>km</span></p></InfoRow>
-            <InfoRow label="住所" last><p style={{ margin: 0, fontSize: 16, fontWeight: 600, lineHeight: 1.55 }}>{g.addr || '未登録'}</p></InfoRow>
+            <InfoRow label="エリア"><p style={{ margin: 0, fontSize: rem(18), fontWeight: 700 }}>{g.area || '未登録'}</p></InfoRow>
+            <InfoRow label="店からの距離"><p style={{ margin: 0, fontSize: rem(18), fontWeight: 700 }}>{g.dist.toFixed(1)} <span style={{ fontSize: rem(14), fontWeight: 600, color: '#6a6a6a' }}>km</span></p></InfoRow>
+            <InfoRow label="住所" last><p style={{ margin: 0, fontSize: rem(16), fontWeight: 600, lineHeight: 1.55 }}>{g.addr || '未登録'}</p></InfoRow>
           </div>
           <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <button onClick={() => openGirlForm(selectedGirlId)} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: font, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>編集する</button>
-            <button onClick={() => setShowDeleteConfirm(true)} style={{ width: '100%', height: 48, borderRadius: 15, background: '#fff', color: '#9a9a9a', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: font, textDecoration: 'underline', textUnderlineOffset: 3 }}>削除する</button>
+            <button onClick={() => openGirlForm(selectedGirlId)} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(16), fontWeight: 700, cursor: 'pointer', fontFamily: font, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>編集する</button>
+            <button onClick={() => setShowDeleteConfirm(true)} style={{ width: '100%', height: 48, borderRadius: 15, background: '#fff', color: '#9a9a9a', border: 'none', fontSize: rem(14), fontWeight: 600, cursor: 'pointer', fontFamily: font, textDecoration: 'underline', textUnderlineOffset: 3 }}>削除する</button>
           </div>
         </div>
         {showDeleteConfirm && <DeleteOverlay name={g.name} color={g.color} initial={g.name[0]} onDelete={doDeleteGirl} onCancel={() => setShowDeleteConfirm(false)} />}
@@ -739,36 +740,36 @@ export default function BoyPage() {
       <div style={{ position: 'relative', minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
           <BackBtn onClick={() => go('admin')} />
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>ドライバー詳細</h1>
+          <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '-.01em' }}>ドライバー詳細</h1>
         </div>
         <div style={{ padding: '0 20px' }}>
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#1a1a1a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 28, flexShrink: 0 }}>{d.initial}</div>
+              <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#1a1a1a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(28), flexShrink: 0 }}>{d.initial}</div>
               <div>
-                <p style={{ margin: 0, fontSize: 36, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>{d.name}</p>
+                <p style={{ margin: 0, fontSize: rem(36), fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>{d.name}</p>
                 <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 7 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: dCfg.color, display: 'inline-block', animation: isActive ? 'lm-pulse 1.6s infinite' : 'none' }} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: dCfg.color }}>{dSt}</span>
+                  <span style={{ fontSize: rem(13), fontWeight: 700, color: dCfg.color }}>{dSt}</span>
                 </div>
               </div>
             </div>
           </div>
           <div style={{ borderTop: '1px solid #f0f0f0' }}>
-            <InfoRow label="車種"><p style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{d.car || '未登録'}</p></InfoRow>
+            <InfoRow label="車種"><p style={{ margin: 0, fontSize: rem(20), fontWeight: 700 }}>{d.car || '未登録'}</p></InfoRow>
             {d.carColor ? (
               <InfoRow label="車の色">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   {colorCSS && <div style={{ width: 24, height: 24, borderRadius: '50%', background: colorCSS, border: '1.5px solid #ddd', flexShrink: 0 }} />}
-                  <p style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{d.carColor}</p>
+                  <p style={{ margin: 0, fontSize: rem(20), fontWeight: 700 }}>{d.carColor}</p>
                 </div>
               </InfoRow>
             ) : null}
-            <InfoRow label="ナンバープレート" last><p style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '.04em' }}>{d.plate || '未登録'}</p></InfoRow>
+            <InfoRow label="ナンバープレート" last><p style={{ margin: 0, fontSize: rem(22), fontWeight: 800, letterSpacing: '.04em' }}>{d.plate || '未登録'}</p></InfoRow>
           </div>
           <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <button onClick={() => openDriverForm(selectedDrvId)} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: font, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>編集する</button>
-            <button onClick={() => { if (!isActive) setShowDeleteConfirm(true) }} disabled={isActive} style={{ width: '100%', height: 48, borderRadius: 15, background: '#fff', color: isActive ? '#c8c8c8' : '#9a9a9a', border: 'none', fontSize: 14, fontWeight: 600, cursor: isActive ? 'not-allowed' : 'pointer', fontFamily: font, textDecoration: isActive ? 'none' : 'underline', textUnderlineOffset: 3 }}>
+            <button onClick={() => openDriverForm(selectedDrvId)} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(16), fontWeight: 700, cursor: 'pointer', fontFamily: font, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>編集する</button>
+            <button onClick={() => { if (!isActive) setShowDeleteConfirm(true) }} disabled={isActive} style={{ width: '100%', height: 48, borderRadius: 15, background: '#fff', color: isActive ? '#c8c8c8' : '#9a9a9a', border: 'none', fontSize: rem(14), fontWeight: 600, cursor: isActive ? 'not-allowed' : 'pointer', fontFamily: font, textDecoration: isActive ? 'none' : 'underline', textUnderlineOffset: 3 }}>
               {isActive ? '削除する（運行中のため不可）' : '削除する'}
             </button>
           </div>
@@ -784,7 +785,7 @@ export default function BoyPage() {
     <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 48px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => { if (formGirlId) { go('girl-detail') } else { go('admin') } }} />
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>{formGirlId ? `${girls[formGirlId]?.name || ''}を編集` : 'キャストを追加'}</h1>
+        <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800 }}>{formGirlId ? `${girls[formGirlId]?.name || ''}を編集` : 'キャストを追加'}</h1>
       </div>
       <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 22 }}>
         <div>
@@ -798,7 +799,7 @@ export default function BoyPage() {
         <div>
           <label style={fieldLabel}>自宅住所</label>
           <textarea value={fGAddr} onChange={e => setFGAddr(e.target.value)} placeholder="新潟市中央区..." style={{ ...fieldInput, height: 80, padding: '14px 16px', lineHeight: 1.5, resize: 'none' as const }} />
-          <p style={{ margin: '8px 2px 0', fontSize: 12, color: '#b0b0b0', lineHeight: 1.5 }}>住所はドライバーへの案内・距離計算に使用します</p>
+          <p style={{ margin: '8px 2px 0', fontSize: rem(12), color: '#b0b0b0', lineHeight: 1.5 }}>住所はドライバーへの案内・距離計算に使用します</p>
         </div>
         <div>
           <label style={fieldLabel}>お店からの距離（km）</label>
@@ -813,13 +814,13 @@ export default function BoyPage() {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#f7f7f7', borderRadius: 14, padding: 14 }}>
-          <div style={{ width: 44, height: 44, borderRadius: '50%', background: fGColor, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, flexShrink: 0 }}>{fGName[0] || '?'}</div>
+          <div style={{ width: 44, height: 44, borderRadius: '50%', background: fGColor, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(18), flexShrink: 0 }}>{fGName[0] || '?'}</div>
           <div>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{fGName || '（名前未入力）'}</p>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{fGArea || '（エリア未入力）'} ・ {fGDist || '0'}km</p>
+            <p style={{ margin: 0, fontSize: rem(15), fontWeight: 700 }}>{fGName || '（名前未入力）'}</p>
+            <p style={{ margin: '2px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{fGArea || '（エリア未入力）'} ・ {fGDist || '0'}km</p>
           </div>
         </div>
-        <button onClick={saveGirl} style={{ height: 56, borderRadius: 15, background: fGName.trim() ? '#0a0a0a' : '#d0d0d0', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: fGName.trim() ? 'pointer' : 'default', fontFamily: font }}>
+        <button onClick={saveGirl} style={{ height: 56, borderRadius: 15, background: fGName.trim() ? '#0a0a0a' : '#d0d0d0', color: '#fff', border: 'none', fontSize: rem(16), fontWeight: 700, cursor: fGName.trim() ? 'pointer' : 'default', fontFamily: font }}>
           {formGirlId ? '変更を保存' : 'キャストを追加'}
         </button>
       </div>
@@ -831,7 +832,7 @@ export default function BoyPage() {
     <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 48px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => { if (formDrvId) { go('driver-detail') } else { go('admin') } }} />
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>{formDrvId ? `${drivers[formDrvId]?.name || ''}を編集` : 'ドライバーを追加'}</h1>
+        <h1 style={{ margin: 0, fontSize: rem(22), fontWeight: 800 }}>{formDrvId ? `${drivers[formDrvId]?.name || ''}を編集` : 'ドライバーを追加'}</h1>
       </div>
       <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 22 }}>
         <div>
@@ -851,13 +852,13 @@ export default function BoyPage() {
           <input value={fDPlate} onChange={e => setFDPlate(e.target.value)} placeholder="例：新潟 300 あ 12-34" style={fieldInput} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#f7f7f7', borderRadius: 14, padding: 14 }}>
-          <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#2a2a2a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, flexShrink: 0 }}>{fDName[0] || '?'}</div>
+          <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#2a2a2a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(18), flexShrink: 0 }}>{fDName[0] || '?'}</div>
           <div>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{fDName || '（名前未入力）'}</p>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{fDCar || '（車種未入力）'}{fDCarColor ? `（${fDCarColor}）` : ''}</p>
+            <p style={{ margin: 0, fontSize: rem(15), fontWeight: 700 }}>{fDName || '（名前未入力）'}</p>
+            <p style={{ margin: '2px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{fDCar || '（車種未入力）'}{fDCarColor ? `（${fDCarColor}）` : ''}</p>
           </div>
         </div>
-        <button onClick={saveDriver} style={{ height: 56, borderRadius: 15, background: fDName.trim() ? '#0a0a0a' : '#d0d0d0', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: fDName.trim() ? 'pointer' : 'not-allowed', fontFamily: font }}>
+        <button onClick={saveDriver} style={{ height: 56, borderRadius: 15, background: fDName.trim() ? '#0a0a0a' : '#d0d0d0', color: '#fff', border: 'none', fontSize: rem(16), fontWeight: 700, cursor: fDName.trim() ? 'pointer' : 'not-allowed', fontFamily: font }}>
           {formDrvId ? '変更を保存' : '登録する'}
         </button>
       </div>
@@ -873,29 +874,29 @@ export default function BoyPage() {
     <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 16px' }}>
         <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS・KING・ボーイ</p>
-          <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>管理</h1>
+          <p style={{ margin: 0, fontSize: rem(12), fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS・KING・ボーイ</p>
+          <h1 style={{ margin: '2px 0 0', fontSize: rem(30), fontWeight: 800, letterSpacing: '-.02em' }}>管理</h1>
         </div>
-        <button onClick={logout} style={{ height: 38, padding: '0 14px', borderRadius: 10, background: '#f4f4f4', border: 'none', color: '#5a5a5a', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>ログアウト</button>
+        <button onClick={logout} style={{ height: 38, padding: '0 14px', borderRadius: 10, background: '#f4f4f4', border: 'none', color: '#5a5a5a', fontSize: rem(13), fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>ログアウト</button>
       </div>
 
       <div style={{ padding: '0 20px' }}>
         <div style={{ background: '#0a0a0a', borderRadius: 16, padding: '16px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#666' }}>本日の在籍</p>
-            <p style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 800, color: '#fff', letterSpacing: '-.02em' }}>キャスト {girlKeys.length}名 · ドライバー {driverKeys.length}名</p>
+            <p style={{ margin: 0, fontSize: rem(12), fontWeight: 600, color: '#666' }}>本日の在籍</p>
+            <p style={{ margin: '4px 0 0', fontSize: rem(20), fontWeight: 800, color: '#fff', letterSpacing: '-.02em' }}>キャスト {girlKeys.length}名 · ドライバー {driverKeys.length}名</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             {avatarGirls.map((g, i) => (
-              <div key={g.id} style={{ width: 28, height: 28, borderRadius: '50%', background: g.color, border: '2px solid #0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', marginLeft: i === 0 ? 0 : -6 }}>{g.initial}</div>
+              <div key={g.id} style={{ width: 28, height: 28, borderRadius: '50%', background: g.color, border: '2px solid #0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: rem(10), fontWeight: 700, color: '#fff', marginLeft: i === 0 ? 0 : -6 }}>{g.initial}</div>
             ))}
-            {girlKeys.length > 4 && <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#2a2a2a', border: '2px solid #0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#9a9a9a', marginLeft: -6 }}>…</div>}
+            {girlKeys.length > 4 && <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#2a2a2a', border: '2px solid #0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: rem(10), fontWeight: 700, color: '#9a9a9a', marginLeft: -6 }}>…</div>}
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>キャスト一覧</p>
-          <button onClick={() => openGirlForm(null)} style={{ height: 30, padding: '0 12px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <p style={{ margin: 0, fontSize: rem(13), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>キャスト一覧</p>
+          <button onClick={() => openGirlForm(null)} style={{ height: 30, padding: '0 12px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(12), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" /></svg>
             追加
           </button>
@@ -905,14 +906,14 @@ export default function BoyPage() {
             const g = girls[id]; const onTrip = approvedSet.has(id)
             return (
               <div key={id} onClick={() => { setSelectedGirlId(id); setShowDeleteConfirm(false); go('girl-detail') }} role="button" style={{ border: '1px solid #ededed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                <div style={{ width: 38, height: 38, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{g.name[0]}</div>
+                <div style={{ width: 38, height: 38, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(15), flexShrink: 0 }}>{g.name[0]}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{g.name}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{g.area} ・ 店から {g.dist.toFixed(1)}km</p>
+                  <p style={{ margin: 0, fontSize: rem(15), fontWeight: 700 }}>{g.name}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{g.area} ・ 店から {g.dist.toFixed(1)}km</p>
                 </div>
                 {onTrip
-                  ? <span style={{ fontSize: 11.5, fontWeight: 700, color: '#fff', background: '#0a0a0a', padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>乗車中</span>
-                  : <span style={{ fontSize: 11.5, fontWeight: 700, color: '#b0b0b0', whiteSpace: 'nowrap', flexShrink: 0 }}>待機中</span>}
+                  ? <span style={{ fontSize: rem(11.5), fontWeight: 700, color: '#fff', background: '#0a0a0a', padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>乗車中</span>
+                  : <span style={{ fontSize: rem(11.5), fontWeight: 700, color: '#b0b0b0', whiteSpace: 'nowrap', flexShrink: 0 }}>待機中</span>}
                 <svg width="7" height="12" viewBox="0 0 7 12"><path d="M1 1l5 5-5 5" stroke="#c0c0c0" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </div>
             )
@@ -920,8 +921,8 @@ export default function BoyPage() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>ドライバー一覧</p>
-          <button onClick={() => openDriverForm(null)} style={{ height: 30, padding: '0 12px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <p style={{ margin: 0, fontSize: rem(13), fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>ドライバー一覧</p>
+          <button onClick={() => openDriverForm(null)} style={{ height: 30, padding: '0 12px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: rem(12), fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" /></svg>
             追加
           </button>
@@ -931,15 +932,15 @@ export default function BoyPage() {
             const d = drivers[key]; const st = app.driverStatuses[key] || '待機中'; const cfg = DRIVER_STATUS_CONFIG[st] || DRIVER_STATUS_CONFIG['待機中']; const isActive = !cfg.available
             return (
               <div key={key} onClick={() => { setSelectedDrvId(key); setShowDeleteConfirm(false); go('driver-detail') }} role="button" style={{ border: '1px solid #ededed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#2a2a2a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{d.initial}</div>
+                <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#2a2a2a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: rem(15), flexShrink: 0 }}>{d.initial}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{d.name}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{d.car}{d.carColor ? `（${d.carColor}）` : ''}</p>
-                  <p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a' }}>{d.plate}</p>
+                  <p style={{ margin: 0, fontSize: rem(15), fontWeight: 700 }}>{d.name}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{d.car}{d.carColor ? `（${d.carColor}）` : ''}</p>
+                  <p style={{ margin: '1px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{d.plate}</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
                   {isActive && <span style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.color, display: 'inline-block', animation: 'lm-pulse 1.6s infinite' }} />}
-                  <span style={{ fontSize: 11.5, fontWeight: 700, color: isActive ? cfg.color : '#b0b0b0', whiteSpace: 'nowrap' }}>{isActive ? '運行中' : '待機中'}</span>
+                  <span style={{ fontSize: rem(11.5), fontWeight: 700, color: isActive ? cfg.color : '#b0b0b0', whiteSpace: 'nowrap' }}>{isActive ? '運行中' : '待機中'}</span>
                 </div>
                 <svg width="7" height="12" viewBox="0 0 7 12"><path d="M1 1l5 5-5 5" stroke="#c0c0c0" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </div>
