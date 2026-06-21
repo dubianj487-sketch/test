@@ -10,6 +10,25 @@ import {
 
 const font = "'Hanken Grotesk', 'Noto Sans JP', sans-serif"
 type Screen = 'home' | 'new' | 'edit' | 'driver-select' | 'status' | 'admin' | 'girl-detail' | 'driver-detail' | 'girl-form' | 'driver-form'
+
+function DeleteOverlay({ name, color, initial, onDelete, onCancel }: { name: string; color: string; initial: string; onDelete: () => void; onCancel: () => void }) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,.6)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+      <div style={{ background: '#fff', borderRadius: '26px 26px 0 0', padding: '22px 22px 48px' }}>
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: '#e0e0e0', margin: '0 auto 24px' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+          <div style={{ width: 52, height: 52, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 22, flexShrink: 0 }}>{initial}</div>
+          <p style={{ margin: 0, fontSize: 22, fontWeight: 800, lineHeight: 1.2 }}>{name}を<br />削除しますか？</p>
+        </div>
+        <p style={{ margin: '0 0 28px', fontSize: 14, color: '#8a8a8a', lineHeight: 1.65 }}>削除すると元に戻せません。<br />過去の便の記録には影響しません。</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <button onClick={onDelete} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>削除する</button>
+          <button onClick={onCancel} style={{ width: '100%', height: 52, borderRadius: 15, background: '#f4f4f4', color: '#0a0a0a', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>キャンセル</button>
+        </div>
+      </div>
+    </div>
+  )
+}
 const GIRL_COLORS = ['#F5A623','#7B61FF','#06C167','#E84855','#276EF1','#00A8B5','#FF7A45','#FF6B9C','#9B59B6','#E74C3C','#2ECC71','#F39C12']
 const CAR_COLOR_MAP: Record<string, string> = {
   '白': '#f0f0f0', 'ホワイト': '#f0f0f0', '黒': '#1a1a1a', 'ブラック': '#1a1a1a',
@@ -271,23 +290,6 @@ export default function BoyPage() {
       <div onClick={() => go('admin')} role="button" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: isAdminScreen ? '#0a0a0a' : '#b5b5b5', flex: 1 }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.8" /><rect x="13" y="3" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.8" /><rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.8" /><rect x="13" y="13" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="1.8" /></svg>
         <span style={{ fontSize: 10.5, fontWeight: 700 }}>管理</span>
-      </div>
-    </div>
-  )
-
-  const DeleteOverlay = ({ name, color, initial, onDelete, onCancel }: { name: string; color: string; initial: string; onDelete: () => void; onCancel: () => void }) => (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,.6)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', maxWidth: 390, left: '50%', transform: 'translateX(-50%)' }}>
-      <div style={{ background: '#fff', borderRadius: '26px 26px 0 0', padding: '22px 22px 48px' }}>
-        <div style={{ width: 36, height: 4, borderRadius: 2, background: '#e0e0e0', margin: '0 auto 24px' }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-          <div style={{ width: 52, height: 52, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 22, flexShrink: 0 }}>{initial}</div>
-          <p style={{ margin: 0, fontSize: 22, fontWeight: 800, lineHeight: 1.2 }}>{name}を<br />削除しますか？</p>
-        </div>
-        <p style={{ margin: '0 0 28px', fontSize: 14, color: '#8a8a8a', lineHeight: 1.65 }}>削除すると元に戻せません。<br />過去の便の記録には影響しません。</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button onClick={onDelete} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>削除する</button>
-          <button onClick={onCancel} style={{ width: '100%', height: 52, borderRadius: 15, background: '#f4f4f4', color: '#0a0a0a', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>キャンセル</button>
-        </div>
       </div>
     </div>
   )
@@ -689,7 +691,7 @@ export default function BoyPage() {
   /* ====== GIRL DETAIL ====== */
   if (screen === 'girl-detail') {
     const g = selectedGirlId ? girls[selectedGirlId] : null
-    if (!g || !selectedGirlId) { go('admin'); return null }
+    if (!g || !selectedGirlId) return null
     const onTrip = approvedSet.has(selectedGirlId)
     return (
       <div style={{ position: 'relative', minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
@@ -728,7 +730,7 @@ export default function BoyPage() {
   /* ====== DRIVER DETAIL ====== */
   if (screen === 'driver-detail') {
     const d = selectedDrvId ? drivers[selectedDrvId] : null
-    if (!d || !selectedDrvId) { go('admin'); return null }
+    if (!d || !selectedDrvId) return null
     const dSt = app.driverStatuses[selectedDrvId] || '待機中'
     const dCfg = DRIVER_STATUS_CONFIG[dSt] || DRIVER_STATUS_CONFIG['待機中']
     const isActive = !dCfg.available
