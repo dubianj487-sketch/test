@@ -694,7 +694,7 @@ export default function BoyPage() {
     if (!g || !selectedGirlId) return null
     const onTrip = approvedSet.has(selectedGirlId)
     return (
-      <div style={{ position: 'relative', minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ position: 'relative', minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
           <BackBtn onClick={() => go('admin')} />
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>キャスト詳細</h1>
@@ -736,7 +736,7 @@ export default function BoyPage() {
     const isActive = !dCfg.available
     const colorCSS = d.carColor ? (CAR_COLOR_MAP[d.carColor] || '#d0d0d0') : null
     return (
-      <div style={{ position: 'relative', minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ position: 'relative', minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
           <BackBtn onClick={() => go('admin')} />
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>ドライバー詳細</h1>
@@ -781,7 +781,7 @@ export default function BoyPage() {
 
   /* ====== GIRL FORM ====== */
   if (screen === 'girl-form') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 48px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 48px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => { if (formGirlId) { go('girl-detail') } else { go('admin') } }} />
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>{formGirlId ? `${girls[formGirlId]?.name || ''}を編集` : 'キャストを追加'}</h1>
@@ -828,7 +828,7 @@ export default function BoyPage() {
 
   /* ====== DRIVER FORM ====== */
   if (screen === 'driver-form') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 48px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 48px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => { if (formDrvId) { go('driver-detail') } else { go('admin') } }} />
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>{formDrvId ? `${drivers[formDrvId]?.name || ''}を編集` : 'ドライバーを追加'}</h1>
@@ -870,7 +870,7 @@ export default function BoyPage() {
   const avatarGirls = girlKeys.slice(0, 4).map(id => ({ id, color: girls[id].color, initial: girls[id].name[0] }))
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 16px' }}>
         <div>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS・KING・ボーイ</p>
