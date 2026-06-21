@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { loadAppState, saveAppState, GIRLS, DRIVERS, buildTripObjs, type AppState, type GirlKey } from '@/lib/appState'
+import { loadAppState, saveAppState, buildTripObjs, type AppState, type GirlKey } from '@/lib/appState'
 
 const font = "'Hanken Grotesk', 'Noto Sans JP', sans-serif"
 type Screen = 'home' | 'place' | 'request'
@@ -30,7 +30,7 @@ export default function CastPage() {
     const id = (localStorage.getItem('lm_castId') || 'miki') as GirlKey
     setCastId(id)
     const state = loadAppState()
-    setDropDraft(state.castDrops[id] || GIRLS[id]?.addr || '')
+    setDropDraft(state.castDrops[id] || state.girls[id]?.addr || '')
     setAppRaw(state)
     setLoading(false)
   }, [router])
@@ -59,12 +59,12 @@ export default function CastPage() {
     )
   }
 
-  const castGirl = GIRLS[castId] || GIRLS['miki']
+  const castGirl = app.girls[castId] || app.girls['miki']
   const castDrop = app.castDrops[castId] || castGirl.addr
   const castTrip = app.trips.find(t => t.assignedIds.includes(castId)) || null
-  const castObjs = castTrip ? buildTripObjs(castTrip) : []
+  const castObjs = castTrip ? buildTripObjs(castTrip, app.girls) : []
   const castEntry = castObjs.find(o => o.id === castId)
-  const castDrv = castTrip?.driverKey ? DRIVERS[castTrip.driverKey] : null
+  const castDrv = castTrip?.driverKey ? app.drivers[castTrip.driverKey] : null
   const castTodayReq = app.todayRequests[castId]
   const castTripStatus = !castTrip ? '' : (!castTrip.driverKey ? 'ドライバー確定待ち' : (!castTrip.boarded ? '乗車前' : '送迎中'))
 
