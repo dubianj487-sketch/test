@@ -288,29 +288,32 @@ export default function BoyPage() {
         <h1 style={{ margin: '2px 0 0', fontSize: rem(30), fontWeight: 800, letterSpacing: '-.02em' }}>管理</h1>
       </div>
       <div style={{ padding: '0 20px' }}>
-        {([
-          {
-            label: '女の子管理', sub: '登録・編集・削除', path: '/masters/girls', bg: '#fff0f5',
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#E84855" strokeWidth="1.8" strokeLinecap="round" /><circle cx="9" cy="7" r="4" stroke="#E84855" strokeWidth="1.8" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#E84855" strokeWidth="1.8" strokeLinecap="round" /></svg>,
-          },
-          {
-            label: 'ドライバー管理', sub: '登録・編集・削除', path: '/masters/drivers', bg: '#f0f7ff',
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 13l1.6-4.5A2 2 0 0 1 8.5 7h7a2 2 0 0 1 1.9 1.5L19 13m-14 0h14v4a1 1 0 0 1-1 1h-1.2a1.8 1.8 0 1 1-3.6 0H9.8a1.8 1.8 0 1 1-3.6 0H5a1 1 0 0 1-1-1v-4h1Z" stroke="#276EF1" strokeWidth="1.8" strokeLinejoin="round" /></svg>,
-          },
-          {
-            label: '配車ウィザード', sub: '3ステップで配車を作成', path: '/dispatch', bg: '#f0fdf4',
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#06C167" strokeWidth="2.2" strokeLinecap="round" /></svg>,
-          },
-        ] as { label: string; sub: string; path: string; bg: string; icon: React.ReactNode }[]).map(item => (
-          <button key={item.path} onClick={() => router.push(item.path)} style={{ width: '100%', borderRadius: 18, padding: '18px 20px', background: '#fff', border: '1.5px solid rgba(0,0,0,.1)', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12, textAlign: 'left' }}>
-            <div style={{ width: 50, height: 50, borderRadius: 14, background: item.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{item.icon}</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: rem(17), fontWeight: 700 }}>{item.label}</p>
-              <p style={{ margin: '2px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{item.sub}</p>
-            </div>
-            <svg width="7" height="13" viewBox="0 0 9 15"><path d="M1 1l6 6.5L1 14" stroke="#c0c0c0" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </button>
-        ))}
+        <p style={{ margin: '0 4px 10px', fontSize: rem(12), fontWeight: 600, color: '#8a8a8a', letterSpacing: '.06em' }}>マスター管理</p>
+        <div style={{ borderRadius: 18, background: '#f5f5f5', overflow: 'hidden' }}>
+          {([
+            {
+              label: '女の子管理', sub: '登録・編集・削除', path: '/masters/girls', iconColor: '#E84855',
+              icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#E84855" strokeWidth="1.8" strokeLinecap="round" /><circle cx="9" cy="7" r="4" stroke="#E84855" strokeWidth="1.8" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#E84855" strokeWidth="1.8" strokeLinecap="round" /></svg>,
+            },
+            {
+              label: 'ドライバー管理', sub: '登録・編集・削除', path: '/masters/drivers', iconColor: '#276EF1',
+              icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l1.6-4.5A2 2 0 0 1 8.5 7h7a2 2 0 0 1 1.9 1.5L19 13m-14 0h14v4a1 1 0 0 1-1 1h-1.2a1.8 1.8 0 1 1-3.6 0H9.8a1.8 1.8 0 1 1-3.6 0H5a1 1 0 0 1-1-1v-4h1Z" stroke="#276EF1" strokeWidth="1.8" strokeLinejoin="round" /></svg>,
+            },
+            {
+              label: '配車ウィザード', sub: '3ステップで配車を作成', path: '/dispatch', iconColor: '#06C167',
+              icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#06C167" strokeWidth="2.2" strokeLinecap="round" /></svg>,
+            },
+          ] as { label: string; sub: string; path: string; iconColor: string; icon: React.ReactNode }[]).map((item, idx, arr) => (
+            <button key={item.path} onClick={() => router.push(item.path)} style={{ width: '100%', padding: '14px 16px', background: 'transparent', border: 'none', borderBottom: idx < arr.length - 1 ? '1px solid rgba(0,0,0,.07)' : 'none', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: item.iconColor + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{item.icon}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: rem(16), fontWeight: 600, color: '#0a0a0a' }}>{item.label}</p>
+                <p style={{ margin: '1px 0 0', fontSize: rem(12), color: '#9a9a9a' }}>{item.sub}</p>
+              </div>
+              <svg width="6" height="12" viewBox="0 0 9 15"><path d="M1 1l6 6.5L1 14" stroke="#c8c8c8" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          ))}
+        </div>
       </div>
       {nav}
     </div>
