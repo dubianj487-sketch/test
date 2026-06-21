@@ -282,7 +282,7 @@ export default function BoyPage() {
   const isAdminScreen = ['admin', 'girl-detail', 'driver-detail', 'girl-form', 'driver-form'].includes(screen)
 
   const nav = (
-    <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 390, zIndex: 40, background: '#ffffff', borderTop: '1px solid #efefef', padding: '10px 14px 24px', display: 'flex', justifyContent: 'space-around', boxSizing: 'border-box' }}>
+    <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 390, zIndex: 40, background: '#ffffff', borderTop: '1px solid #efefef', padding: '10px 14px max(10px, env(safe-area-inset-bottom))', display: 'flex', justifyContent: 'space-around', boxSizing: 'border-box' }}>
       <div onClick={() => go('home')} role="button" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: !isAdminScreen ? '#0a0a0a' : '#b5b5b5', flex: 1 }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13l1.6-4.5A2 2 0 0 1 8.5 7h7a2 2 0 0 1 1.9 1.5L19 13m-14 0h14v4a1 1 0 0 1-1 1h-1.2a1.8 1.8 0 1 1-3.6 0H9.8a1.8 1.8 0 1 1-3.6 0H5a1 1 0 0 1-1-1v-4h1Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
         <span style={{ fontSize: 10.5, fontWeight: 700 }}>配車</span>
