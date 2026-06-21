@@ -118,7 +118,7 @@ export default function DriverPage() {
   /* ====== OFFER ====== */
   if (screen === 'offer') return (
     <div style={{ minHeight: '100dvh', background: '#0a0a0a', color: '#fff', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
+      <div style={{ background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
         <div>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#6e6e6e', letterSpacing: '.04em' }}>{myDrv.name}</p>
           <h1 style={{ margin: '2px 0 0', fontSize: 28, fontWeight: 800, letterSpacing: '-.02em' }}>配車依頼</h1>
@@ -193,7 +193,7 @@ export default function DriverPage() {
 
   return (
     <div style={{ minHeight: '100dvh', background: '#0a0a0a', color: '#fff', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ position: 'sticky', top: 0, zIndex: 35, background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 10px' }}>
+      <div style={{ background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 10px' }}>
         <div>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#06c167', letterSpacing: '.04em' }}>{activeT ? '運行中' : '運行'}</p>
           <h1 style={{ margin: '2px 0 0', fontSize: 24, fontWeight: 800, letterSpacing: '-.01em', whiteSpace: 'nowrap' }}>{activeT ? '便 #' + activeT.id : '担当便なし'}</h1>
