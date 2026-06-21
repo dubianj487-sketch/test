@@ -27,7 +27,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full" style={{ background: "#0a0a0a", WebkitFontSmoothing: "antialiased" }}>
+      <body className="min-h-full" style={{ background: "#ffffff", WebkitFontSmoothing: "antialiased" }}>
         <div className="mx-auto min-h-dvh" style={{ maxWidth: 390 }}>
           {children}
         </div>
