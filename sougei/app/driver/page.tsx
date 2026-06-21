@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { loadAppState, saveAppState, GIRLS, DRIVERS, DRIVER_STATUS_CONFIG, buildTripObjs, type AppState, type DriverKey } from '@/lib/appState'
+import { loadAppState, saveAppState, DRIVER_STATUS_CONFIG, buildTripObjs, type AppState, type DriverKey } from '@/lib/appState'
 
 const font = "'Hanken Grotesk', 'Noto Sans JP', sans-serif"
 type Screen = 'offer' | 'trip'
@@ -79,22 +79,22 @@ export default function DriverPage() {
     )
   }
 
-  const myDrv = DRIVERS[driverKey] || DRIVERS['sato']
+  const myDrv = app.drivers[driverKey] || Object.values(app.drivers)[0]
   const myTrips = app.trips.filter(t => t.driverKey === driverKey)
   const myStatus = app.driverStatuses[driverKey] || '待機中'
   const myStatusCfg = DRIVER_STATUS_CONFIG[myStatus] || DRIVER_STATUS_CONFIG['待機中']
 
   const activeT = (activeTripId ? myTrips.find(t => t.id === activeTripId) : myTrips.find(t => (t.completed || 0) < t.assignedIds.length)) || myTrips[0] || null
-  const aObjs = activeT ? buildTripObjs(activeT) : []
+  const aObjs = activeT ? buildTripObjs(activeT, app.girls) : []
   const aTotal = aObjs.length
   const aDone = activeT ? (activeT.completed || 0) : 0
   const aBoardOrder = [...aObjs].sort((a, b) => b.boardNo - a.boardNo)
 
   const myAssignedTrips = myTrips.map(t => {
     const tot = t.assignedIds.length, dn = t.completed || 0
-    const estKm = Math.round(t.assignedIds.reduce((s, id) => s + (GIRLS[id]?.dist || 0), 0) + 5)
+    const estKm = Math.round(t.assignedIds.reduce((s, id) => s + (app.girls[id]?.dist || 0), 0) + 5)
     const st = !t.boarded ? '出発前' : (dn < tot ? '送迎中' : '完了')
-    return { id: t.id, label: '便 #' + t.id, departTime: t.departTime, assignedCount: tot, dropsTotal: tot, estimatedDist: '約' + estKm + 'km', status: st, castObjs: t.assignedIds.map(id => ({ ...GIRLS[id], initial: GIRLS[id].name[0] })) }
+    return { id: t.id, label: '便 #' + t.id, departTime: t.departTime, assignedCount: tot, dropsTotal: tot, estimatedDist: '約' + estKm + 'km', status: st, castObjs: t.assignedIds.map(id => { const g = app.girls[id] || { name: '?', area: '', dist: 0, addr: '', color: '#aaa' }; return { ...g, id, initial: g.name[0] } }) }
   })
 
   const allStatuses = ['待機中', 'お店前'].map(st => {
