@@ -9,8 +9,13 @@ import {
 } from '@/lib/appState'
 
 const font = "'Hanken Grotesk', 'Noto Sans JP', sans-serif"
-type Screen = 'home' | 'new' | 'edit' | 'driver-select' | 'status' | 'admin' | 'girl-form' | 'driver-form'
+type Screen = 'home' | 'new' | 'edit' | 'driver-select' | 'status' | 'admin' | 'girl-detail' | 'driver-detail' | 'girl-form' | 'driver-form'
 const GIRL_COLORS = ['#F5A623','#7B61FF','#06C167','#E84855','#276EF1','#00A8B5','#FF7A45','#FF6B9C','#9B59B6','#E74C3C','#2ECC71','#F39C12']
+const CAR_COLOR_MAP: Record<string, string> = {
+  '白': '#f0f0f0', 'ホワイト': '#f0f0f0', '黒': '#1a1a1a', 'ブラック': '#1a1a1a',
+  'シルバー': '#c8c8c8', 'グレー': '#808080', 'ネイビー': '#1e3a5f',
+  '赤': '#e74c3c', '青': '#276EF1', 'ブルー': '#276EF1', 'ゴールド': '#F5A623',
+}
 
 const BackBtn = ({ onClick }: { onClick: () => void }) => (
   <button onClick={onClick} style={{ width: 38, height: 38, borderRadius: 11, background: '#f4f4f4', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -18,8 +23,15 @@ const BackBtn = ({ onClick }: { onClick: () => void }) => (
   </button>
 )
 
-const fieldInput: React.CSSProperties = { height: 52, width: '100%', borderRadius: 14, background: '#f7f7f7', border: '1px solid #e6e6e6', color: '#0a0a0a', padding: '0 16px', fontSize: 15, fontFamily: font, outline: 'none', boxSizing: 'border-box' }
-const fieldLabel: React.CSSProperties = { margin: '0 0 8px 2px', fontSize: 12, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em', display: 'block' }
+const InfoRow = ({ label, last, children }: { label: string; last?: boolean; children: React.ReactNode }) => (
+  <div style={{ padding: '14px 0', borderBottom: last ? 'none' : '1px solid #f0f0f0' }}>
+    <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#9a9a9a', letterSpacing: '.06em', textTransform: 'uppercase' as const }}>{label}</p>
+    <div style={{ marginTop: 4 }}>{children}</div>
+  </div>
+)
+
+const fieldInput: React.CSSProperties = { height: 54, width: '100%', borderRadius: 14, background: '#fafafa', border: '1.5px solid #e8e8e8', color: '#0a0a0a', padding: '0 16px', fontSize: 18, fontWeight: 600, fontFamily: font, outline: 'none', boxSizing: 'border-box' }
+const fieldLabel: React.CSSProperties = { margin: '0 0 8px 2px', fontSize: 11, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.08em', textTransform: 'uppercase' as const, display: 'block' }
 
 export default function BoyPage() {
   const router = useRouter()
@@ -42,7 +54,11 @@ export default function BoyPage() {
   const [formDrvId, setFormDrvId] = useState<string | null>(null)
   const [fDName, setFDName] = useState('')
   const [fDCar, setFDCar] = useState('')
+  const [fDCarColor, setFDCarColor] = useState('')
   const [fDPlate, setFDPlate] = useState('')
+  const [selectedGirlId, setSelectedGirlId] = useState<string | null>(null)
+  const [selectedDrvId, setSelectedDrvId] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
     const role = localStorage.getItem('lm_role')
@@ -79,18 +95,19 @@ export default function BoyPage() {
 
   const girls = app.girls
   const drivers = app.drivers
-  const approvedSet = new Set(app.trips.flatMap(t => t.assignedIds))
 
+  const approvedSet = new Set(app.trips.flatMap(t => t.assignedIds))
   const pendingRequests = Object.keys(app.rideRequests)
-    .filter(id => app.rideRequests[id] === 'approved' && !approvedSet.has(id) && girls[id])
-    .map(id => { const g = girls[id]; const sel = tripDraftIds.includes(id); return { id, ...g, initial: g.name[0], distLabel: g.dist.toFixed(1) + 'km', selected: sel } })
-    .sort((a, b) => a.dist - b.dist)
+    .filter(id => app.rideRequests[id] === 'approved' && !approvedSet.has(id))
+    .map(id => { const g = girls[id]; if (!g) return null; const sel = tripDraftIds.includes(id); return { id, ...g, initial: g.name[0], distLabel: g.dist.toFixed(1) + 'km', selected: sel } })
+    .filter(Boolean) as { id: string; name: string; area: string; dist: number; addr: string; color: string; initial: string; distLabel: string; selected: boolean }[]
+  pendingRequests.sort((a, b) => a.dist - b.dist)
 
   const tripsList = app.trips.map(t => {
     const drv = t.driverKey ? drivers[t.driverKey] : null
     const tot = t.assignedIds.length, dn = t.completed || 0
     const status = !t.driverKey ? '待機中' : (!t.boarded ? '出発前' : (dn < tot ? '送迎中' : '完了'))
-    return { id: t.id, label: '便 #' + t.id, departTime: t.departTime, assignedCount: tot, driverName: drv ? drv.name : '未定', status, progressPct: tot ? Math.round(dn / tot * 100) + '%' : '0%', dropsDone: dn, dropsTotal: tot, castObjs: t.assignedIds.map(id => ({ ...(girls[id] || { color: '#aaa', name: '?' }), initial: (girls[id]?.name || '?')[0] })) }
+    return { id: t.id, label: '便 #' + t.id, departTime: t.departTime, assignedCount: tot, driverName: drv ? drv.name : '未定', status, progressPct: tot ? Math.round(dn / tot * 100) + '%' : '0%', dropsDone: dn, dropsTotal: tot, castObjs: t.assignedIds.map(id => { const g = girls[id] || { name: '?', area: '', dist: 0, addr: '', color: '#aaa' }; return { ...g, id, initial: g.name[0] } }) }
   })
 
   const viewT = app.trips.find(t => t.id === viewingTripId) || null
@@ -100,8 +117,13 @@ export default function BoyPage() {
   const vStatus = !viewT ? '' : (!viewT.driverKey ? 'ドライバー確定待ち' : (!viewT.boarded ? '乗車前' : (vDone < vTotal ? '送迎中' : '送迎完了')))
   const vTodayCastId = viewT ? viewT.assignedIds.find(id => app.todayRequests[id]?.status === '承認待ち') : undefined
   const vTodayReq = vTodayCastId ? app.todayRequests[vTodayCastId] : undefined
-  const todayReqList = (Object.entries(app.todayRequests) as [string, { place: string; reason: string; status: string }][]).filter(([, v]) => v.status === '承認待ち').map(([id, v]) => ({ castId: id, castName: girls[id]?.name || id, place: v.place, status: v.status, color: girls[id]?.color || '#888', initial: (girls[id]?.name || '?')[0] }))
-  const suggestions = Object.keys(girls).filter(id => !viewT?.assignedIds.includes(id)).map(id => { const g = girls[id]; return { id, ...g, initial: g.name[0], distLabel: '店から' + g.dist.toFixed(1) + 'km' } }).sort((a, b) => a.dist - b.dist)
+  const todayReqList = Object.entries(app.todayRequests)
+    .filter(([, v]) => v?.status === '承認待ち')
+    .map(([id, v]) => ({ castId: id, castName: girls[id]?.name || id, place: v!.place, status: v!.status, color: girls[id]?.color || '#888', initial: (girls[id]?.name || '?')[0] }))
+  const suggestions = Object.keys(girls)
+    .filter(id => !viewT?.assignedIds.includes(id))
+    .map(id => { const g = girls[id]; return { id, ...g, initial: g.name[0], distLabel: '店から' + g.dist.toFixed(1) + 'km' } })
+    .sort((a, b) => a.dist - b.dist)
   const draftDepartStr = draftDepartNow ? '今すぐ' : String(draftDepartHour).padStart(2, '0') + ':' + String(draftDepartMin).padStart(2, '0')
 
   function addMinutes(delta: number) {
@@ -149,7 +171,7 @@ export default function BoyPage() {
 
   function addGirlToTrip(tripId: number | null, castId: string) {
     if (!tripId) return
-    setApp(s => ({ ...s, trips: s.trips.map(t => t.id !== tripId || t.assignedIds.includes(castId) ? t : { ...t, assignedIds: [...t.assignedIds, castId].sort((a, b) => (girls[a]?.dist || 0) - (girls[b]?.dist || 0)) }) }))
+    setApp(s => ({ ...s, trips: s.trips.map(t => t.id !== tripId || t.assignedIds.includes(castId) ? t : { ...t, assignedIds: [...t.assignedIds, castId].sort((a, b) => (s.girls[a]?.dist || 0) - (s.girls[b]?.dist || 0)) }) }))
   }
 
   function assignDriver(tripId: number, driverKey: string) {
@@ -171,7 +193,7 @@ export default function BoyPage() {
 
   function applySort() {
     if (!viewT) return
-    setApp(s => ({ ...s, trips: s.trips.map(t => t.id === viewT.id ? { ...t, assignedIds: [...t.assignedIds].sort((a, b) => (girls[a]?.dist || 0) - (girls[b]?.dist || 0)) } : t) }))
+    setApp(s => ({ ...s, trips: s.trips.map(t => t.id === viewT.id ? { ...t, assignedIds: [...t.assignedIds].sort((a, b) => (s.girls[a]?.dist || 0) - (s.girls[b]?.dist || 0)) } : t) }))
   }
 
   function openGirlForm(id: string | null) {
@@ -190,11 +212,13 @@ export default function BoyPage() {
     const id = formGirlId || Date.now().toString(36)
     const g: Girl = { name: fGName.trim(), area: fGArea.trim(), dist: parseFloat(fGDist) || 0, addr: fGAddr.trim(), color: fGColor }
     setApp(s => ({ ...s, girls: { ...s.girls, [id]: g }, castDrops: formGirlId ? s.castDrops : { ...s.castDrops, [id]: g.addr } }))
-    go('admin')
+    if (formGirlId) { go('girl-detail') } else { go('admin') }
   }
 
-  function deleteGirl(id: string) {
-    if (!window.confirm(`「${girls[id]?.name}」を削除しますか？`)) return
+  function doDeleteGirl() {
+    if (!selectedGirlId) return
+    const id = selectedGirlId
+    setShowDeleteConfirm(false)
     setApp(s => {
       const newGirls = { ...s.girls }; delete newGirls[id]
       const newReqs = { ...s.rideRequests }; delete newReqs[id]
@@ -202,11 +226,16 @@ export default function BoyPage() {
       const newDrops = { ...s.castDrops }; delete newDrops[id]
       return { ...s, girls: newGirls, rideRequests: newReqs, todayRequests: newToday, castDrops: newDrops, trips: s.trips.map(t => ({ ...t, assignedIds: t.assignedIds.filter(x => x !== id) })) }
     })
+    go('admin')
   }
 
   function openDriverForm(id: string | null) {
-    if (id) { const d = drivers[id]; setFDName(d.name); setFDCar(d.car); setFDPlate(d.plate) }
-    else { setFDName(''); setFDCar(''); setFDPlate('') }
+    if (id) {
+      const d = drivers[id]
+      setFDName(d.name); setFDCar(d.car); setFDCarColor(d.carColor || ''); setFDPlate(d.plate)
+    } else {
+      setFDName(''); setFDCar(''); setFDCarColor(''); setFDPlate('')
+    }
     setFormDrvId(id)
     go('driver-form')
   }
@@ -214,21 +243,25 @@ export default function BoyPage() {
   function saveDriver() {
     if (!fDName.trim()) return
     const id = formDrvId || Date.now().toString(36)
-    const d: DriverInfo = { name: fDName.trim(), initial: fDName.trim()[0] || '?', car: fDCar.trim(), plate: fDPlate.trim() }
+    const d: DriverInfo = { name: fDName.trim(), initial: fDName.trim()[0] || '?', car: fDCar.trim(), carColor: fDCarColor.trim() || undefined, plate: fDPlate.trim() }
     setApp(s => ({ ...s, drivers: { ...s.drivers, [id]: d }, driverStatuses: formDrvId ? s.driverStatuses : { ...s.driverStatuses, [id]: '待機中' } }))
-    go('admin')
+    if (formDrvId) { go('driver-detail') } else { go('admin') }
   }
 
-  function deleteDriver(id: string) {
-    if (!window.confirm(`「${drivers[id]?.name}」を削除しますか？`)) return
+  function doDeleteDriver() {
+    if (!selectedDrvId) return
+    const id = selectedDrvId
+    setShowDeleteConfirm(false)
     setApp(s => {
       const newDrivers = { ...s.drivers }; delete newDrivers[id]
       const newSt = { ...s.driverStatuses }; delete newSt[id]
       return { ...s, drivers: newDrivers, driverStatuses: newSt, trips: s.trips.map(t => t.driverKey === id ? { ...t, driverKey: null } : t) }
     })
+    go('admin')
   }
 
-  const isAdminScreen = ['admin', 'edit', 'girl-form', 'driver-form'].includes(screen)
+  const isAdminScreen = ['admin', 'girl-detail', 'driver-detail', 'girl-form', 'driver-form'].includes(screen)
+
   const nav = (
     <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 390, zIndex: 40, background: '#ffffff', borderTop: '1px solid #efefef', padding: '10px 14px 24px', display: 'flex', justifyContent: 'space-around', boxSizing: 'border-box' }}>
       <div onClick={() => go('home')} role="button" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', color: !isAdminScreen ? '#0a0a0a' : '#b5b5b5', flex: 1 }}>
@@ -242,9 +275,26 @@ export default function BoyPage() {
     </div>
   )
 
+  const DeleteOverlay = ({ name, color, initial, onDelete, onCancel }: { name: string; color: string; initial: string; onDelete: () => void; onCancel: () => void }) => (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,.6)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', maxWidth: 390, left: '50%', transform: 'translateX(-50%)' }}>
+      <div style={{ background: '#fff', borderRadius: '26px 26px 0 0', padding: '22px 22px 48px' }}>
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: '#e0e0e0', margin: '0 auto 24px' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+          <div style={{ width: 52, height: 52, borderRadius: '50%', background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 22, flexShrink: 0 }}>{initial}</div>
+          <p style={{ margin: 0, fontSize: 22, fontWeight: 800, lineHeight: 1.2 }}>{name}を<br />削除しますか？</p>
+        </div>
+        <p style={{ margin: '0 0 28px', fontSize: 14, color: '#8a8a8a', lineHeight: 1.65 }}>削除すると元に戻せません。<br />過去の便の記録には影響しません。</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <button onClick={onDelete} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>削除する</button>
+          <button onClick={onCancel} style={{ width: '100%', height: 52, borderRadius: 15, background: '#f4f4f4', color: '#0a0a0a', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>キャンセル</button>
+        </div>
+      </div>
+    </div>
+  )
+
   /* ====== HOME ====== */
   if (screen === 'home') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
         <div>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS・KING ・ ボーイ</p>
@@ -324,13 +374,11 @@ export default function BoyPage() {
 
   /* ====== NEW ====== */
   if (screen === 'new') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ background: '#fff' }}>
-        <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '50%', background: '#0a0a0a', borderRadius: '0 2px 2px 0' }} /></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
-          <BackBtn onClick={() => go('home')} />
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>配車依頼</h1>
-        </div>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+      <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '50%', background: '#0a0a0a', borderRadius: '0 2px 2px 0' }} /></div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+        <BackBtn onClick={() => go('home')} />
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>配車依頼</h1>
       </div>
 
       <div style={{ padding: '0 20px' }}>
@@ -390,15 +438,15 @@ export default function BoyPage() {
 
   /* ====== DRIVER SELECT ====== */
   if (screen === 'driver-select') {
-    const orderedDraft = tripDraftIds.map(id => ({ id, ...(girls[id] || { name: '?', area: '', dist: 0, addr: '', color: '#aaa' }), initial: (girls[id]?.name || '?')[0] })).sort((a, b) => a.dist - b.dist)
+    const orderedDraft = tripDraftIds
+      .map(id => { const g = girls[id] || { name: '?', area: '', dist: 0, addr: '', color: '#aaa' }; return { id, ...g, initial: g.name[0] } })
+      .sort((a, b) => a.dist - b.dist)
     return (
-      <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-        <div style={{ background: '#fff' }}>
-          <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '100%', background: '#0a0a0a' }} /></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
-            <BackBtn onClick={() => go('new')} />
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>ドライバーを指定</h1>
-          </div>
+      <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+        <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '100%', background: '#0a0a0a' }} /></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+          <BackBtn onClick={() => go('new')} />
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>ドライバーを指定</h1>
         </div>
 
         <div style={{ padding: '0 20px' }}>
@@ -422,7 +470,7 @@ export default function BoyPage() {
                   <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#1a1a1a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, flexShrink: 0 }}>{drv.initial}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>{drv.name}</p>
-                    <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#9a9a9a' }}>{drv.car}</p>
+                    <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#9a9a9a' }}>{drv.car}{drv.carColor ? `（${drv.carColor}）` : ''}</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5 }}>
                       <span style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.color, flexShrink: 0, display: 'inline-block' }} />
                       <span style={{ fontSize: 12, fontWeight: 700, color: cfg.color }}>{st}</span>
@@ -465,7 +513,7 @@ export default function BoyPage() {
 
   /* ====== STATUS ====== */
   if (screen === 'status') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => go('home')} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -491,7 +539,7 @@ export default function BoyPage() {
             <div style={{ marginTop: 16, background: '#1a1a1a', borderRadius: 13, padding: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 42, height: 42, borderRadius: '50%', background: '#333', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16 }}>{vDrv.initial}</div>
-                <div style={{ flex: 1, minWidth: 0 }}><p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{vDrv.name}</p><p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{vDrv.car} ・ {vDrv.plate}</p></div>
+                <div style={{ flex: 1, minWidth: 0 }}><p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{vDrv.name}</p><p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{vDrv.car}{vDrv.carColor ? `（${vDrv.carColor}）` : ''} ・ {vDrv.plate}</p></div>
                 <span onClick={() => viewT && unassignDriver(viewT.id)} role="button" style={{ fontSize: 11.5, color: '#6e6e6e', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}>変更</span>
               </div>
             </div>
@@ -553,7 +601,7 @@ export default function BoyPage() {
 
   /* ====== EDIT ====== */
   if (screen === 'edit') return (
-    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+    <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
         <BackBtn onClick={() => go('status')} />
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>便を編集</h1>
@@ -570,6 +618,13 @@ export default function BoyPage() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {app.trips.length === 0 && (
+        <div style={{ margin: '0 20px 16px', border: '1px solid #ededed', borderRadius: 14, padding: 20, textAlign: 'center' }}>
+          <p style={{ margin: 0, fontSize: 14, color: '#b0b0b0', fontWeight: 600 }}>まだ便がありません</p>
+          <p style={{ margin: '6px 0 0', fontSize: 12, color: '#c8c8c8' }}>配車タブから便を作成してください</p>
         </div>
       )}
 
@@ -631,39 +686,131 @@ export default function BoyPage() {
     </div>
   )
 
+  /* ====== GIRL DETAIL ====== */
+  if (screen === 'girl-detail') {
+    const g = selectedGirlId ? girls[selectedGirlId] : null
+    if (!g || !selectedGirlId) { go('admin'); return null }
+    const onTrip = approvedSet.has(selectedGirlId)
+    return (
+      <div style={{ position: 'relative', minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+          <BackBtn onClick={() => go('admin')} />
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>キャスト詳細</h1>
+        </div>
+        <div style={{ padding: '0 20px' }}>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
+              <div style={{ width: 68, height: 68, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 28, flexShrink: 0 }}>{g.name[0]}</div>
+              <div>
+                <p style={{ margin: 0, fontSize: 36, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>{g.name}</p>
+                <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', background: onTrip ? '#0a0a0a' : '#f0f0f0', padding: '5px 13px', borderRadius: 999 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: onTrip ? '#fff' : '#8a8a8a' }}>{onTrip ? '乗車中' : '待機中'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid #f0f0f0' }}>
+            <InfoRow label="エリア"><p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{g.area || '未登録'}</p></InfoRow>
+            <InfoRow label="店からの距離"><p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{g.dist.toFixed(1)} <span style={{ fontSize: 14, fontWeight: 600, color: '#6a6a6a' }}>km</span></p></InfoRow>
+            <InfoRow label="住所" last><p style={{ margin: 0, fontSize: 16, fontWeight: 600, lineHeight: 1.55 }}>{g.addr || '未登録'}</p></InfoRow>
+          </div>
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button onClick={() => openGirlForm(selectedGirlId)} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: font, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>編集する</button>
+            <button onClick={() => setShowDeleteConfirm(true)} style={{ width: '100%', height: 48, borderRadius: 15, background: '#fff', color: '#9a9a9a', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: font, textDecoration: 'underline', textUnderlineOffset: 3 }}>削除する</button>
+          </div>
+        </div>
+        {showDeleteConfirm && <DeleteOverlay name={g.name} color={g.color} initial={g.name[0]} onDelete={doDeleteGirl} onCancel={() => setShowDeleteConfirm(false)} />}
+        {nav}
+      </div>
+    )
+  }
+
+  /* ====== DRIVER DETAIL ====== */
+  if (screen === 'driver-detail') {
+    const d = selectedDrvId ? drivers[selectedDrvId] : null
+    if (!d || !selectedDrvId) { go('admin'); return null }
+    const dSt = app.driverStatuses[selectedDrvId] || '待機中'
+    const dCfg = DRIVER_STATUS_CONFIG[dSt] || DRIVER_STATUS_CONFIG['待機中']
+    const isActive = !dCfg.available
+    const colorCSS = d.carColor ? (CAR_COLOR_MAP[d.carColor] || '#d0d0d0') : null
+    return (
+      <div style={{ position: 'relative', minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+          <BackBtn onClick={() => go('admin')} />
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>ドライバー詳細</h1>
+        </div>
+        <div style={{ padding: '0 20px' }}>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#1a1a1a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 28, flexShrink: 0 }}>{d.initial}</div>
+              <div>
+                <p style={{ margin: 0, fontSize: 36, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>{d.name}</p>
+                <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: dCfg.color, display: 'inline-block', animation: isActive ? 'lm-pulse 1.6s infinite' : 'none' }} />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: dCfg.color }}>{dSt}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid #f0f0f0' }}>
+            <InfoRow label="車種"><p style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{d.car || '未登録'}</p></InfoRow>
+            {d.carColor ? (
+              <InfoRow label="車の色">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {colorCSS && <div style={{ width: 24, height: 24, borderRadius: '50%', background: colorCSS, border: '1.5px solid #ddd', flexShrink: 0 }} />}
+                  <p style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>{d.carColor}</p>
+                </div>
+              </InfoRow>
+            ) : null}
+            <InfoRow label="ナンバープレート" last><p style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '.04em' }}>{d.plate || '未登録'}</p></InfoRow>
+          </div>
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button onClick={() => openDriverForm(selectedDrvId)} style={{ width: '100%', height: 56, borderRadius: 15, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: font, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>編集する</button>
+            <button onClick={() => { if (!isActive) setShowDeleteConfirm(true) }} disabled={isActive} style={{ width: '100%', height: 48, borderRadius: 15, background: '#fff', color: isActive ? '#c8c8c8' : '#9a9a9a', border: 'none', fontSize: 14, fontWeight: 600, cursor: isActive ? 'not-allowed' : 'pointer', fontFamily: font, textDecoration: isActive ? 'none' : 'underline', textUnderlineOffset: 3 }}>
+              {isActive ? '削除する（運行中のため不可）' : '削除する'}
+            </button>
+          </div>
+        </div>
+        {showDeleteConfirm && <DeleteOverlay name={d.name} color="#1a1a1a" initial={d.initial} onDelete={doDeleteDriver} onCancel={() => setShowDeleteConfirm(false)} />}
+        {nav}
+      </div>
+    )
+  }
+
   /* ====== GIRL FORM ====== */
   if (screen === 'girl-form') return (
     <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 48px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
-        <BackBtn onClick={() => go('admin')} />
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>{formGirlId ? 'キャストを編集' : 'キャストを追加'}</h1>
+        <BackBtn onClick={() => { if (formGirlId) { go('girl-detail') } else { go('admin') } }} />
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>{formGirlId ? `${girls[formGirlId]?.name || ''}を編集` : 'キャストを追加'}</h1>
       </div>
-      <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 22 }}>
         <div>
-          <p style={fieldLabel}>名前</p>
+          <label style={fieldLabel}>ニックネーム</label>
           <input value={fGName} onChange={e => setFGName(e.target.value)} placeholder="ことね" style={fieldInput} />
         </div>
         <div>
-          <p style={fieldLabel}>エリア</p>
+          <label style={fieldLabel}>エリア（地区）</label>
           <input value={fGArea} onChange={e => setFGArea(e.target.value)} placeholder="古町（中央区）" style={fieldInput} />
         </div>
         <div>
-          <p style={fieldLabel}>お店からの距離（km）</p>
+          <label style={fieldLabel}>自宅住所</label>
+          <textarea value={fGAddr} onChange={e => setFGAddr(e.target.value)} placeholder="新潟市中央区..." style={{ ...fieldInput, height: 80, padding: '14px 16px', lineHeight: 1.5, resize: 'none' as const }} />
+          <p style={{ margin: '8px 2px 0', fontSize: 12, color: '#b0b0b0', lineHeight: 1.5 }}>住所はドライバーへの案内・距離計算に使用します</p>
+        </div>
+        <div>
+          <label style={fieldLabel}>お店からの距離（km）</label>
           <input value={fGDist} onChange={e => setFGDist(e.target.value)} placeholder="1.5" type="number" step="0.1" min="0" style={fieldInput} />
         </div>
         <div>
-          <p style={fieldLabel}>住所・降車場所</p>
-          <textarea value={fGAddr} onChange={e => setFGAddr(e.target.value)} placeholder="新潟市中央区..." style={{ ...fieldInput, height: 80, padding: '14px 16px', lineHeight: 1.5, resize: 'none' as const }} />
-        </div>
-        <div>
-          <p style={fieldLabel}>カラー</p>
+          <label style={fieldLabel}>カラー</label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
             {GIRL_COLORS.map(c => (
               <div key={c} onClick={() => setFGColor(c)} style={{ width: 38, height: 38, borderRadius: '50%', background: c, border: fGColor === c ? '3px solid #0a0a0a' : '3px solid transparent', cursor: 'pointer', boxSizing: 'border-box', outline: fGColor === c ? '2px solid #fff' : 'none', outlineOffset: '-5px' }} />
             ))}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, background: '#f7f7f7', borderRadius: 14, padding: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#f7f7f7', borderRadius: 14, padding: 14 }}>
           <div style={{ width: 44, height: 44, borderRadius: '50%', background: fGColor, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, flexShrink: 0 }}>{fGName[0] || '?'}</div>
           <div>
             <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{fGName || '（名前未入力）'}</p>
@@ -681,87 +828,118 @@ export default function BoyPage() {
   if (screen === 'driver-form') return (
     <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 48px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
-        <BackBtn onClick={() => go('admin')} />
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>{formDrvId ? 'ドライバーを編集' : 'ドライバーを追加'}</h1>
+        <BackBtn onClick={() => { if (formDrvId) { go('driver-detail') } else { go('admin') } }} />
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>{formDrvId ? `${drivers[formDrvId]?.name || ''}を編集` : 'ドライバーを追加'}</h1>
       </div>
-      <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 22 }}>
         <div>
-          <p style={fieldLabel}>氏名</p>
-          <input value={fDName} onChange={e => setFDName(e.target.value)} placeholder="佐藤 健" style={fieldInput} />
+          <label style={fieldLabel}>名前</label>
+          <input value={fDName} onChange={e => setFDName(e.target.value)} placeholder="例：田中 誠" style={fieldInput} />
         </div>
         <div>
-          <p style={fieldLabel}>車両</p>
-          <input value={fDCar} onChange={e => setFDCar(e.target.value)} placeholder="アルファード（白）" style={fieldInput} />
+          <label style={fieldLabel}>車種</label>
+          <input value={fDCar} onChange={e => setFDCar(e.target.value)} placeholder="例：アルファード" style={fieldInput} />
         </div>
         <div>
-          <p style={fieldLabel}>ナンバープレート</p>
-          <input value={fDPlate} onChange={e => setFDPlate(e.target.value)} placeholder="新潟 300 あ 12-34" style={fieldInput} />
+          <label style={fieldLabel}>車の色</label>
+          <input value={fDCarColor} onChange={e => setFDCarColor(e.target.value)} placeholder="例：白" style={fieldInput} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, background: '#f7f7f7', borderRadius: 14, padding: 14 }}>
+        <div>
+          <label style={fieldLabel}>ナンバープレート</label>
+          <input value={fDPlate} onChange={e => setFDPlate(e.target.value)} placeholder="例：新潟 300 あ 12-34" style={fieldInput} />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#f7f7f7', borderRadius: 14, padding: 14 }}>
           <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#2a2a2a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, flexShrink: 0 }}>{fDName[0] || '?'}</div>
           <div>
             <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{fDName || '（名前未入力）'}</p>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{fDCar || '（車両未入力）'}</p>
+            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{fDCar || '（車種未入力）'}{fDCarColor ? `（${fDCarColor}）` : ''}</p>
           </div>
         </div>
-        <button onClick={saveDriver} style={{ height: 56, borderRadius: 15, background: fDName.trim() ? '#0a0a0a' : '#d0d0d0', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: fDName.trim() ? 'pointer' : 'default', fontFamily: font }}>
-          {formDrvId ? '変更を保存' : 'ドライバーを追加'}
+        <button onClick={saveDriver} style={{ height: 56, borderRadius: 15, background: fDName.trim() ? '#0a0a0a' : '#d0d0d0', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, cursor: fDName.trim() ? 'pointer' : 'not-allowed', fontFamily: font }}>
+          {formDrvId ? '変更を保存' : '登録する'}
         </button>
       </div>
     </div>
   )
 
   /* ====== ADMIN ====== */
+  const girlKeys = Object.keys(girls)
+  const driverKeys = Object.keys(drivers)
+  const avatarGirls = girlKeys.slice(0, 4).map(id => ({ id, color: girls[id].color, initial: girls[id].name[0] }))
+
   return (
     <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '0 0 110px', boxSizing: 'border-box', animation: 'lm-fade .3s ease both', fontFamily: font }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 16px' }}>
         <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS · KING</p>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS・KING・ボーイ</p>
           <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 800, letterSpacing: '-.02em' }}>管理</h1>
         </div>
         <button onClick={logout} style={{ height: 38, padding: '0 14px', borderRadius: 10, background: '#f4f4f4', border: 'none', color: '#5a5a5a', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>ログアウト</button>
       </div>
 
       <div style={{ padding: '0 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 4px 10px' }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>キャスト一覧</p>
-          <button onClick={() => openGirlForm(null)} style={{ height: 32, padding: '0 12px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>＋ 追加</button>
+        <div style={{ background: '#0a0a0a', borderRadius: 16, padding: '16px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#666' }}>本日の在籍</p>
+            <p style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 800, color: '#fff', letterSpacing: '-.02em' }}>キャスト {girlKeys.length}名 · ドライバー {driverKeys.length}名</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            {avatarGirls.map((g, i) => (
+              <div key={g.id} style={{ width: 28, height: 28, borderRadius: '50%', background: g.color, border: '2px solid #0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', marginLeft: i === 0 ? 0 : -6 }}>{g.initial}</div>
+            ))}
+            {girlKeys.length > 4 && <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#2a2a2a', border: '2px solid #0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#9a9a9a', marginLeft: -6 }}>…</div>}
+          </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {Object.keys(girls).map(id => {
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>キャスト一覧</p>
+          <button onClick={() => openGirlForm(null)} style={{ height: 30, padding: '0 12px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" /></svg>
+            追加
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+          {girlKeys.map(id => {
             const g = girls[id]; const onTrip = approvedSet.has(id)
             return (
-              <div key={id} style={{ border: '1px solid #ededed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div key={id} onClick={() => { setSelectedGirlId(id); setShowDeleteConfirm(false); go('girl-detail') }} role="button" style={{ border: '1px solid #ededed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
                 <div style={{ width: 38, height: 38, borderRadius: '50%', background: g.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{g.name[0]}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{g.name}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{g.area} ・ {g.dist.toFixed(1)}km</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{g.area} ・ 店から {g.dist.toFixed(1)}km</p>
                 </div>
-                {onTrip && <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: '#0a0a0a', padding: '3px 8px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>乗車中</span>}
-                <button onClick={() => openGirlForm(id)} style={{ height: 30, padding: '0 10px', borderRadius: 8, background: '#f4f4f4', border: 'none', color: '#3a3a3a', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>編集</button>
-                <button onClick={() => deleteGirl(id)} style={{ height: 30, padding: '0 10px', borderRadius: 8, background: '#fff0f0', border: 'none', color: '#d03030', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>削除</button>
+                {onTrip
+                  ? <span style={{ fontSize: 11.5, fontWeight: 700, color: '#fff', background: '#0a0a0a', padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>乗車中</span>
+                  : <span style={{ fontSize: 11.5, fontWeight: 700, color: '#b0b0b0', whiteSpace: 'nowrap', flexShrink: 0 }}>待機中</span>}
+                <svg width="7" height="12" viewBox="0 0 7 12"><path d="M1 1l5 5-5 5" stroke="#c0c0c0" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </div>
             )
           })}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '24px 4px 10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#8a8a8a', letterSpacing: '.04em' }}>ドライバー一覧</p>
-          <button onClick={() => openDriverForm(null)} style={{ height: 32, padding: '0 12px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>＋ 追加</button>
+          <button onClick={() => openDriverForm(null)} style={{ height: 30, padding: '0 12px', borderRadius: 999, background: '#0a0a0a', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" /></svg>
+            追加
+          </button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {Object.keys(drivers).map(key => {
-            const d = drivers[key]; const st = app.driverStatuses[key] || '待機中'; const isActive = st === '移動中' || st === '乗車待機'
+          {driverKeys.map(key => {
+            const d = drivers[key]; const st = app.driverStatuses[key] || '待機中'; const cfg = DRIVER_STATUS_CONFIG[st] || DRIVER_STATUS_CONFIG['待機中']; const isActive = !cfg.available
             return (
-              <div key={key} style={{ border: '1px solid #ededed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div key={key} onClick={() => { setSelectedDrvId(key); setShowDeleteConfirm(false); go('driver-detail') }} role="button" style={{ border: '1px solid #ededed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
                 <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#2a2a2a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{d.initial}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>{d.name}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{d.car} ・ {d.plate}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{d.car}{d.carColor ? `（${d.carColor}）` : ''}</p>
+                  <p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a' }}>{d.plate}</p>
                 </div>
-                {isActive && <span style={{ fontSize: 11, fontWeight: 700, color: '#06c167', whiteSpace: 'nowrap', flexShrink: 0 }}>運行中</span>}
-                <button onClick={() => openDriverForm(key)} style={{ height: 30, padding: '0 10px', borderRadius: 8, background: '#f4f4f4', border: 'none', color: '#3a3a3a', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>編集</button>
-                <button onClick={() => deleteDriver(key)} style={{ height: 30, padding: '0 10px', borderRadius: 8, background: '#fff0f0', border: 'none', color: '#d03030', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>削除</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                  {isActive && <span style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.color, display: 'inline-block', animation: 'lm-pulse 1.6s infinite' }} />}
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: isActive ? cfg.color : '#b0b0b0', whiteSpace: 'nowrap' }}>{isActive ? '運行中' : '待機中'}</span>
+                </div>
+                <svg width="7" height="12" viewBox="0 0 7 12"><path d="M1 1l5 5-5 5" stroke="#c0c0c0" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </div>
             )
           })}

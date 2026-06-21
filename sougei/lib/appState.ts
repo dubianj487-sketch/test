@@ -25,7 +25,7 @@ export type Girl = {
   color: string
 }
 
-export type DriverInfo = { name: string; initial: string; car: string; plate: string }
+export type DriverInfo = { name: string; initial: string; car: string; plate: string; carColor?: string }
 
 export type AppState = {
   girls: Record<string, Girl>
@@ -59,8 +59,8 @@ export const GIRLS: Record<string, Girl> = {
 }
 
 export const DRIVERS: Record<string, DriverInfo> = {
-  sato:   { name: '佐藤 健', initial: '佐', car: 'アルファード（白）',   plate: '新潟 300 あ 12-34' },
-  tanaka: { name: '田中 誠', initial: '田', car: 'ヴェルファイア（黒）', plate: '新潟 500 い 56-78' },
+  sato:   { name: '佐藤 健', initial: '佐', car: 'アルファード', carColor: '白', plate: '新潟 300 あ 12-34' },
+  tanaka: { name: '田中 誠', initial: '田', car: 'ヴェルファイア', carColor: '黒', plate: '新潟 500 い 56-78' },
 }
 
 export const DEFAULT_APP_STATE: AppState = {
