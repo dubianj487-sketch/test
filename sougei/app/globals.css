@@ -15,9 +15,14 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  background: #fff;
+}
+
 body {
   margin: 0;
   background: #fff;
+  overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
   font-family: 'Hanken Grotesk', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #0a0a0a;

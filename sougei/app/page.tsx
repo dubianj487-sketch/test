@@ -189,6 +189,20 @@ export default function App() {
     return () => clearTimeout(t)
   }, [countdownActive, countdownRemaining])
 
+  // 画面のテーマ（ダーク/ライト）に土台（html/body）とSafariのバー色を同期させる
+  const themeBg = !ready ? '#ffffff' : darkUI ? '#0a0a0a' : '#ffffff'
+  useEffect(() => {
+    document.documentElement.style.backgroundColor = themeBg
+    document.body.style.backgroundColor = themeBg
+    let meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null
+    if (!meta) {
+      meta = document.createElement('meta')
+      meta.name = 'theme-color'
+      document.head.appendChild(meta)
+    }
+    meta.content = themeBg
+  }, [themeBg])
+
   const act = async (fn: () => Promise<unknown>) => {
     await fn()
     reload()
@@ -1585,7 +1599,7 @@ function RouteList({ objs, storeName, boarded, departTime, isLast, returnTime }:
 
 function BottomNav({ children, dark }: { children: React.ReactNode; dark: boolean }) {
   return (
-    <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 390, zIndex: 40, background: dark ? '#0a0a0a' : '#fff', borderTop: dark ? '1px solid #1f1f1f' : '1px solid #efefef', padding: '10px 14px 24px', display: 'flex', justifyContent: 'space-around' }}>
+    <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 390, zIndex: 40, background: dark ? '#0a0a0a' : '#fff', borderTop: dark ? '1px solid #1f1f1f' : '1px solid #efefef', padding: '10px 14px calc(env(safe-area-inset-bottom) + 14px)', display: 'flex', justifyContent: 'space-around' }}>
       {children}
     </div>
   )
