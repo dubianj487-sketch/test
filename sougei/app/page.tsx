@@ -428,7 +428,7 @@ export default function App() {
   /* ============================ レンダリング ============================ */
   if (!ready) {
     return (
-      <div style={{ minHeight: '100dvh', background: '#fff', padding: '58px 20px 0' }}>
+      <div style={{ minHeight: '100dvh', background: '#fff', padding: 'calc(env(safe-area-inset-top) + 18px) 20px 0' }}>
         {[38, 54, 0, 0, 0].map((_, i) => (
           <div key={i} style={{ height: i < 2 ? (i === 0 ? 13 : 26) : i === 2 ? 56 : 88, width: i === 0 ? '38%' : i === 1 ? '54%' : '100%', borderRadius: i < 2 ? 8 : 18, margin: '0 0 16px', background: 'linear-gradient(90deg,#f0f0f0 25%,#e6e6e6 50%,#f0f0f0 75%)', backgroundSize: '300% 100%', animation: 'sk-shimmer 1.3s ease infinite' }} />
         ))}
@@ -438,7 +438,7 @@ export default function App() {
 
   const screenBase: React.CSSProperties = {
     minHeight: '100dvh',
-    padding: '52px 0 110px',
+    padding: 'calc(env(safe-area-inset-top) + 12px) 0 110px',
     boxSizing: 'border-box',
     animation: 'lm-fade .3s ease both',
   }
@@ -451,7 +451,7 @@ export default function App() {
 
   /* ---------- ログイン ---------- */
   const renderLogin = () => (
-    <div style={{ minHeight: '100dvh', background: '#0a0a0a', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '60px 28px 44px', boxSizing: 'border-box' }}>
+    <div style={{ minHeight: '100dvh', background: '#0a0a0a', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 'calc(env(safe-area-inset-top) + 24px) 28px 44px', boxSizing: 'border-box' }}>
       <div style={{ animation: 'lm-fade .4s ease both', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{ marginBottom: 56, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12 }}>
           <div style={{ width: 52, height: 52, borderRadius: 16, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1092,7 +1092,7 @@ export default function App() {
     const initial = isCast ? (selectedCastId ? girls[selectedCastId].name[0] : '') : selectedDriverKey ? drivers[selectedDriverKey].initial : ''
     const color = isCast ? (selectedCastId ? girls[selectedCastId].color : '#ccc') : '#1a1a1a'
     return (
-      <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: '52px 0 0', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ minHeight: '100dvh', background: '#fff', color: '#0a0a0a', padding: 'calc(env(safe-area-inset-top) + 12px) 0 0', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
         <div style={{ flex: 1 }} />
         <div style={{ background: '#fff', borderRadius: '26px 26px 0 0', padding: '22px 22px 44px', boxShadow: '0 -8px 32px rgba(0,0,0,.1)' }}>
           <div style={{ width: 36, height: 4, borderRadius: 2, background: '#e0e0e0', margin: '0 auto 22px' }} />
@@ -1487,7 +1487,7 @@ export default function App() {
       )}
 
       {loading && role !== '' && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 35, background: darkUI ? '#0a0a0a' : '#fff', overflow: 'hidden', padding: '58px 20px 0', boxSizing: 'border-box' }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 35, background: darkUI ? '#0a0a0a' : '#fff', overflow: 'hidden', padding: 'calc(env(safe-area-inset-top) + 18px) 20px 0', boxSizing: 'border-box' }}>
           {[0, 1, 2, 3].map((i) => (
             <div key={i} style={{ height: i === 0 ? 26 : 80, width: i === 0 ? '54%' : '100%', borderRadius: i === 0 ? 10 : 18, marginBottom: 14, background: darkUI ? 'linear-gradient(90deg,#1a1a1a 25%,#262626 50%,#1a1a1a 75%)' : 'linear-gradient(90deg,#f0f0f0 25%,#e6e6e6 50%,#f0f0f0 75%)', backgroundSize: '300% 100%', animation: 'sk-shimmer 1.3s ease infinite' }} />
           ))}
