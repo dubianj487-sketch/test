@@ -6,7 +6,6 @@ import type {
   GirlMap,
   DriverMap,
   RideReqMap,
-  TodayReqMap,
   DriverStatusMap,
 } from './types'
 
@@ -17,17 +16,15 @@ export type Snapshot = {
   driverOrder: string[]
   trips: Trip[]
   rideRequests: RideReqMap
-  todayRequests: TodayReqMap
   driverStatuses: DriverStatusMap
 }
 
 export async function loadSnapshot(): Promise<Snapshot> {
-  const [girlsR, driversR, tripsR, rideR, todayR, statusR] = await Promise.all([
+  const [girlsR, driversR, tripsR, rideR, statusR] = await Promise.all([
     supabase.from('girls').select('*').order('sort'),
     supabase.from('drivers').select('*').order('sort'),
     supabase.from('trips').select('*').order('id'),
     supabase.from('ride_requests').select('*'),
-    supabase.from('today_requests').select('*'),
     supabase.from('driver_status').select('*'),
   ])
 
@@ -50,13 +47,6 @@ export async function loadSnapshot(): Promise<Snapshot> {
     rideRequests[r.girl_id] = r.status
   })
 
-  const todayRequests: TodayReqMap = {}
-  ;(todayR.data || []).forEach(
-    (r: { girl_id: string; place: string; reason: string; status: string }) => {
-      todayRequests[r.girl_id] = { place: r.place, reason: r.reason, status: r.status }
-    }
-  )
-
   const driverStatuses: DriverStatusMap = {}
   ;(statusR.data || []).forEach((s: { driver_key: string; status: string }) => {
     driverStatuses[s.driver_key] = s.status
@@ -69,7 +59,6 @@ export async function loadSnapshot(): Promise<Snapshot> {
     driverOrder,
     trips: (tripsR.data || []) as Trip[],
     rideRequests,
-    todayRequests,
     driverStatuses,
   }
 }
@@ -99,6 +88,7 @@ export async function createTrip(
       boarded: false,
       completed: 0,
       arrived,
+      changed: false,
     })
     .select('id')
     .single()
@@ -145,6 +135,10 @@ export async function markArrived(trip: Trip) {
   if (trip.driver_key) await setDriverStatus(trip.driver_key, '乗車待機')
 }
 
+export async function setTripChanged(tripId: number, value: boolean) {
+  await supabase.from('trips').update({ changed: value }).eq('id', tripId)
+}
+
 export async function completeStop(trip: Trip) {
   const total = trip.assigned_ids.length
   const next = Math.min((trip.completed || 0) + 1, total)
@@ -156,18 +150,6 @@ export async function completeStop(trip: Trip) {
 
 export async function sendRideRequest(girlId: string) {
   await supabase.from('ride_requests').upsert({ girl_id: girlId, status: 'approved' })
-}
-
-export async function submitTodayRequest(girlId: string, place: string, reason: string) {
-  await supabase
-    .from('today_requests')
-    .upsert({ girl_id: girlId, place: place || '(場所未入力)', reason, status: '承認待ち' })
-}
-
-export async function approveTodayRequest(girlId: string, current: { place: string; reason: string }) {
-  await supabase
-    .from('today_requests')
-    .upsert({ girl_id: girlId, place: current.place, reason: current.reason, status: '承認済み' })
 }
 
 export async function saveDrop(girlId: string, address: string) {

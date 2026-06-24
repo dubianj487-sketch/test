@@ -28,11 +28,10 @@ export type Trip = {
   boarded: boolean
   completed: number
   arrived: boolean
+  changed: boolean
 }
 
 export type RideReqMap = Record<string, string> // girl_id -> status
-export type TodayReq = { place: string; reason: string; status: string }
-export type TodayReqMap = Record<string, TodayReq> // girl_id -> req
 export type DriverStatusMap = Record<string, string> // driver_key -> status
 
 export type GirlMap = Record<string, Girl>
@@ -83,9 +82,9 @@ export function makeTripLabel(ids: string[], girls: GirlMap): string {
   const sorted = [...ids].sort((a, b) => (girls[a]?.dist || 0) - (girls[b]?.dist || 0))
   const areas = sorted.map((id) => (girls[id]?.area || '').replace(/（.*）/, ''))
   if (areas.length === 0) return '便'
-  if (areas.length === 1) return areas[0] + '方面'
-  if (areas.length === 2) return areas[0] + '・' + areas[1] + '方面'
-  return areas[0] + '・' + areas[1] + ' ほか方面'
+  if (areas.length === 1) return areas[0]
+  if (areas.length === 2) return areas[0] + '・' + areas[1]
+  return areas[0] + '・' + areas[1] + ' ほか'
 }
 
 export function tripDotColor(t: Trip): string {
@@ -100,6 +99,7 @@ export function tripDotColor(t: Trip): string {
 export type DropObj = Girl & {
   initial: string
   distLabel: string
+  kmShort: string
   dropNo: number
   boardNo: number
   done: boolean
@@ -122,6 +122,7 @@ export function buildTripObjs(t: Trip, girls: GirlMap): DropObj[] {
       ...o,
       initial: o.name[0],
       distLabel: '店から' + o.dist.toFixed(1) + 'km',
+      kmShort: o.dist.toFixed(1) + 'km',
       dropNo: i + 1,
       boardNo: total - i,
       done: isDone,

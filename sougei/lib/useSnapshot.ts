@@ -10,7 +10,6 @@ const EMPTY: Snapshot = {
   driverOrder: [],
   trips: [],
   rideRequests: {},
-  todayRequests: {},
   driverStatuses: {},
 }
 
@@ -38,7 +37,6 @@ export function useSnapshot() {
       .channel('sougei-all')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, scheduleReload)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_requests' }, scheduleReload)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'today_requests' }, scheduleReload)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'driver_status' }, scheduleReload)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'girls' }, scheduleReload)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'drivers' }, scheduleReload)
