@@ -24,8 +24,16 @@ body {
   background: #fff;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
-  font-family: 'Hanken Grotesk', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-rendering: optimizeLegibility;
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', system-ui, 'Segoe UI', Roboto, sans-serif;
   color: #0a0a0a;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+p {
+  line-height: 1.6;
+  letter-spacing: .01em;
 }
 
 ::-webkit-scrollbar { width: 0; height: 0; }
@@ -66,7 +74,7 @@ body {
 }
 
 @keyframes lm-pulse { 0%,100%{ opacity:1 } 50%{ opacity:.35 } }
-@keyframes lm-fade{ from{ opacity:0 } to{ opacity:1 } }
+@keyframes lm-fade{ from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
 @keyframes sk-shimmer{ 0%{ background-position:-300% 0 } 100%{ background-position:300% 0 } }
 
 .animate-lm-pulse {
@@ -97,19 +105,13 @@ body {
   animation: urgentPulse 2s ease-in-out infinite;
 }
 
-button {
-  transition: transform .1s ease, opacity .1s ease;
+button, [role="button"] {
+  transition: transform .14s cubic-bezier(.2,.7,.3,1), filter .14s ease, opacity .14s ease;
 }
-button:active {
-  transform: scale(.95);
-  opacity: .88;
-}
-[role="button"] {
-  transition: transform .1s ease, opacity .1s ease;
-}
-[role="button"]:active {
+button:active, [role="button"]:active {
   transform: scale(.97);
-  opacity: .82;
+  opacity: .85;
+  filter: brightness(.97);
 }
 input, textarea {
   transition: border-color .12s ease;
