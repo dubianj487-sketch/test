@@ -29,6 +29,9 @@ export type Trip = {
   completed: number
   arrived: boolean
   changed: boolean
+  manual_order: boolean
+  confirmed: boolean
+  pending_at_store: boolean
 }
 
 export type RideReqMap = Record<string, string> // girl_id -> status
@@ -105,14 +108,15 @@ export type DropObj = Girl & {
   done: boolean
   current: boolean
   pending: boolean
+  canMoveUp: boolean
+  canMoveDown: boolean
 }
 
-// 便の降車順オブジェクトを構築（近い順ソート）
+// 便の降車順オブジェクトを構築（manual_orderなら保存順、そうでなければ近い順）
 export function buildTripObjs(t: Trip, girls: GirlMap): DropObj[] {
-  const objs = (t.assigned_ids || [])
-    .map((id) => girls[id])
-    .filter(Boolean)
-    .sort((a, b) => a.dist - b.dist)
+  const ids = t.assigned_ids || []
+  const list = ids.map((id) => girls[id]).filter(Boolean)
+  const objs = t.manual_order ? list : list.slice().sort((a, b) => a.dist - b.dist)
   const total = objs.length
   const done = t.completed || 0
   return objs.map((o, i) => {
@@ -128,6 +132,8 @@ export function buildTripObjs(t: Trip, girls: GirlMap): DropObj[] {
       done: isDone,
       current: isCurr,
       pending: !isDone && !isCurr,
+      canMoveUp: i > done,
+      canMoveDown: i >= done && i < total - 1 && !isDone,
     }
   })
 }

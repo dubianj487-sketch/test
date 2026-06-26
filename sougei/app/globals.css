@@ -76,6 +76,9 @@ p {
 @keyframes lm-pulse { 0%,100%{ opacity:1 } 50%{ opacity:.35 } }
 @keyframes lm-fade{ from{ opacity:0; transform:translateY(8px) } to{ opacity:1; transform:none } }
 @keyframes sk-shimmer{ 0%{ background-position:-300% 0 } 100%{ background-position:300% 0 } }
+@keyframes lm-typing{ 0%,60%,100%{ opacity:.25 } 30%{ opacity:1 } }
+@keyframes lm-demo{ from{ opacity:0; transform:translateY(-8px) scale(.985) } to{ opacity:1; transform:none } }
+@keyframes lm-flip{ 0%{ transform:translateY(-100%) rotateX(-88deg); opacity:0 } 55%{ opacity:1 } 100%{ transform:none; opacity:1 } }
 
 .animate-lm-pulse {
   animation: lmPulse 1.6s infinite;

@@ -166,21 +166,44 @@ export default function App() {
   const [dropDraft, setDropDraft] = useState('')
   const [dropSaved, setDropSaved] = useState(false)
 
+  const [draftManualOrder, setDraftManualOrder] = useState(false)
+  const [editingTripId, setEditingTripId] = useState<number | null>(null)
+  const [demoMenuOpen, setDemoMenuOpen] = useState(false)
+  const [showDoneTrips, setShowDoneTrips] = useState(false)
+  const [arriveCountdownTrip, setArriveCountdownTrip] = useState<number | null>(null)
+  const [arriveRemaining, setArriveRemaining] = useState(5)
+
   const darkUI = role === 'driver' || screen === 'login'
 
   // 画面遷移（軽いスケルトン演出）
   const go = (s: string) => setScreen(s)
 
-  // カウントダウン
+  // 配車確定の10秒カウントダウン（取り消し可能、0でドライバーへ確定）
   useEffect(() => {
     if (!countdownActive) return
     if (countdownRemaining <= 0) {
       setCountdownActive(false)
+      const trip = trips.find((t) => t.id === justCreatedTripId)
+      if (trip) db.confirmTrip(trip).then(reload)
       return
     }
     const t = setTimeout(() => setCountdownRemaining((r) => r - 1), 1000)
     return () => clearTimeout(t)
   }, [countdownActive, countdownRemaining])
+
+  // ドライバー到着の5秒カウントダウン（取り消し可能、0で運行開始）
+  useEffect(() => {
+    if (arriveCountdownTrip == null) return
+    if (arriveRemaining <= 0) {
+      const tid = arriveCountdownTrip
+      setArriveCountdownTrip(null)
+      setDriverActiveTripId(tid)
+      setScreen('driver-trip')
+      return
+    }
+    const t = setTimeout(() => setArriveRemaining((r) => r - 1), 1000)
+    return () => clearTimeout(t)
+  }, [arriveCountdownTrip, arriveRemaining])
 
   // 画面のテーマ（ダーク/ライト）に土台（html/body）とSafariのバー色を同期させる
   const themeBg = !ready ? '#ffffff' : darkUI ? '#0a0a0a' : '#ffffff'
@@ -268,37 +291,42 @@ export default function App() {
       .sort((a, b) => a.dist - b.dist)
   }, [girlOrder, girls, approvedSet, pendingRequests, tripDraftIds])
 
-  const tripsList = useMemo(
-    () =>
-      trips.map((t) => {
-        const drv = t.driver_key ? drivers[t.driver_key] : null
-        const tot = t.assigned_ids.length
-        const dn = t.completed || 0
-        const status = !t.driver_key ? '待機中' : !t.boarded ? '出発前' : dn < tot ? '送迎中' : '完了'
-        return {
-          t,
-          label: makeTripLabel(t.assigned_ids, girls),
-          departTime: t.depart_time,
-          assignedCount: tot,
-          driverName: drv ? drv.name : '未定',
-          driverInitial: drv ? drv.initial : '?',
-          car: drv ? drv.car : '',
-          status,
-          progressPct: tot ? Math.round((dn / tot) * 100) + '%' : '0%',
-          dropsDone: dn,
-          dropsTotal: tot,
-          returnTime: calcReturnTime(t.depart_time, t.assigned_ids, girls),
-          isLastTrip: !!t.last_trip,
-          estMin: estMinLabel(t.assigned_ids, girls),
-          showArrived: !!t.arrived && !t.boarded,
-          showWaiting: !!t.driver_key && !t.arrived && !t.boarded,
-          waitingName: (drv ? drv.name : 'ドライバー') + ' がお店に向かっています',
-          dotColor: tripDotColor(t),
-          castObjs: t.assigned_ids.map((id) => girls[id]).filter(Boolean),
-        }
-      }),
-    [trips, drivers, girls]
-  )
+  const tripCardOf = (t: Trip) => {
+    const drv = t.driver_key ? drivers[t.driver_key] : null
+    const tot = t.assigned_ids.length
+    const dn = t.completed || 0
+    const done = !!t.boarded && dn >= tot
+    const live = (!!t.arrived && !t.boarded) || (!!t.boarded && dn < tot)
+    return {
+      t,
+      id: t.id,
+      label: makeTripLabel(t.assigned_ids, girls),
+      departTime: t.depart_time,
+      assignedCount: tot,
+      driverName: drv ? drv.name : '未定',
+      driverInitial: drv ? drv.initial : '?',
+      car: drv ? drv.car : '',
+      returnTime: calcReturnTime(t.depart_time, t.assigned_ids, girls),
+      isLastTrip: !!t.last_trip,
+      estMin: estMinLabel(t.assigned_ids, girls),
+      dropsDone: dn,
+      dropsTotal: tot,
+      showArrived: !!t.arrived && !t.boarded,
+      showWaiting: !!t.driver_key && !t.arrived && !t.boarded,
+      showStatus: !((t.arrived && !t.boarded) || (t.driver_key && !t.arrived && !t.boarded)),
+      statusText: !t.driver_key ? 'ドライバーを選択してください' : t.boarded ? (dn >= tot ? '送迎完了' : '運行中') : '出発前',
+      statusColor: !t.driver_key ? '#b0b0b0' : t.boarded ? (dn >= tot ? '#b0b0b0' : '#F5A623') : '#0a0a0a',
+      isLive: live,
+      isDone: done,
+      hasDriver: !!t.driver_key,
+      noDriver: !t.driver_key,
+      waitingName: 'お店に向かっています',
+      castObjs: t.assigned_ids.map((id) => girls[id]).filter(Boolean),
+    }
+  }
+  const allCards = trips.map(tripCardOf)
+  const activeCards = allCards.filter((c) => !c.isDone)
+  const doneCards = allCards.filter((c) => c.isDone)
 
   const viewT = trips.find((t) => t.id === viewingTripId) || null
   const vObjs = viewT ? buildTripObjs(viewT, girls) : []
@@ -306,6 +334,7 @@ export default function App() {
   const vDone = viewT ? viewT.completed || 0 : 0
   const vDrv = viewT?.driver_key ? drivers[viewT.driver_key] : null
   const vStatus = !viewT ? '' : !viewT.driver_key ? 'ドライバー確定待ち' : !viewT.boarded ? '乗車前' : vDone < vTotal ? '送迎中' : '送迎完了'
+  const viewCard = viewT ? tripCardOf(viewT) : null
 
   const suggestions = useMemo(() => {
     if (!viewT) return []
@@ -320,21 +349,24 @@ export default function App() {
 
   // ドライバー
   const myAssignedTrips = trips
-    .filter((t) => t.driver_key === driverKey)
+    .filter((t) => t.driver_key === driverKey && t.confirmed)
     .map((t) => {
       const tot = t.assigned_ids.length
-      const dn = t.completed || 0
       return {
         t,
         label: makeTripLabel(t.assigned_ids, girls),
         departTime: t.depart_time,
         assignedCount: tot,
         estMin: estMinLabel(t.assigned_ids, girls),
+        returnTime: calcReturnTime(t.depart_time, t.assigned_ids, girls),
+        isLastTrip: !!t.last_trip,
         arrived: !!t.arrived,
+        counting: arriveCountdownTrip === t.id,
+        arrivePct: (arriveRemaining / 5) * 100 + '%',
         castObjs: t.assigned_ids.map((id) => girls[id]).filter(Boolean),
       }
     })
-  const myTrips = trips.filter((t) => t.driver_key === driverKey)
+  const myTrips = trips.filter((t) => t.driver_key === driverKey && t.confirmed)
   const activeT =
     (driverActiveTripId ? myTrips.find((t) => t.id === driverActiveTripId) : myTrips.find((t) => (t.completed || 0) < t.assigned_ids.length)) ||
     myTrips[0] ||
@@ -359,28 +391,90 @@ export default function App() {
 
   const confirmTrip = () => {
     if (!tripDraftIds.length) return
-    go('boy-driver-select')
+    go('boy-reorder')
+  }
+  const goReorderNext = () => go('boy-driver-select')
+
+  const draftOrdered = draftManualOrder ? tripDraftIds : [...tripDraftIds].sort((a, b) => girls[a].dist - girls[b].dist)
+  const moveDraftDrop = (cid: string, dir: number) => {
+    const cur = [...draftOrdered]
+    const i = cur.indexOf(cid)
+    const j = i + dir
+    if (i < 0 || j < 0 || j >= cur.length) return
+    ;[cur[i], cur[j]] = [cur[j], cur[i]]
+    setTripDraftIds(cur)
+    setDraftManualOrder(true)
+  }
+  const applyDraftSort = () => {
+    setTripDraftIds([...tripDraftIds].sort((a, b) => girls[a].dist - girls[b].dist))
+    setDraftManualOrder(false)
   }
 
-  const finalizeTrip = async () => {
-    if (!tripDraftIds.length) return
-    const sorted = [...tripDraftIds].sort((a, b) => girls[a].dist - girls[b].dist)
-    const deptStr = draftDepartNow ? '今すぐ' : String(draftDepartHour).padStart(2, '0') + ':' + String(draftDepartMin).padStart(2, '0')
-    const wasAtStore = !!(draftDriverKey && driverStatuses[draftDriverKey] === 'お店前')
-    const newId = await db.createTrip(sorted, deptStr, draftDriverKey, draftLastTrip, wasAtStore)
+  const resetDraft = () => {
     setTripDraftIds([])
     setDraftDriverKey(null)
     setDraftLastTrip(false)
+    setDraftManualOrder(false)
     setDraftDepartNow(true)
     setDraftDepartHour(1)
     setDraftDepartMin(0)
-    if (newId != null) {
+  }
+
+  const enterEditDriver = (trip: Trip) => {
+    setEditingTripId(trip.id)
+    setTripDraftIds([...trip.assigned_ids])
+    setDraftDriverKey(trip.driver_key || null)
+    setDraftLastTrip(!!trip.last_trip)
+    setDraftManualOrder(!!trip.manual_order)
+    if (trip.depart_time === '今すぐ') {
+      setDraftDepartNow(true)
+    } else {
+      const [h, m] = trip.depart_time.split(':').map(Number)
+      setDraftDepartNow(false)
+      setDraftDepartHour(h)
+      setDraftDepartMin(m)
+    }
+    go('boy-driver-select')
+  }
+  const goDriverSelectBack = () => {
+    if (editingTripId != null) {
+      setEditingTripId(null)
+      resetDraft()
+      go('boy-status')
+    } else {
+      go('boy-reorder')
+    }
+  }
+
+  const finalizeTrip = async () => {
+    const deptStr = draftDepartNow ? '今すぐ' : String(draftDepartHour).padStart(2, '0') + ':' + String(draftDepartMin).padStart(2, '0')
+    const wasAtStore = !!(draftDriverKey && driverStatuses[draftDriverKey] === 'お店前')
+    // 既存便のドライバー/時刻を変更
+    if (editingTripId != null) {
+      const trip = trips.find((t) => t.id === editingTripId)
+      const eid = editingTripId
+      if (trip) await db.editTripDriver(trip, draftDriverKey, draftLastTrip, wasAtStore)
+      setEditingTripId(null)
+      resetDraft()
+      setViewingTripId(eid)
+      go('boy-status')
+      reload()
+      return
+    }
+    if (!tripDraftIds.length) return
+    const ordered = draftManualOrder ? [...tripDraftIds] : [...tripDraftIds].sort((a, b) => girls[a].dist - girls[b].dist)
+    const isDraft = !draftDriverKey
+    const newId = await db.createTrip(ordered, deptStr, draftDriverKey, draftLastTrip, draftManualOrder, isDraft, wasAtStore)
+    resetDraft()
+    if (isDraft) {
+      go('boy-home')
+    } else if (newId != null) {
       setViewingTripId(newId)
       setJustCreatedTripId(newId)
       setCountdownActive(true)
       setCountdownRemaining(10)
+      go('boy-status')
     }
-    go('boy-status')
     reload()
   }
 
@@ -393,9 +487,40 @@ export default function App() {
       await db.deleteTrip(trip)
       setTripDraftIds(trip.assigned_ids)
       setDraftDriverKey(trip.driver_key || null)
+      setDraftManualOrder(!!trip.manual_order)
       reload()
     }
     go('boy-driver-select')
+  }
+  const confirmNow = () => {
+    setCountdownActive(false)
+    const trip = trips.find((t) => t.id === justCreatedTripId)
+    if (trip) act(() => db.confirmTrip(trip))
+  }
+
+  // 既存便の降車順を手動入れ替え／自動並び替え
+  const moveExistingDrop = (trip: Trip, cid: string, dir: number) => {
+    const cur = buildTripObjs(trip, girls).map((o) => o.id)
+    const i = cur.indexOf(cid)
+    const j = i + dir
+    if (i < 0 || j < 0 || j >= cur.length) return
+    ;[cur[i], cur[j]] = [cur[j], cur[i]]
+    act(() => db.setTripOrder(trip.id, cur, true))
+  }
+  const applySortExisting = (trip: Trip) => {
+    const sorted = [...trip.assigned_ids].sort((a, b) => girls[a].dist - girls[b].dist)
+    act(() => db.setTripOrder(trip.id, sorted, false))
+  }
+
+  // ドライバー：到着→5秒カウントダウン→運行開始（取り消し可）
+  const markArrive = (trip: Trip) => {
+    act(() => db.markArrived(trip))
+    setArriveCountdownTrip(trip.id)
+    setArriveRemaining(5)
+  }
+  const cancelArrive = (trip: Trip) => {
+    setArriveCountdownTrip(null)
+    act(() => db.cancelArrived(trip))
   }
 
   const addMinutes = (delta: number) => {
@@ -433,13 +558,14 @@ export default function App() {
 
   const screenBase: React.CSSProperties = {
     minHeight: '100dvh',
-    padding: 'calc(env(safe-area-inset-top) + 4px) 0 110px',
+    padding: 'env(safe-area-inset-top) 0 110px',
     boxSizing: 'border-box',
     animation: 'lm-fade .3s ease both',
   }
   const lightScreen: React.CSSProperties = { ...screenBase, background: '#fff', color: '#0a0a0a' }
   const darkScreen: React.CSSProperties = { ...screenBase, background: '#0a0a0a', color: '#fff' }
-  const headerRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }
+  const stickyLight: React.CSSProperties = { position: 'sticky', top: 'env(safe-area-inset-top)', zIndex: 20, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', background: 'rgba(255,255,255,.82)' }
+  const headerRow: React.CSSProperties = { ...stickyLight, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }
   const h1: React.CSSProperties = { margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: '-.01em' }
   const blackBtn: React.CSSProperties = { width: '100%', height: 56, borderRadius: 15, background: dark0, color: '#fff', border: 'none', fontSize: 16, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit' }
   const sectionLabel: React.CSSProperties = { margin: '24px 4px 10px', fontSize: 13, fontWeight: 400, color: '#8a8a8a', letterSpacing: '.04em' }
@@ -468,25 +594,31 @@ export default function App() {
           </button>
         </div>
         <div style={{ marginTop: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+          <div onClick={() => setDemoMenuOpen((v) => !v)} role="button" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, cursor: 'pointer' }}>
             <div style={{ flex: 1, height: 1, background: '#1f1f1f' }} />
-            <span style={{ fontSize: 10, fontWeight: 400, letterSpacing: '.14em', color: '#3a3a3a' }}>DEMO</span>
+            <span style={{ fontSize: 11, fontWeight: 400, letterSpacing: '.14em', color: '#5a5a5a', display: 'inline-flex', alignItems: 'center', gap: 5 }}>DEMO
+              <svg width="9" height="9" viewBox="0 0 12 12"><path d={demoMenuOpen ? 'M2 8l4-4 4 4' : 'M2 4l4 4 4-4'} stroke="#5a5a5a" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </span>
             <div style={{ flex: 1, height: 1, background: '#1f1f1f' }} />
           </div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-            <button onClick={quickBoy} style={demoPill}>ボーイ</button>
-            {driverOrder.map((k) => (
-              <button key={k} onClick={() => quickDriverAs(k)} style={demoPill}>{drivers[k].name} D</button>
-            ))}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4 }}>
-            {girlOrder.slice(0, 5).map((id) => (
-              <button key={id} onClick={() => quickCastAs(id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '8px 0', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                <Avatar bg={girls[id].color} label={girls[id].name[0]} size={34} fs={14} />
-                <span style={{ fontSize: 10, fontWeight: 600, color: '#4a4a4a' }}>{girls[id].name}</span>
-              </button>
-            ))}
-          </div>
+          {demoMenuOpen && (
+            <div style={{ animation: 'lm-demo .22s ease both' }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <button onClick={quickBoy} style={demoPill}>ボーイ</button>
+                {driverOrder.map((k) => (
+                  <button key={k} onClick={() => quickDriverAs(k)} style={demoPill}>{drivers[k].name} D</button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4 }}>
+                {girlOrder.slice(0, 5).map((id) => (
+                  <button key={id} onClick={() => quickCastAs(id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '8px 0', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    <Avatar bg={girls[id].color} label={girls[id].name[0]} size={34} fs={14} />
+                    <span style={{ fontSize: 10, fontWeight: 400, color: '#4a4a4a' }}>{girls[id].name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <p style={{ margin: 0, fontSize: 11, color: '#3a3a3a', fontWeight: 600, letterSpacing: '.08em', textAlign: 'center' }}>CLUB VENUS &nbsp;·&nbsp; CLUB KING</p>
@@ -500,73 +632,87 @@ export default function App() {
     <div style={lightScreen}>
       <div style={{ position: 'sticky', top: 'env(safe-area-inset-top)', zIndex: 20, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', background: 'rgba(255,255,255,.82)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
         <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS・KING ・ ボーイ</p>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB LUMINA ・ ボーイ</p>
           <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 700, letterSpacing: '-.02em' }}>配車</h1>
         </div>
         <div onClick={() => go('boy-settings')} role="button" style={{ width: 40, height: 40, borderRadius: '50%', background: dark0, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 400, fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>B</div>
       </div>
       <div style={{ padding: '0 20px' }}>
-        <button onClick={() => go('boy-new')} style={{ width: '100%', height: 58, borderRadius: 16, background: dark0, color: '#fff', border: 'none', fontSize: 16, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>
+        <button onClick={() => go('boy-new')} style={{ width: '100%', height: 54, borderRadius: 14, background: dark0, color: '#fff', border: 'none', fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>
           <Plus size={20} /> 配車を依頼する
         </button>
-        <p style={{ margin: '26px 4px 10px', fontSize: 13, fontWeight: 400, color: '#8a8a8a', letterSpacing: '.04em' }}>本日の便</p>
-        {tripsList.length === 0 ? (
-          <div style={{ border: '1px solid #ededed', borderRadius: 18, padding: 28, textAlign: 'center' }}>
+
+        {pendingRequests.length > 0 && (
+          <div style={{ marginTop: 14, background: '#f6f6f6', border: '1px solid #ececec', borderRadius: 14, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 400, color: '#0a0a0a' }}>{pendingRequests.length}名の乗車リクエスト</p>
+              <button onClick={() => go('boy-new')} style={{ height: 32, padding: '0 13px', borderRadius: 999, background: dark0, color: '#fff', border: 'none', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>配車を作成 →</button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                {pendingRequests.map((r) => (
+                  <Avatar key={r.id} bg={r.color} label={r.initial} size={28} fs={12} border="2px solid #f6f6f6" />
+                ))}
+              </div>
+              <p style={{ margin: 0, fontSize: 11, color: '#9a9a9a', lineHeight: 1.4 }}>配車依頼作成時に選択できます</p>
+            </div>
+          </div>
+        )}
+
+        <p style={{ margin: '26px 4px 10px', fontSize: 13, fontWeight: 400, color: '#8a8a8a', letterSpacing: '.04em' }}>進行中の便</p>
+        {activeCards.length === 0 ? (
+          <div style={{ border: '1px solid #ededed', borderRadius: 20, padding: 28, textAlign: 'center' }}>
             <div style={{ marginBottom: 10, opacity: 0.3, display: 'flex', justifyContent: 'center' }}><Car size={32} /></div>
-            <p style={{ margin: 0, fontSize: 14, color: '#b0b0b0', fontWeight: 600 }}>まだ配車依頼がありません</p>
-            <p style={{ margin: '6px 0 0', fontSize: 12, color: '#c8c8c8' }}>今夜の配車依頼がここに表示されます</p>
+            <p style={{ margin: 0, fontSize: 15, color: '#b0b0b0', fontWeight: 400 }}>まだ配車依頼がありません</p>
+            <p style={{ margin: '6px 0 0', fontSize: 12, color: '#b8b8b8' }}>今夜の配車依頼がここに表示されます</p>
           </div>
         ) : (
-          tripsList.map((tr) => (
-            <div key={tr.t.id} onClick={() => { setViewingTripId(tr.t.id); go('boy-status') }} role="button" style={{ background: '#fff', border: '1px solid #efefef', borderRadius: 18, padding: 16, color: '#0a0a0a', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,.06), 0 8px 24px -12px rgba(0,0,0,.12)', marginBottom: 10 }}>
+          activeCards.map((tr) => (
+            <div key={tr.id} onClick={() => { setViewingTripId(tr.id); go('boy-status') }} role="button" style={{ background: '#fff', border: '1px solid #efefef', borderRadius: 20, padding: 16, color: '#0a0a0a', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,.04), 0 6px 18px -12px rgba(0,0,0,.1)', marginBottom: 10 }}>
               {tr.showArrived && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 12, marginBottom: 12, borderBottom: '1px solid #f2f2f2' }}>
-                  <span style={{ width: 16, height: 16, borderRadius: '50%', background: '#06c167', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Check size={10} /></span>
-                  <span style={{ fontSize: 13, fontWeight: 400, color: '#0a0a0a' }}>ドライバーが到着しました</span>
+                <div style={{ marginBottom: 13, display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{ width: 16, height: 16, borderRadius: '50%', background: '#06a152', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Check size={10} /></span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#06a152' }}>キャストを乗車させてください</span>
                 </div>
               )}
-              {tr.showWaiting && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 12, marginBottom: 12, borderBottom: '1px solid #f2f2f2' }}>
-                  <Clock size={16} color="#b4b4b4" />
-                  <span style={{ fontSize: 13, fontWeight: 400, color: '#7a7a7a' }}>{tr.waitingName}</span>
-                </div>
-              )}
+              {tr.showWaiting && <div style={{ marginBottom: 13 }}><span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a' }}>{tr.waitingName}…</span></div>}
+              {tr.showStatus && <div style={{ marginBottom: 13 }}><span style={{ fontSize: 13, fontWeight: 400, color: tr.statusColor }}>{tr.statusText}</span></div>}
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: '-.01em', lineHeight: 1.1 }}>{tr.label}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                  {tr.isLastTrip ? (
-                    <span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a' }}>最終便</span>
-                  ) : (
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#0a0a0a' }}>{tr.returnTime}</span>
-                  )}
-                  <svg width="8" height="14" viewBox="0 0 8 14" style={{ flexShrink: 0, marginTop: 2 }}><path d="M1 1l6 6-6 6" stroke="#c8c8c8" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <p style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: '-.01em', lineHeight: 1.2, minWidth: 0 }}>{tr.label}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginTop: 3 }}>
+                  {tr.isLastTrip ? <span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a' }}>最終便</span> : <span style={{ fontSize: 13, fontWeight: 600, color: '#0a0a0a' }}>{tr.returnTime}</span>}
+                  <svg width="8" height="14" viewBox="0 0 8 14" style={{ flexShrink: 0 }}><path d="M1 1l6 6-6 6" stroke="#c8c8c8" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </div>
               </div>
-              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f2f2f2', display: 'flex', alignItems: 'center', gap: 9 }}>
+              <div style={{ marginTop: 13, display: 'flex', alignItems: 'center', gap: 9 }}>
                 <Avatar bg="#2a2a2a" label={tr.driverInitial} size={26} fs={12} />
                 <span style={{ fontSize: 13, fontWeight: 400, color: '#0a0a0a' }}>{tr.driverName}</span>
                 <span style={{ fontSize: 12, color: '#9a9a9a', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tr.car}</span>
                 <span style={{ fontSize: 12, fontWeight: 400, color: '#9a9a9a', flexShrink: 0 }}>{tr.assignedCount}名</span>
               </div>
+              {tr.isLive && (
+                <div style={{ marginTop: 16, display: 'flex', gap: 6 }}>
+                  {[0, 1, 2, 3].map((k) => <div key={k} style={{ flex: 1, height: 4, borderRadius: 99, background: k < 2 ? '#06c167' : '#e4e4e4' }} />)}
+                </div>
+              )}
             </div>
           ))
         )}
-        {/* 乗車リクエスト */}
-        {pendingRequests.length > 0 && (
-          <div style={{ marginTop: 12, background: dark0, borderRadius: 14, padding: '14px 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 400, color: '#fff' }}>{pendingRequests.length}名の乗車リクエスト</p>
-              <button onClick={() => go('boy-new')} style={{ height: 32, padding: '0 13px', borderRadius: 999, background: '#fff', color: '#0a0a0a', border: 'none', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}>配車を作成 →</button>
+
+        {doneCards.length > 0 && (
+          <>
+            <div onClick={() => setShowDoneTrips((v) => !v)} role="button" style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', padding: 6 }}>
+              <span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a' }}>完了した便 {doneCards.length}件</span>
+              <svg width="11" height="11" viewBox="0 0 12 12"><path d={showDoneTrips ? 'M2 8l4-4 4 4' : 'M2 4l4 4 4-4'} stroke="#9a9a9a" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                {pendingRequests.map((r) => (
-                  <Avatar key={r.id} bg={r.color} label={r.initial} size={28} fs={12} border="2px solid #0a0a0a" />
-                ))}
+            {showDoneTrips && doneCards.map((tr) => (
+              <div key={tr.id} onClick={() => { setViewingTripId(tr.id); go('boy-status') }} role="button" style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 20, padding: '14px 16px', color: '#0a0a0a', cursor: 'pointer', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 9 }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10" fill="#c8c8c8" /><path d="m7.5 12 3 3 6-6" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <span style={{ fontSize: 15, fontWeight: 600, color: '#7a7a7a', minWidth: 0 }}>{tr.label}</span>
+                <span style={{ fontSize: 12, color: '#b0b0b0', flex: 1, textAlign: 'right', whiteSpace: 'nowrap' }}>{tr.driverName}</span>
               </div>
-              <p style={{ margin: 0, fontSize: 11.5, color: '#9a9a9a', lineHeight: 1.4 }}>配車依頼作成時に選択できます</p>
-            </div>
-          </div>
+            ))}
+          </>
         )}
       </div>
     </div>
@@ -638,46 +784,103 @@ export default function App() {
             <p style={{ margin: 0, fontSize: 12.5, color: '#c0c0c0', fontWeight: 400 }}>出発準備ができ次第すぐに出発します</p>
           )}
         </div>
-        <button onClick={confirmTrip} style={{ ...blackBtn, marginTop: 28, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <span>ドライバーを選ぶ</span>
+        <button onClick={confirmTrip} style={{ ...blackBtn, marginTop: 28, height: 54, borderRadius: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <span>降車順を決める</span>
           <ArrowR />
         </button>
       </div>
     </div>
   )
 
+  /* ---------- ボーイ：降車順（手動並び替え） ---------- */
+  const renderBoyReorder = () => {
+    const moveBtn: React.CSSProperties = { width: 30, height: 22, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }
+    return (
+      <div style={lightScreen}>
+        <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '66%', background: dark0 }} /></div>
+        <div style={headerRow}>
+          <BackBtn onClick={() => go('boy-new')} />
+          <h1 style={h1}>降車順</h1>
+        </div>
+        <div style={{ padding: '0 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '6px 0 14px' }}>
+            <p style={{ margin: '0 4px', fontSize: 13, color: '#8a8a8a', fontWeight: 400, letterSpacing: '.04em' }}>降ろす順番を確認</p>
+            {draftManualOrder ? (
+              <span onClick={applyDraftSort} role="button" style={{ fontSize: 12, fontWeight: 400, color: '#0a0a0a', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 7h13M3 12h9M3 17h5m11-9v11m0 0 3-3m-3 3-3-3" stroke="#0a0a0a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>近い順に戻す
+              </span>
+            ) : (
+              <span style={{ fontSize: 11, fontWeight: 400, color: '#06c167', display: 'flex', alignItems: 'center', gap: 4 }}><Check size={13} color="#06c167" sw={2.4} />近い順 適用済み</span>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {draftOrdered.map((id, i) => {
+              const g = girls[id]
+              if (!g) return null
+              return (
+                <div key={id} style={{ border: '1px solid #ededed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ width: 24, height: 24, borderRadius: 8, background: dark0, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 400, flexShrink: 0 }}>{i + 1}</span>
+                  <Avatar bg={g.color} label={g.name[0]} size={38} fs={15} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 15, fontWeight: 400 }}>{g.name}</p>
+                    <p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a' }}>{g.area} ・ 店から {g.dist.toFixed(1)}km</p>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+                    <button onClick={() => moveDraftDrop(id, -1)} style={moveBtn}><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 15l6-6 6 6" stroke="#9a9a9a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+                    <button onClick={() => moveDraftDrop(id, 1)} style={moveBtn}><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#9a9a9a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <p style={{ margin: '14px 4px 0', fontSize: 12, color: '#b0b0b0', lineHeight: 1.6 }}>上下の矢印で順番を入れ替えられます。お店から近い順が初期設定です。</p>
+          <button onClick={goReorderNext} style={{ ...blackBtn, marginTop: 28, height: 54, borderRadius: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span>ドライバーを選ぶ</span>
+            <ArrowR />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   /* ---------- ボーイ：ドライバー指定（新規便） ---------- */
   const renderBoyDriverSelect = () => {
     const draftCount = tripDraftIds.length
     const draftEst = estMinLabel(tripDraftIds, girls)
+    const draftDepartStr = draftDepartNow ? '今すぐ' : String(draftDepartHour).padStart(2, '0') + ':' + String(draftDepartMin).padStart(2, '0')
+    const draftLabel = makeTripLabel(draftOrdered, girls)
+    const dCar = draftDriverKey ? drivers[draftDriverKey] : null
+    const confirmTripLabel = editingTripId != null ? 'この内容に変更する' : draftDriverKey ? '配車依頼を確定する' : '下書きとして保存する'
     return (
       <div style={lightScreen}>
         <div style={{ height: 4, background: '#f0f0f0' }}><div style={{ height: '100%', width: '100%', background: dark0 }} /></div>
         <div style={{ ...headerRow }}>
-          <BackBtn onClick={() => go('boy-new')} />
+          <BackBtn onClick={goDriverSelectBack} />
           <h1 style={h1}>ドライバーを指定</h1>
         </div>
         <div style={{ padding: '0 20px' }}>
-          <div style={{ background: dark0, borderRadius: 18, padding: '20px 20px 18px', marginBottom: 20 }}>
-            <div style={{ marginBottom: 16 }}>
-              <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 400, color: '#4a4a4a', letterSpacing: '.1em', textTransform: 'uppercase' }}>出発</p>
-              {draftDepartNow ? (
-                <p style={{ margin: 0, fontSize: 32, fontWeight: 600, color: '#fff', letterSpacing: '-.02em', lineHeight: 1 }}>今すぐ</p>
-              ) : (
-                <p style={{ margin: 0, fontSize: 48, fontWeight: 700, color: '#fff', letterSpacing: '-.03em', lineHeight: 1 }}>{String(draftDepartHour).padStart(2, '0') + ':' + String(draftDepartMin).padStart(2, '0')}</p>
-              )}
+          <div style={{ background: '#fff', border: '1px solid #efefef', borderRadius: 20, padding: 16, marginBottom: 20, boxShadow: '0 1px 2px rgba(0,0,0,.04), 0 6px 18px -12px rgba(0,0,0,.1)' }}>
+            <div style={{ marginBottom: 13 }}><span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a' }}>出発 {draftDepartStr}</span></div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+              <p style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: '-.01em', lineHeight: 1.2, minWidth: 0 }}>{draftLabel}</p>
+              <span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a', flexShrink: 0, marginTop: 4 }}>{draftEst}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  {tripDraftIds.map((id) => girls[id] && <Avatar key={id} bg={girls[id].color} label={girls[id].name[0]} size={28} fs={12} border="2px solid #0a0a0a" />)}
+            <div style={{ marginTop: 13, paddingTop: 13, borderTop: '1px solid #f2f2f2', overflow: 'hidden' }}>
+              {dCar ? (
+                <div key={draftDriverKey} style={{ display: 'flex', alignItems: 'center', gap: 9, minHeight: 30, animation: 'lm-flip .42s cubic-bezier(.2,.7,.3,1) both', transformOrigin: 'top center' }}>
+                  <Avatar bg="#2a2a2a" label={dCar.initial} size={26} fs={12} />
+                  <span style={{ fontSize: 13, fontWeight: 400, color: '#0a0a0a' }}>{dCar.name}</span>
+                  <span style={{ fontSize: 12, color: '#9a9a9a', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{dCar.car}</span>
+                  <span style={{ fontSize: 12, fontWeight: 400, color: '#9a9a9a', flexShrink: 0 }}>{draftCount}名</span>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a' }}>{draftCount}名乗車</span>
-              </div>
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <p style={{ margin: 0, fontSize: 11, fontWeight: 400, color: '#4a4a4a', letterSpacing: '.06em' }}>推定所要時間</p>
-                <p style={{ margin: '2px 0 0', fontSize: 18, fontWeight: 600, color: '#fff' }}>{draftEst}</p>
-              </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 9, minHeight: 30 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 6 }}>
+                    {draftOrdered.map((id) => girls[id] && <Avatar key={id} bg={girls[id].color} label={girls[id].name[0]} size={26} fs={11} border="2px solid #fff" />)}
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 400, color: '#9a9a9a', flex: 1 }}>{draftCount}名乗車</span>
+                </div>
+              )}
             </div>
           </div>
           <p style={{ margin: '0 4px 12px', fontSize: 12, fontWeight: 400, color: '#8a8a8a', letterSpacing: '.04em' }}>担当ドライバーを選んでください</p>
@@ -720,10 +923,10 @@ export default function App() {
               <div style={{ position: 'absolute', top: 3, left: draftLastTrip ? 21 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
             </div>
           </div>
-          <button onClick={finalizeTrip} style={{ ...blackBtn, marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <Check size={18} sw={2.4} /> 配車依頼を確定する
+          <button onClick={finalizeTrip} style={{ ...blackBtn, marginTop: 20, height: 54, borderRadius: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Check size={18} sw={2.4} /> {confirmTripLabel}
           </button>
-          <p style={{ margin: '10px 4px 0', fontSize: 12, color: '#a0a0a0', textAlign: 'center' }}>ドライバーはあとから変更できます</p>
+          {editingTripId == null && <p style={{ margin: '10px 4px 0', fontSize: 12, color: '#a0a0a0', textAlign: 'center' }}>内容はあとから変更できます</p>}
         </div>
       </div>
     )
@@ -760,17 +963,25 @@ export default function App() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {vObjs.map((g) => (
-            <div key={g.id} style={{ border: '1px solid #ededed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div key={g.id} style={{ border: '1px solid #ededed', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 24, height: 24, borderRadius: 8, background: dark0, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 400, flexShrink: 0 }}>{g.dropNo}</span>
               <Avatar bg={g.color} label={g.initial} size={38} fs={15} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ margin: 0, fontSize: 15, fontWeight: 400 }}>{g.name}</p>
                 <p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a', fontWeight: 400 }}>{g.area} ・ {g.distLabel}</p>
               </div>
+              <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+                <button onClick={() => viewT && moveExistingDrop(viewT, g.id, -1)} style={{ width: 30, height: 22, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 15l6-6 6 6" stroke="#9a9a9a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+                <button onClick={() => viewT && moveExistingDrop(viewT, g.id, 1)} style={{ width: 30, height: 22, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#9a9a9a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+              </div>
               <button onClick={() => viewT && act(() => db.setTripAssigned(viewT.id, viewT.assigned_ids.filter((x) => x !== g.id)))} style={{ width: 30, height: 30, borderRadius: '50%', background: '#f4f4f4', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><X /></button>
             </div>
           ))}
         </div>
+        <button onClick={() => viewT && applySortExisting(viewT)} style={{ marginTop: 12, width: '100%', height: 48, borderRadius: 14, background: '#f4f4f4', border: 'none', color: '#0a0a0a', fontSize: 15, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 7h13M3 12h9M3 17h5m11-9v11m0 0 3-3m-3 3-3-3" stroke="#0a0a0a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          お店から近い順に自動で並び替え
+        </button>
         {suggestions.length > 0 && (
           <div style={{ marginTop: 22, background: dark0, borderRadius: 18, padding: 16, color: '#fff' }}>
             <div onClick={() => setSuggestOpenEdit((v) => !v)} role="button" style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
@@ -807,13 +1018,12 @@ export default function App() {
     const viewArrived = !!(viewT && viewT.arrived && !viewT.boarded) && !countdownActive
     return (
       <div style={lightScreen}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px 14px' }}>
+        <div style={{ ...headerRow }}>
           <BackBtn onClick={() => { setCountdownActive(false); setJustCreatedTripId(null); go('boy-home') }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: '#9a9a9a' }}>{viewT ? makeTripLabel(viewT.assigned_ids, girls) : ''}</p>
+            <p style={{ margin: 0, fontSize: 11, fontWeight: 400, color: '#9a9a9a' }}>{viewT ? makeTripLabel(viewT.assigned_ids, girls) : ''}</p>
             <h1 style={h1}>便の詳細</h1>
           </div>
-          <button onClick={() => go('boy-edit')} style={{ height: 36, padding: '0 14px', borderRadius: 10, background: '#f4f4f4', border: 'none', fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, color: '#0a0a0a' }}><Edit />編集</button>
         </div>
         <div style={{ padding: '0 20px' }}>
           {showCountdown && (
@@ -828,7 +1038,7 @@ export default function App() {
               <div style={{ height: 4, background: '#2a2a2a', borderRadius: 2, overflow: 'hidden', marginBottom: 14 }}>
                 <div style={{ height: '100%', background: '#06c167', borderRadius: 2, transition: 'width 1s linear', width: Math.round((countdownRemaining / 10) * 100) + '%' }} />
               </div>
-              <button onClick={() => { setCountdownActive(false); setCountdownRemaining(0) }} style={{ width: '100%', height: 44, borderRadius: 11, background: '#1e1e1e', color: '#fff', border: 'none', fontSize: 14, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit' }}>今すぐ確定する</button>
+              <button onClick={confirmNow} style={{ width: '100%', height: 44, borderRadius: 11, background: '#1e1e1e', color: '#fff', border: 'none', fontSize: 15, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit' }}>今すぐ確定する</button>
             </div>
           )}
           {justCreated && (
@@ -859,52 +1069,41 @@ export default function App() {
             </div>
           )}
 
-          <div style={{ background: dark0, borderRadius: 18, padding: 18, color: '#fff' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <p style={{ margin: 0, fontSize: 12, color: '#a8a8a8', fontWeight: 600 }}>{viewT ? makeTripLabel(viewT.assigned_ids, girls) : ''}</p>
-                <p style={{ margin: '3px 0 0', fontSize: 22, fontWeight: 700, letterSpacing: '-.01em' }}>{vStatus}</p>
-              </div>
-              {!showCountdown && <span style={{ width: 10, height: 10, borderRadius: '50%', background: viewT ? tripDotColor(viewT) : '#c0c0c0', animation: 'lm-pulse 1.6s infinite' }} />}
-            </div>
-            {viewT?.driver_key ? (
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', gap: 9 }}>
-                <Avatar bg="#333" label={vDrv?.initial || '−'} size={26} fs={12} />
-                <span style={{ fontSize: 13, fontWeight: 400, color: '#fff' }}>{vDrv?.name}</span>
-                <span style={{ fontSize: 12, color: '#5a5a5a', flex: 1 }}>{vDrv?.car}</span>
-                <span onClick={() => viewT && act(() => db.unassignDriver(viewT))} role="button" style={{ fontSize: 11.5, color: '#5a5a5a', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3, whiteSpace: 'nowrap', flexShrink: 0 }}>変更</span>
-              </div>
-            ) : (
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid #1e1e1e' }}>
-                <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 400, color: '#9a9a9a', letterSpacing: '.04em' }}>ドライバーを指定</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {driverOrder.map((key) => {
-                    const st = driverStatuses[key] || '待機中'
-                    const cfg = driverStatusConfig[st]
-                    return (
-                      <div key={key} onClick={() => { if (cfg.available && viewT) act(() => db.assignDriver(viewT.id, key)) }} role="button" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 11, background: '#151515', cursor: cfg.available ? 'pointer' : 'not-allowed', border: '1px solid #2a2a2a', opacity: cfg.available ? 1 : 0.5 }}>
-                        <Avatar bg="#2a2a2a" label={drivers[key].initial} size={34} fs={14} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ margin: 0, fontSize: 14, fontWeight: 400, color: '#fff' }}>{drivers[key].name}</p>
-                          <p style={{ margin: '1px 0 0', fontSize: 11.5, color: '#9a9a9a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{drivers[key].car} ・ {st}</p>
-                        </div>
-                        <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid #333' }} />
-                      </div>
-                    )
-                  })}
-                </div>
+          <div style={{ background: '#fff', border: '1px solid #efefef', borderRadius: 20, padding: 16, color: '#0a0a0a', boxShadow: '0 1px 2px rgba(0,0,0,.04), 0 6px 18px -12px rgba(0,0,0,.1)' }}>
+            {viewCard?.showArrived && (
+              <div style={{ marginBottom: 13, display: 'flex', alignItems: 'center', gap: 7 }}>
+                <span style={{ width: 16, height: 16, borderRadius: '50%', background: '#06a152', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Check size={10} /></span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#06a152' }}>キャストを乗車させてください</span>
               </div>
             )}
-            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ flex: 1, height: 5, borderRadius: 3, background: '#2a2a2a', overflow: 'hidden' }}><div style={{ height: '100%', background: '#06c167', borderRadius: 3, width: vTotal ? Math.round((vDone / vTotal) * 100) + '%' : '0%' }} /></div>
-                <span style={{ fontSize: 12, fontWeight: 400, color: '#7a7a7a', whiteSpace: 'nowrap' }}>{vDone}/{vTotal}名</span>
-              </div>
-              <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: '#4a4a4a' }}>帰店予定</p>
-                <p style={{ margin: '1px 0 0', fontSize: 14, fontWeight: 600, color: '#fff' }}>{viewT ? (viewT.last_trip ? '最終便' : calcReturnTime(viewT.depart_time, viewT.assigned_ids, girls)) : '-'}</p>
+            {viewCard?.showWaiting && <div style={{ marginBottom: 13 }}><span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a' }}>{viewCard.waitingName}…</span></div>}
+            {viewCard?.showStatus && <div style={{ marginBottom: 13 }}><span style={{ fontSize: 13, fontWeight: 400, color: viewCard.statusColor }}>{viewCard.statusText}</span></div>}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+              <p style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: '-.01em', lineHeight: 1.2, minWidth: 0 }}>{viewT ? makeTripLabel(viewT.assigned_ids, girls) : ''}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginTop: 3 }}>
+                {viewT?.last_trip ? <span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a' }}>最終便</span> : <span style={{ fontSize: 13, fontWeight: 600, color: '#0a0a0a' }}>{viewCard?.returnTime}</span>}
               </div>
             </div>
+            {viewT?.driver_key ? (
+              <div onClick={() => viewT && enterEditDriver(viewT)} role="button" style={{ marginTop: 13, paddingTop: 13, borderTop: '1px solid #f2f2f2', display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
+                <Avatar bg="#2a2a2a" label={vDrv?.initial || '−'} size={26} fs={12} />
+                <span style={{ fontSize: 13, fontWeight: 400, color: '#0a0a0a' }}>{vDrv?.name}</span>
+                <span style={{ fontSize: 12, color: '#9a9a9a', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vDrv?.car}</span>
+                <span style={{ fontSize: 12, fontWeight: 400, color: '#9a9a9a', flexShrink: 0 }}>{vTotal}名</span>
+                <svg width="7" height="12" viewBox="0 0 8 14" style={{ flexShrink: 0 }}><path d="M1 1l6 6-6 6" stroke="#c8c8c8" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </div>
+            ) : (
+              <div onClick={() => viewT && enterEditDriver(viewT)} role="button" style={{ marginTop: 13, paddingTop: 13, borderTop: '1px solid #f2f2f2', display: 'flex', alignItems: 'center', gap: 9, cursor: 'pointer' }}>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', border: '1.5px dashed #d0d0d0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Plus size={13} color="#9a9a9a" sw={2.2} /></div>
+                <span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a', flex: 1 }}>ドライバーを選択してください</span>
+                <svg width="7" height="12" viewBox="0 0 8 14" style={{ flexShrink: 0 }}><path d="M1 1l6 6-6 6" stroke="#c8c8c8" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </div>
+            )}
+            {viewCard?.isLive && (
+              <div style={{ marginTop: 16, display: 'flex', gap: 6 }}>
+                {[0, 1, 2, 3].map((k) => <div key={k} style={{ flex: 1, height: 4, borderRadius: 99, background: k < 2 ? '#06c167' : '#e4e4e4' }} />)}
+              </div>
+            )}
           </div>
 
           {viewT?.changed && (
@@ -919,8 +1118,11 @@ export default function App() {
             </div>
           )}
 
-          <p style={sectionLabel}>降車ルート</p>
-          <RouteList objs={vObjs} storeName="CLUB VENUS・KING" boarded={!!viewT?.boarded} departTime={viewT?.depart_time || ''} isLast={!!viewT?.last_trip} returnTime={viewT ? calcReturnTime(viewT.depart_time, viewT.assigned_ids, girls) : '-'} />
+          <div onClick={() => go('boy-edit')} role="button" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '24px 0 10px', cursor: 'pointer' }}>
+            <p style={{ margin: '0 4px', fontSize: 13, fontWeight: 400, color: '#8a8a8a', letterSpacing: '.04em' }}>降車ルート</p>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 400, color: '#0a0a0a' }}><Edit color="#0a0a0a" />編集</span>
+          </div>
+          <RouteList objs={vObjs} storeName="CLUB LUMINA" boarded={!!viewT?.boarded} departTime={viewT?.depart_time || ''} isLast={!!viewT?.last_trip} returnTime={viewT ? calcReturnTime(viewT.depart_time, viewT.assigned_ids, girls) : '-'} />
         </div>
       </div>
     )
@@ -930,7 +1132,7 @@ export default function App() {
   const renderBoyAdmin = () => (
     <div style={lightScreen}>
       <div style={{ padding: '8px 20px 14px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB VENUS · KING · ボーイ</p>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB LUMINA ・ ボーイ</p>
         <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 700, letterSpacing: '-.02em' }}>管理</h1>
       </div>
       <div style={{ padding: '0 20px' }}>
@@ -1106,7 +1308,7 @@ export default function App() {
     <div style={lightScreen}>
       <div style={{ position: 'sticky', top: 'env(safe-area-inset-top)', zIndex: 20, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', background: 'rgba(255,255,255,.82)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
         <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a' }}>CLUB VENUS・KING</p>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a' }}>CLUB LUMINA</p>
           <h1 style={{ margin: '2px 0 0', fontSize: 22, fontWeight: 700, letterSpacing: '-.02em' }}>こんばんは、{castG?.name}さん</h1>
         </div>
         <div onClick={() => go('cast-settings')} role="button" style={{ cursor: 'pointer' }}><Avatar bg={castG?.color || '#888'} label={castG?.name[0] || '?'} size={40} fs={16} /></div>
@@ -1262,12 +1464,12 @@ export default function App() {
                   <span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a' }}>{tr.assignedCount}名乗車</span>
                 </div>
                 {!tr.arrived ? (
-                  <button onClick={() => act(() => db.markArrived(tr.t))} style={{ width: '100%', height: 56, borderRadius: 14, background: '#06c167', color: '#fff', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px -8px rgba(6,193,103,.7)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, lineHeight: 1.2 }}>店に到着しました<span style={{ fontSize: 11, fontWeight: 600, opacity: 0.85 }}>ボーイに乗車OKを知らせる</span></button>
+                  <button onClick={() => markArrive(tr.t)} style={{ width: '100%', height: 56, borderRadius: 14, background: '#06c167', color: '#fff', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px -8px rgba(6,193,103,.7)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, lineHeight: 1.2 }}>到着しました<span style={{ fontSize: 11, fontWeight: 400, opacity: 0.85 }}>乗車可能を知らせる</span></button>
                 ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#11271a', borderRadius: 12, padding: '11px 14px', marginBottom: 10 }}><Check size={16} color="#06c167" /><span style={{ fontSize: 13, fontWeight: 400, color: '#06c167' }}>乗車OKを通知しました</span></div>
-                    <button onClick={() => { setDriverActiveTripId(tr.t.id); go('driver-trip') }} style={{ width: '100%', height: 52, borderRadius: 14, background: '#06c167', color: '#fff', border: 'none', fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px -8px rgba(6,193,103,.7)' }}>運行を開始する</button>
-                  </>
+                  <button onClick={() => cancelArrive(tr.t)} style={{ position: 'relative', overflow: 'hidden', width: '100%', height: 56, borderRadius: 14, background: '#0a6e3c', color: '#fff', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px -8px rgba(6,193,103,.7)' }}>
+                    <div style={{ position: 'absolute', inset: 0, background: '#06c167', width: tr.counting ? tr.arrivePct : '100%', transition: 'width 1s linear' }} />
+                    <span style={{ position: 'relative', zIndex: 1 }}>タップでキャンセル</span>
+                  </button>
                 )}
               </div>
             ))
@@ -1331,7 +1533,7 @@ export default function App() {
               </div>
               <div style={{ flex: 1, paddingBottom: 18, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                  <span style={{ fontSize: 15, fontWeight: 400, color: '#fff' }}>CLUB VENUS・KING</span>
+                  <span style={{ fontSize: 15, fontWeight: 400, color: '#fff' }}>CLUB LUMINA</span>
                   <span style={{ fontSize: 11.5, fontWeight: 400, color: activeT?.boarded ? '#06c167' : '#7a7a7a', flexShrink: 0 }}>{activeT?.boarded ? '乗車済み' : 'お店前で乗車'}</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginTop: 11 }}>
@@ -1402,7 +1604,7 @@ export default function App() {
   /* ---------- 設定 ---------- */
   const renderSettings = (kind: 'boy' | 'cast' | 'driver') => {
     const dark = kind === 'driver'
-    let avatarBg = '#0a0a0a', initial = 'B', name = 'ボーイ', sub = 'CLUB VENUS・KING'
+    let avatarBg = '#0a0a0a', initial = 'B', name = 'ボーイ', sub = 'CLUB LUMINA'
     if (kind === 'cast') { avatarBg = castG?.color || '#888'; initial = castG?.name[0] || '?'; name = castG?.name || ''; sub = castG?.area || '' }
     if (kind === 'driver') { avatarBg = '#2a2a2a'; initial = myDrv?.initial || '?'; name = myDrv?.name || ''; sub = (myDrv?.car || '') + ' ・ ' + (myDrv?.plate || '') }
     return (
@@ -1425,6 +1627,7 @@ export default function App() {
       case 'login': return renderLogin()
       case 'boy-home': return renderBoyHome()
       case 'boy-new': return renderBoyNew()
+      case 'boy-reorder': return renderBoyReorder()
       case 'boy-driver-select': return renderBoyDriverSelect()
       case 'boy-edit': return renderBoyEdit()
       case 'boy-status': return renderBoyStatus()

@@ -76,7 +76,9 @@ export async function createTrip(
   departTime: string,
   driverKey: string | null,
   lastTrip: boolean,
-  arrived: boolean
+  manualOrder: boolean,
+  confirmed: boolean,
+  pendingAtStore: boolean
 ): Promise<number | null> {
   const { data } = await supabase
     .from('trips')
@@ -87,8 +89,11 @@ export async function createTrip(
       last_trip: lastTrip,
       boarded: false,
       completed: 0,
-      arrived,
+      arrived: false,
       changed: false,
+      manual_order: manualOrder,
+      confirmed,
+      pending_at_store: pendingAtStore,
     })
     .select('id')
     .single()
@@ -96,10 +101,37 @@ export async function createTrip(
   for (const id of assignedIds) {
     await supabase.from('ride_requests').upsert({ girl_id: id, status: 'approved' })
   }
-  if (driverKey) {
-    await setDriverStatus(driverKey, arrived ? '乗車待機' : '移動中')
+  // 確定済み（=下書きや即時確定）でドライバー付きの場合のみステータス反映
+  if (confirmed && driverKey) {
+    await setDriverStatus(driverKey, pendingAtStore ? '乗車待機' : '移動中')
   }
   return data?.id ?? null
+}
+
+// カウントダウン後の確定：ドライバーに通知（=可視化）し稼働状態を反映
+export async function confirmTrip(trip: Trip) {
+  const arrived = trip.pending_at_store
+  await supabase.from('trips').update({ confirmed: true, arrived }).eq('id', trip.id)
+  if (trip.driver_key) await setDriverStatus(trip.driver_key, arrived ? '乗車待機' : '移動中')
+}
+
+// 既存便のドライバー/最終便フラグを変更
+export async function editTripDriver(
+  trip: Trip,
+  driverKey: string | null,
+  lastTrip: boolean,
+  wasAtStore: boolean
+) {
+  await supabase
+    .from('trips')
+    .update({ driver_key: driverKey, last_trip: lastTrip, arrived: driverKey ? wasAtStore : false })
+    .eq('id', trip.id)
+  if (driverKey) await setDriverStatus(driverKey, wasAtStore ? '乗車待機' : '移動中')
+}
+
+// 降車順を更新（手動 or 自動）
+export async function setTripOrder(tripId: number, ids: string[], manualOrder: boolean) {
+  await supabase.from('trips').update({ assigned_ids: ids, manual_order: manualOrder }).eq('id', tripId)
 }
 
 export async function deleteTrip(trip: Trip) {
@@ -133,6 +165,11 @@ export async function boardTrip(trip: Trip) {
 export async function markArrived(trip: Trip) {
   await supabase.from('trips').update({ arrived: true }).eq('id', trip.id)
   if (trip.driver_key) await setDriverStatus(trip.driver_key, '乗車待機')
+}
+
+export async function cancelArrived(trip: Trip) {
+  await supabase.from('trips').update({ arrived: false }).eq('id', trip.id)
+  if (trip.driver_key) await setDriverStatus(trip.driver_key, '移動中')
 }
 
 export async function setTripChanged(tripId: number, value: boolean) {
