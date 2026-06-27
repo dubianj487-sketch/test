@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { businessDayStart } from './types'
 import type {
   Girl,
   Driver,
@@ -42,8 +43,11 @@ export async function loadSnapshot(): Promise<Snapshot> {
     driverOrder.push(d.key)
   })
 
+  // 乗車リクエストは正午締めの営業日内のものだけ採用（前営業日のリクエストは消す）
+  const reqStart = businessDayStart()
   const rideRequests: RideReqMap = {}
-  ;(rideR.data || []).forEach((r: { girl_id: string; status: string }) => {
+  ;(rideR.data || []).forEach((r: { girl_id: string; status: string; created_at: string | null }) => {
+    if (r.created_at && new Date(r.created_at).getTime() < reqStart) return
     rideRequests[r.girl_id] = r.status
   })
 
@@ -97,9 +101,9 @@ export async function createTrip(
     })
     .select('id')
     .single()
-  // 乗車リクエストを承認済みに
+  // 乗車リクエストを承認済みに（営業日判定のため作成時刻も更新）
   for (const id of assignedIds) {
-    await supabase.from('ride_requests').upsert({ girl_id: id, status: 'approved' })
+    await supabase.from('ride_requests').upsert({ girl_id: id, status: 'approved', created_at: new Date().toISOString() })
   }
   // 確定済み（=下書きや即時確定）でドライバー付きの場合のみステータス反映
   if (confirmed && driverKey) {
@@ -186,7 +190,7 @@ export async function completeStop(trip: Trip) {
 }
 
 export async function sendRideRequest(girlId: string) {
-  await supabase.from('ride_requests').upsert({ girl_id: girlId, status: 'approved' })
+  await supabase.from('ride_requests').upsert({ girl_id: girlId, status: 'approved', created_at: new Date().toISOString() })
 }
 
 export async function saveDrop(girlId: string, address: string) {
