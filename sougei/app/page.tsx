@@ -268,6 +268,14 @@ export default function App() {
   /* ---------- 派生値 ---------- */
   const approvedSet = useMemo(() => new Set(trips.flatMap((t) => t.assigned_ids)), [trips])
 
+  // 乗車中＝乗車済みの便にいて、まだ降車していない
+  const riding = (id: string) => {
+    const t = trips.find((tr) => tr.assigned_ids.includes(id) && tr.boarded)
+    if (!t) return false
+    const order = buildTripObjs(t, girls).map((o) => o.id)
+    return order.indexOf(id) >= (t.completed || 0)
+  }
+
   const pendingRequests = useMemo(() => {
     return Object.keys(rideRequests)
       .filter((id) => rideRequests[id] === 'approved' && !approvedSet.has(id) && girls[id])
@@ -625,7 +633,7 @@ export default function App() {
     </div>
   )
 
-  const demoPill: React.CSSProperties = { flex: 1, height: 40, borderRadius: 999, background: 'transparent', border: '1px solid #2a2a2a', color: '#9a9a9a', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+  const demoPill: React.CSSProperties = { flex: 1, height: 40, borderRadius: 11, background: '#1f1f1f', border: 'none', color: '#e0e0e0', fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit' }
 
   /* ---------- ボーイ：ホーム（配車） ---------- */
   const renderBoyHome = () => (
@@ -1131,9 +1139,12 @@ export default function App() {
   /* ---------- ボーイ：管理 ---------- */
   const renderBoyAdmin = () => (
     <div style={lightScreen}>
-      <div style={{ padding: '8px 20px 14px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB LUMINA ・ ボーイ</p>
-        <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 700, letterSpacing: '-.02em' }}>管理</h1>
+      <div style={{ ...stickyLight, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 14px' }}>
+        <div>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 400, color: '#8a8a8a', letterSpacing: '.04em' }}>CLUB LUMINA ・ ボーイ</p>
+          <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 700, letterSpacing: '-.02em' }}>管理</h1>
+        </div>
+        <div onClick={() => go('boy-settings')} role="button" style={{ width: 40, height: 40, borderRadius: '50%', background: dark0, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 400, fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>B</div>
       </div>
       <div style={{ padding: '0 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 10px' }}>
@@ -1143,7 +1154,7 @@ export default function App() {
         <div style={{ marginBottom: 24 }}>
           {girlOrder.map((id) => {
             const g = girls[id]
-            const onTrip = approvedSet.has(id)
+            const onTrip = riding(id)
             return (
               <div key={id} onClick={() => openCastDetail(id)} role="button" style={{ padding: '11px 0', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
                 <Avatar bg={g.color} label={g.name[0]} size={40} fs={16} />
@@ -1151,7 +1162,7 @@ export default function App() {
                   <p style={{ margin: 0, fontSize: 15, fontWeight: 400 }}>{g.name}</p>
                   <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{g.area} ・ 店から{g.dist.toFixed(1)}km</p>
                 </div>
-                {onTrip ? <span style={{ fontSize: 11.5, fontWeight: 400, color: '#fff', background: dark0, padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>乗車中</span> : <span style={{ fontSize: 11.5, fontWeight: 400, color: '#b0b0b0', whiteSpace: 'nowrap', flexShrink: 0 }}>待機中</span>}
+                {onTrip ? <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#F5A623', animation: 'lm-pulse 1.6s infinite' }} /><span style={{ fontSize: 11.5, fontWeight: 400, color: '#F5A623', whiteSpace: 'nowrap' }}>乗車中</span></div> : <span style={{ fontSize: 11.5, fontWeight: 400, color: '#b0b0b0', whiteSpace: 'nowrap', flexShrink: 0 }}>待機中</span>}
                 <ChevR />
               </div>
             )
@@ -1161,7 +1172,8 @@ export default function App() {
         <div>
           {driverOrder.map((key) => {
             const d = drivers[key]
-            const onTrip = !!trips.find((t) => t.driver_key === key && (t.completed || 0) < t.assigned_ids.length)
+            const st = driverStatuses[key] || '待機中'
+            const cfg = driverStatusConfig[st]
             return (
               <div key={key} onClick={() => openDriverDetail(key)} role="button" style={{ padding: '11px 0', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
                 <Avatar bg="#2a2a2a" label={d.initial} size={40} fs={15} />
@@ -1170,7 +1182,7 @@ export default function App() {
                   <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9a9a9a' }}>{d.car}</p>
                   <p style={{ margin: '1px 0 0', fontSize: 12, color: '#9a9a9a' }}>{d.plate}</p>
                 </div>
-                {onTrip ? <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#06c167', animation: 'lm-pulse 1.6s infinite' }} /><span style={{ fontSize: 11.5, fontWeight: 400, color: '#06c167', whiteSpace: 'nowrap' }}>運行中</span></div> : <span style={{ fontSize: 11.5, fontWeight: 400, color: '#b0b0b0', whiteSpace: 'nowrap', flexShrink: 0 }}>待機中</span>}
+                {st === '待機中' ? <span style={{ fontSize: 11.5, fontWeight: 400, color: '#b0b0b0', whiteSpace: 'nowrap', flexShrink: 0 }}>待機中</span> : <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.color, animation: 'lm-pulse 1.6s infinite' }} /><span style={{ fontSize: 11.5, fontWeight: 400, color: cfg.color, whiteSpace: 'nowrap' }}>{st}</span></div>}
                 <ChevR />
               </div>
             )
@@ -1184,7 +1196,7 @@ export default function App() {
   const renderCastDetail = () => {
     const g = selectedCastId ? girls[selectedCastId] : null
     if (!g) return null
-    const onTrip = !!(selectedCastId && approvedSet.has(selectedCastId))
+    const onTrip = !!(selectedCastId && riding(selectedCastId))
     return (
       <div style={lightScreen}>
         <div style={headerRow}><BackBtn onClick={() => go('boy-admin')} /><h1 style={h1}>キャスト詳細</h1></div>
@@ -1234,7 +1246,9 @@ export default function App() {
   const renderDriverDetail = () => {
     const d = selectedDriverKey ? drivers[selectedDriverKey] : null
     if (!d) return null
-    const onTrip = !!(selectedDriverKey && trips.find((t) => t.driver_key === selectedDriverKey && (t.completed || 0) < t.assigned_ids.length))
+    const dst = selectedDriverKey ? driverStatuses[selectedDriverKey] || '待機中' : '待機中'
+    const dcfg = driverStatusConfig[dst]
+    const onTrip = dst !== '待機中'
     return (
       <div style={lightScreen}>
         <div style={headerRow}><BackBtn onClick={() => go('boy-admin')} /><h1 style={h1}>ドライバー詳細</h1></div>
@@ -1244,7 +1258,7 @@ export default function App() {
             <div>
               <p style={{ margin: 0, fontSize: 36, fontWeight: 600, letterSpacing: '-.02em', lineHeight: 1 }}>{d.name}</p>
               {onTrip ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#06c167', animation: 'lm-pulse 1.6s infinite' }} /><span style={{ fontSize: 13, fontWeight: 400, color: '#06c167' }}>運行中</span></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: dcfg.color, animation: 'lm-pulse 1.6s infinite' }} /><span style={{ fontSize: 13, fontWeight: 400, color: dcfg.color }}>{dst}</span></div>
               ) : (
                 <div style={{ marginTop: 8, display: 'inline-flex', background: '#f4f4f4', padding: '5px 13px', borderRadius: 999 }}><span style={{ fontSize: 12, fontWeight: 400, color: '#8a8a8a' }}>待機中</span></div>
               )}
@@ -1570,7 +1584,7 @@ export default function App() {
             <div style={{ display: 'flex', gap: 14 }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 26, flexShrink: 0 }}><div style={{ width: 26, height: 26, borderRadius: 8, background: '#141414', border: '2px solid #2c2c2c', flexShrink: 0 }} /></div>
               <div style={{ flex: 1, paddingBottom: 4 }}>
-                {activeT?.last_trip ? <p style={{ margin: '3px 0 0', fontSize: 15, fontWeight: 400, color: '#5a5a5a' }}>終了</p> : <><p style={{ margin: '3px 0 2px', fontSize: 15, fontWeight: 400, color: '#7a7a7a' }}>帰店予定</p><p style={{ margin: 0, fontSize: 13, fontWeight: 400, color: '#7a7a7a' }}>{activeT ? calcReturnTime(activeT.depart_time, activeT.assigned_ids, girls) : '-'}</p></>}
+                {activeT?.last_trip ? <p style={{ margin: '3px 0 0', fontSize: 15, fontWeight: 400, color: '#5a5a5a' }}>終了</p> : <><p style={{ margin: '3px 0 2px', fontSize: 15, fontWeight: 400, color: '#7a7a7a' }}>帰着</p><p style={{ margin: 0, fontSize: 13, fontWeight: 400, color: '#7a7a7a' }}>{activeT ? calcReturnTime(activeT.depart_time, activeT.assigned_ids, girls) : '-'}</p></>}
               </div>
             </div>
           </div>
@@ -1761,7 +1775,7 @@ function RouteList({ objs, storeName, boarded, departTime, isLast, returnTime }:
       <div style={{ display: 'flex', gap: 13 }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 24 }}><div style={{ width: 24, height: 24, borderRadius: 8, background: '#f4f4f4', border: '2px solid #e8e8e8', flexShrink: 0 }} /></div>
         <div style={{ flex: 1, paddingBottom: 8 }}>
-          {isLast ? <p style={{ margin: '3px 0 0', fontSize: 14, fontWeight: 400, color: '#b0b0b0' }}>終了</p> : <><p style={{ margin: '3px 0 2px', fontSize: 14, fontWeight: 400, color: '#b0b0b0' }}>帰店予定</p><p style={{ margin: 0, fontSize: 12, fontWeight: 400, color: '#b0b0b0' }}>{returnTime}</p></>}
+          {isLast ? <p style={{ margin: '3px 0 0', fontSize: 15, fontWeight: 400, color: '#b0b0b0' }}>終了</p> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}><p style={{ margin: 0, fontSize: 15, fontWeight: 400, color: '#b0b0b0' }}>帰着</p><p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#0a0a0a', flexShrink: 0 }}>{returnTime}</p></div>}
         </div>
       </div>
     </div>
