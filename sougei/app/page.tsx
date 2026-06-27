@@ -357,7 +357,12 @@ export default function App() {
 
   // ドライバー
   const myAssignedTrips = trips
-    .filter((t) => t.driver_key === driverKey && t.confirmed)
+    .filter(
+      (t) =>
+        t.driver_key === driverKey &&
+        t.confirmed &&
+        !(t.boarded && (t.completed || 0) >= t.assigned_ids.length)
+    )
     .map((t) => {
       const tot = t.assigned_ids.length
       return {
@@ -1477,13 +1482,18 @@ export default function App() {
                   <div style={{ display: 'flex', alignItems: 'center' }}>{tr.castObjs.map((oc) => <Avatar key={oc.id} bg={oc.color} label={oc.name[0]} size={28} fs={12} border="2px solid #0a0a0a" />)}</div>
                   <span style={{ fontSize: 13, fontWeight: 400, color: '#9a9a9a' }}>{tr.assignedCount}名乗車</span>
                 </div>
-                {!tr.arrived ? (
-                  <button onClick={() => markArrive(tr.t)} style={{ width: '100%', height: 56, borderRadius: 14, background: '#06c167', color: '#fff', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px -8px rgba(6,193,103,.7)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, lineHeight: 1.2 }}>到着しました<span style={{ fontSize: 11, fontWeight: 400, opacity: 0.85 }}>乗車可能を知らせる</span></button>
-                ) : (
+                {tr.counting ? (
                   <button onClick={() => cancelArrive(tr.t)} style={{ position: 'relative', overflow: 'hidden', width: '100%', height: 56, borderRadius: 14, background: '#0a6e3c', color: '#fff', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px -8px rgba(6,193,103,.7)' }}>
-                    <div style={{ position: 'absolute', inset: 0, background: '#06c167', width: tr.counting ? tr.arrivePct : '100%', transition: 'width 1s linear' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: '#06c167', width: tr.arrivePct, transition: 'width 1s linear' }} />
                     <span style={{ position: 'relative', zIndex: 1 }}>タップでキャンセル</span>
                   </button>
+                ) : tr.arrived ? (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#11271a', borderRadius: 12, padding: '11px 14px', marginBottom: 10 }}><Check size={16} color="#06c167" /><span style={{ fontSize: 13, fontWeight: 400, color: '#06c167' }}>乗車OKを通知しました</span></div>
+                    <button onClick={() => { setDriverActiveTripId(tr.t.id); go('driver-trip') }} style={{ width: '100%', height: 52, borderRadius: 14, background: '#06c167', color: '#fff', border: 'none', fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px -8px rgba(6,193,103,.7)' }}>運行を開始する</button>
+                  </>
+                ) : (
+                  <button onClick={() => markArrive(tr.t)} style={{ width: '100%', height: 56, borderRadius: 14, background: '#06c167', color: '#fff', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 20px -8px rgba(6,193,103,.7)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, lineHeight: 1.2 }}>到着しました<span style={{ fontSize: 11, fontWeight: 400, opacity: 0.85 }}>乗車可能を知らせる</span></button>
                 )}
               </div>
             ))
