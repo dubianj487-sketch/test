@@ -10,6 +10,8 @@ import {
   estMinLabel,
   tripDotColor,
   driverStatusConfig,
+  businessDayStart,
+  inCurrentBusinessDay,
   type Trip,
 } from '@/lib/types'
 
@@ -132,7 +134,9 @@ const dark0 = '#0a0a0a'
 /* ============================ メイン ============================ */
 export default function App() {
   const { snap, ready, reload } = useSnapshot()
-  const { girls, drivers, girlOrder, driverOrder, trips, rideRequests, driverStatuses } = snap
+  const { girls, drivers, girlOrder, driverOrder, trips: allTrips, rideRequests, driverStatuses } = snap
+  // 正午締めの営業日でフィルタ（前営業日の便は正午を過ぎると一覧から消える）
+  const trips = allTrips.filter((t) => inCurrentBusinessDay(t, businessDayStart()))
 
   // ローカル（セッション）状態
   const [role, setRole] = useState('')

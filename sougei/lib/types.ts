@@ -32,6 +32,22 @@ export type Trip = {
   manual_order: boolean
   confirmed: boolean
   pending_at_store: boolean
+  created_at: string | null
+}
+
+// ===== 営業日（正午締め） =====
+// ナイトの営業は深夜をまたぐため、誰も送迎していない正午で1営業日を区切る。
+// 正午より前なら前日正午が起点、正午以降なら当日正午が起点。
+export function businessDayStart(now: Date = new Date()): number {
+  const noon = new Date(now)
+  noon.setHours(12, 0, 0, 0)
+  if (now.getTime() < noon.getTime()) noon.setDate(noon.getDate() - 1)
+  return noon.getTime()
+}
+
+export function inCurrentBusinessDay(t: Trip, startMs: number): boolean {
+  if (!t.created_at) return true
+  return new Date(t.created_at).getTime() >= startMs
 }
 
 export type RideReqMap = Record<string, string> // girl_id -> status
