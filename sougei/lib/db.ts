@@ -192,3 +192,63 @@ export async function sendRideRequest(girlId: string) {
 export async function saveDrop(girlId: string, address: string) {
   await supabase.from('girls').update({ drop_address: address }).eq('id', girlId)
 }
+
+// ===== マスタ管理（キャスト・ドライバーのCRUD） =====
+
+function genId(prefix: string): string {
+  return prefix + '_' + Date.now().toString(36) + Math.floor(Math.random() * 1000)
+}
+
+export async function createGirl(g: {
+  name: string
+  area: string
+  dist: number
+  addr: string
+  color: string
+  sort: number
+}) {
+  await supabase.from('girls').insert({
+    id: genId('g'),
+    name: g.name,
+    area: g.area,
+    dist: g.dist,
+    addr: g.addr,
+    color: g.color,
+    drop_address: null,
+    sort: g.sort,
+  })
+}
+
+export async function updateGirl(
+  id: string,
+  patch: { name?: string; area?: string; dist?: number; addr?: string }
+) {
+  await supabase.from('girls').update(patch).eq('id', id)
+}
+
+export async function deleteGirl(id: string) {
+  await supabase.from('ride_requests').delete().eq('girl_id', id)
+  await supabase.from('girls').delete().eq('id', id)
+}
+
+export async function createDriver(d: {
+  name: string
+  initial: string
+  car: string
+  plate: string
+  sort: number
+}) {
+  await supabase.from('drivers').insert({ key: genId('d'), ...d })
+}
+
+export async function updateDriver(
+  key: string,
+  patch: { name?: string; initial?: string; car?: string; plate?: string }
+) {
+  await supabase.from('drivers').update(patch).eq('key', key)
+}
+
+export async function deleteDriver(key: string) {
+  await supabase.from('driver_status').delete().eq('driver_key', key)
+  await supabase.from('drivers').delete().eq('key', key)
+}

@@ -158,6 +158,8 @@ export default function App() {
   const [selectedCastId, setSelectedCastId] = useState<string | null>(null)
   const [selectedDriverKey, setSelectedDriverKey] = useState<string | null>(null)
   const [adminDeleteType, setAdminDeleteType] = useState<'cast' | 'driver' | null>(null)
+  const [castForm, setCastForm] = useState({ name: '', area: '', dist: '', addr: '' })
+  const [driverForm, setDriverForm] = useState({ name: '', kind: '', color: '', plate: '' })
 
   const [justCreatedTripId, setJustCreatedTripId] = useState<number | null>(null)
   const [countdownActive, setCountdownActive] = useState(false)
@@ -561,6 +563,76 @@ export default function App() {
     go('boy-admin-delete-confirm')
   }
   const goDeleteBack = () => go(adminDeleteType === 'cast' ? 'boy-admin-cast-detail' : 'boy-admin-driver-detail')
+
+  // ----- マスタ管理：キャスト -----
+  const GIRL_COLORS = ['#c98aa8', '#8aa8c9', '#8ac9a0', '#c9b78a', '#a88ac9', '#c98a8a', '#8ac9c2', '#bdc98a']
+  const openCastAdd = () => {
+    setCastForm({ name: '', area: '', dist: '', addr: '' })
+    go('boy-admin-cast-add')
+  }
+  const openCastEdit = () => {
+    const g = selectedCastId ? girls[selectedCastId] : null
+    if (g) setCastForm({ name: g.name, area: g.area, dist: String(g.dist), addr: g.drop_address || g.addr })
+    go('boy-admin-cast-edit')
+  }
+  const castFormValid = !!(castForm.name.trim() && castForm.area.trim() && castForm.dist.trim() && castForm.addr.trim())
+  const saveCastAdd = async () => {
+    if (!castFormValid) return
+    const sort = girlOrder.reduce((m, id) => Math.max(m, girls[id]?.sort || 0), 0) + 1
+    const color = GIRL_COLORS[girlOrder.length % GIRL_COLORS.length]
+    await act(() =>
+      db.createGirl({ name: castForm.name.trim(), area: castForm.area.trim(), dist: Number(castForm.dist) || 0, addr: castForm.addr.trim(), color, sort })
+    )
+    go('boy-admin')
+  }
+  const saveCastEdit = async () => {
+    if (!selectedCastId || !castFormValid) return
+    await act(() =>
+      db.updateGirl(selectedCastId, { name: castForm.name.trim(), area: castForm.area.trim(), dist: Number(castForm.dist) || 0, addr: castForm.addr.trim() })
+    )
+    go('boy-admin-cast-detail')
+  }
+
+  // ----- マスタ管理：ドライバー -----
+  const openDriverAdd = () => {
+    setDriverForm({ name: '', kind: '', color: '', plate: '' })
+    go('boy-admin-driver-add')
+  }
+  const openDriverEdit = () => {
+    const d = selectedDriverKey ? drivers[selectedDriverKey] : null
+    if (d) {
+      const [kind, color] = d.car.split('・')
+      setDriverForm({ name: d.name, kind: kind || '', color: color || '', plate: d.plate })
+    }
+    go('boy-admin-driver-edit')
+  }
+  const driverFormValid = !!(driverForm.name.trim() && driverForm.kind.trim() && driverForm.plate.trim())
+  const driverCar = () => (driverForm.color.trim() ? driverForm.kind.trim() + '・' + driverForm.color.trim() : driverForm.kind.trim())
+  const saveDriverAdd = async () => {
+    if (!driverFormValid) return
+    const sort = driverOrder.reduce((m, k) => Math.max(m, drivers[k]?.sort || 0), 0) + 1
+    await act(() =>
+      db.createDriver({ name: driverForm.name.trim(), initial: driverForm.name.trim()[0] || '?', car: driverCar(), plate: driverForm.plate.trim(), sort })
+    )
+    go('boy-admin')
+  }
+  const saveDriverEdit = async () => {
+    if (!selectedDriverKey || !driverFormValid) return
+    await act(() =>
+      db.updateDriver(selectedDriverKey, { name: driverForm.name.trim(), initial: driverForm.name.trim()[0] || '?', car: driverCar(), plate: driverForm.plate.trim() })
+    )
+    go('boy-admin-driver-detail')
+  }
+
+  // ----- マスタ管理：削除実行 -----
+  const doDelete = async () => {
+    if (adminDeleteType === 'cast' && selectedCastId) {
+      await act(() => db.deleteGirl(selectedCastId))
+    } else if (adminDeleteType === 'driver' && selectedDriverKey) {
+      await act(() => db.deleteDriver(selectedDriverKey))
+    }
+    go('boy-admin')
+  }
 
   /* ============================ レンダリング ============================ */
   if (!ready) {
@@ -1158,7 +1230,7 @@ export default function App() {
       <div style={{ padding: '0 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 10px' }}>
           <p style={{ margin: 0, fontSize: 13, fontWeight: 400, color: '#8a8a8a', letterSpacing: '.04em' }}>キャスト一覧</p>
-          <button onClick={() => go('boy-admin-cast-add')} style={{ height: 30, padding: '0 12px', borderRadius: 999, background: dark0, color: '#fff', border: 'none', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}><Plus size={11} sw={2.5} />追加</button>
+          <button onClick={openCastAdd} style={{ height: 30, padding: '0 12px', borderRadius: 999, background: dark0, color: '#fff', border: 'none', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}><Plus size={11} sw={2.5} />追加</button>
         </div>
         <div style={{ marginBottom: 24 }}>
           {girlOrder.map((id) => {
@@ -1177,7 +1249,10 @@ export default function App() {
             )
           })}
         </div>
-        <p style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 400, color: '#8a8a8a', letterSpacing: '.04em' }}>ドライバー一覧</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 10px' }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 400, color: '#8a8a8a', letterSpacing: '.04em' }}>ドライバー一覧</p>
+          <button onClick={openDriverAdd} style={{ height: 30, padding: '0 12px', borderRadius: 999, background: dark0, color: '#fff', border: 'none', fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}><Plus size={11} sw={2.5} />追加</button>
+        </div>
         <div>
           {driverOrder.map((key) => {
             const d = drivers[key]
@@ -1225,7 +1300,7 @@ export default function App() {
             <DetailRow label="住所" value={g.drop_address || g.addr} last />
           </div>
           <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <button onClick={() => go('boy-admin-cast-edit')} style={{ ...blackBtn, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>編集する</button>
+            <button onClick={openCastEdit} style={{ ...blackBtn, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>編集する</button>
             <button onClick={goDeleteConfirm} style={{ width: '100%', height: 48, borderRadius: 15, background: '#fff', color: '#9a9a9a', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline', textUnderlineOffset: 3 }}>削除する</button>
           </div>
         </div>
@@ -1241,11 +1316,12 @@ export default function App() {
       <div style={lightScreen}>
         <div style={headerRow}><BackBtn onClick={() => go('boy-admin-cast-detail')} /><h1 style={h1}>{g.name}を編集</h1></div>
         <div style={{ padding: '0 20px' }}>
-          <FieldView label="ニックネーム" value={g.name} />
-          <FieldView label="エリア（地区）" value={g.area} />
-          <FieldView label="自宅住所" value={g.drop_address || g.addr} multiline />
+          <Field label="ニックネーム" value={castForm.name} onChange={(v) => setCastForm({ ...castForm, name: v })} />
+          <Field label="エリア（地区）" value={castForm.area} onChange={(v) => setCastForm({ ...castForm, area: v })} />
+          <Field label="店からの距離（km）" value={castForm.dist} onChange={(v) => setCastForm({ ...castForm, dist: v })} inputMode="decimal" />
+          <Field label="自宅住所" value={castForm.addr} onChange={(v) => setCastForm({ ...castForm, addr: v })} multiline />
           <p style={{ margin: '0 0 32px 2px', fontSize: 12, color: '#b0b0b0', lineHeight: 1.5 }}>住所はドライバーへの案内・距離計算に使用します</p>
-          <button onClick={() => go('boy-admin')} style={{ ...blackBtn, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>変更を保存</button>
+          <button onClick={saveCastEdit} disabled={!castFormValid} style={{ ...blackBtn, background: castFormValid ? dark0 : '#d8d8d8', boxShadow: castFormValid ? '0 8px 20px -8px rgba(0,0,0,.5)' : 'none' }}>変更を保存</button>
         </div>
       </div>
     )
@@ -1278,7 +1354,7 @@ export default function App() {
             <DetailRow label="ナンバープレート" value={d.plate} last />
           </div>
           <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <button style={{ ...blackBtn, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>編集する</button>
+            <button onClick={openDriverEdit} style={{ ...blackBtn, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>編集する</button>
             {onTrip ? <p style={{ margin: '4px 0 0', fontSize: 12, color: '#b0b0b0', textAlign: 'center' }}>運行中のドライバーは削除できません</p> : <button onClick={goDeleteConfirm} style={{ width: '100%', height: 48, borderRadius: 15, background: '#fff', color: '#9a9a9a', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline', textUnderlineOffset: 3 }}>削除する</button>}
           </div>
         </div>
@@ -1286,20 +1362,39 @@ export default function App() {
     )
   }
 
-  /* ---------- ボーイ：ドライバー追加（表示のみ） ---------- */
+  /* ---------- ボーイ：ドライバー追加 ---------- */
   const renderDriverAdd = () => (
     <div style={lightScreen}>
       <div style={headerRow}><BackBtn onClick={() => go('boy-admin')} /><h1 style={h1}>ドライバーを追加</h1></div>
       <div style={{ padding: '0 20px' }}>
-        <FieldView label="名前" value="例：田中 誠" placeholder />
-        <FieldView label="車種" value="例：アルファード" placeholder />
-        <FieldView label="車の色" value="例：白" placeholder />
-        <FieldView label="ナンバープレート" value="例：新潟 300 あ 12-34" placeholder />
-        <p style={{ margin: '0 0 32px 2px', fontSize: 12, color: '#b0b0b0', lineHeight: 1.5 }}>全項目を入力すると登録できます</p>
-        <button onClick={() => go('boy-admin')} style={{ ...blackBtn, background: '#d8d8d8' }}>登録する</button>
+        <Field label="名前" value={driverForm.name} onChange={(v) => setDriverForm({ ...driverForm, name: v })} placeholder="例：田中 誠" />
+        <Field label="車種" value={driverForm.kind} onChange={(v) => setDriverForm({ ...driverForm, kind: v })} placeholder="例：アルファード" />
+        <Field label="車の色" value={driverForm.color} onChange={(v) => setDriverForm({ ...driverForm, color: v })} placeholder="例：白" />
+        <Field label="ナンバープレート" value={driverForm.plate} onChange={(v) => setDriverForm({ ...driverForm, plate: v })} placeholder="例：新潟 300 あ 12-34" />
+        <p style={{ margin: '0 0 32px 2px', fontSize: 12, color: '#b0b0b0', lineHeight: 1.5 }}>名前・車種・ナンバーを入力すると登録できます</p>
+        <button onClick={saveDriverAdd} disabled={!driverFormValid} style={{ ...blackBtn, background: driverFormValid ? dark0 : '#d8d8d8', boxShadow: driverFormValid ? '0 8px 20px -8px rgba(0,0,0,.5)' : 'none' }}>登録する</button>
       </div>
     </div>
   )
+
+  /* ---------- ボーイ：ドライバー編集 ---------- */
+  const renderDriverEdit = () => {
+    const d = selectedDriverKey ? drivers[selectedDriverKey] : null
+    if (!d) return null
+    return (
+      <div style={lightScreen}>
+        <div style={headerRow}><BackBtn onClick={() => go('boy-admin-driver-detail')} /><h1 style={h1}>{d.name}を編集</h1></div>
+        <div style={{ padding: '0 20px' }}>
+          <Field label="名前" value={driverForm.name} onChange={(v) => setDriverForm({ ...driverForm, name: v })} placeholder="例：田中 誠" />
+          <Field label="車種" value={driverForm.kind} onChange={(v) => setDriverForm({ ...driverForm, kind: v })} placeholder="例：アルファード" />
+          <Field label="車の色" value={driverForm.color} onChange={(v) => setDriverForm({ ...driverForm, color: v })} placeholder="例：白" />
+          <Field label="ナンバープレート" value={driverForm.plate} onChange={(v) => setDriverForm({ ...driverForm, plate: v })} placeholder="例：新潟 300 あ 12-34" />
+          <p style={{ margin: '0 0 32px 2px', fontSize: 12, color: '#b0b0b0', lineHeight: 1.5 }}>名前・車種・ナンバーを入力すると保存できます</p>
+          <button onClick={saveDriverEdit} disabled={!driverFormValid} style={{ ...blackBtn, background: driverFormValid ? dark0 : '#d8d8d8', boxShadow: driverFormValid ? '0 8px 20px -8px rgba(0,0,0,.5)' : 'none' }}>変更を保存</button>
+        </div>
+      </div>
+    )
+  }
 
   /* ---------- ボーイ：削除確認 ---------- */
   const renderDeleteConfirm = () => {
@@ -1318,7 +1413,7 @@ export default function App() {
           </div>
           <p style={{ margin: '0 0 28px', fontSize: 14, color: '#8a8a8a', lineHeight: 1.65 }}>削除すると元に戻せません。<br />過去の便の記録には影響しません。</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <button onClick={() => go('boy-admin')} style={{ ...blackBtn, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>削除する</button>
+            <button onClick={doDelete} style={{ ...blackBtn, boxShadow: '0 8px 20px -8px rgba(0,0,0,.5)' }}>削除する</button>
             <button onClick={goDeleteBack} style={{ width: '100%', height: 52, borderRadius: 15, background: '#f4f4f4', color: '#0a0a0a', border: 'none', fontSize: 15, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit' }}>キャンセル</button>
           </div>
         </div>
@@ -1418,12 +1513,12 @@ export default function App() {
     <div style={lightScreen}>
       <div style={headerRow}><BackBtn onClick={() => go('boy-admin')} /><h1 style={h1}>キャストを追加</h1></div>
       <div style={{ padding: '0 20px' }}>
-        <FieldView label="源氏名" value="例：ことね" placeholder />
-        <FieldView label="エリア" value="例：古町（中央区）" placeholder />
-        <FieldView label="店からの距離（km）" value="例：0.8" placeholder />
-        <FieldView label="自宅住所" value="例：新潟市中央区古町通8番町1477" placeholder />
+        <Field label="源氏名" value={castForm.name} onChange={(v) => setCastForm({ ...castForm, name: v })} placeholder="例：ことね" />
+        <Field label="エリア" value={castForm.area} onChange={(v) => setCastForm({ ...castForm, area: v })} placeholder="例：古町（中央区）" />
+        <Field label="店からの距離（km）" value={castForm.dist} onChange={(v) => setCastForm({ ...castForm, dist: v })} placeholder="例：0.8" inputMode="decimal" />
+        <Field label="自宅住所" value={castForm.addr} onChange={(v) => setCastForm({ ...castForm, addr: v })} placeholder="例：新潟市中央区古町通8番町1477" multiline />
         <p style={{ margin: '0 0 32px 2px', fontSize: 12, color: '#b0b0b0', lineHeight: 1.5 }}>全項目を入力すると登録できます</p>
-        <button style={{ ...blackBtn, background: '#d8d8d8' }}>登録する</button>
+        <button onClick={saveCastAdd} disabled={!castFormValid} style={{ ...blackBtn, background: castFormValid ? dark0 : '#d8d8d8', boxShadow: castFormValid ? '0 8px 20px -8px rgba(0,0,0,.5)' : 'none' }}>登録する</button>
       </div>
     </div>
   )
@@ -1666,6 +1761,7 @@ export default function App() {
       case 'boy-admin-cast-edit': return renderCastEdit()
       case 'boy-admin-driver-detail': return renderDriverDetail()
       case 'boy-admin-driver-add': return renderDriverAdd()
+      case 'boy-admin-driver-edit': return renderDriverEdit()
       case 'boy-admin-cast-add': return renderCastAdd()
       case 'boy-admin-delete-confirm': return renderDeleteConfirm()
       case 'boy-settings': return renderSettings('boy')
@@ -1679,7 +1775,7 @@ export default function App() {
     }
   }
 
-  const inAdmin = ['boy-admin', 'boy-admin-cast-detail', 'boy-admin-cast-edit', 'boy-admin-cast-add', 'boy-admin-driver-detail', 'boy-admin-driver-add', 'boy-admin-delete-confirm'].includes(screen)
+  const inAdmin = ['boy-admin', 'boy-admin-cast-detail', 'boy-admin-cast-edit', 'boy-admin-cast-add', 'boy-admin-driver-detail', 'boy-admin-driver-add', 'boy-admin-driver-edit', 'boy-admin-delete-confirm'].includes(screen)
   const inDispatch = ['boy-home', 'boy-new', 'boy-driver-select', 'boy-status', 'boy-edit'].includes(screen)
   const active = darkUI ? '#fff' : '#0a0a0a'
   const inact = darkUI ? '#6e6e6e' : '#b5b5b5'
@@ -1750,13 +1846,16 @@ function DetailRow({ label, value, last }: { label: string; value: string; last?
   )
 }
 
-function FieldView({ label, value, multiline, placeholder }: { label: string; value: string; multiline?: boolean; placeholder?: boolean }) {
+function Field({ label, value, onChange, multiline, placeholder, inputMode }: { label: string; value: string; onChange: (v: string) => void; multiline?: boolean; placeholder?: string; inputMode?: 'text' | 'decimal' }) {
+  const base = { width: '100%', border: '1.5px solid #e8e8e8', borderRadius: 14, padding: multiline ? '14px 16px' : '0 16px', fontSize: multiline ? 16 : 18, fontWeight: 600, color: '#0a0a0a', background: '#fafafa', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' as const, lineHeight: 1.55 }
   return (
     <div style={{ marginBottom: 22 }}>
       <p style={{ margin: '0 0 8px', fontSize: 11, fontWeight: 400, color: '#8a8a8a', letterSpacing: '.08em', textTransform: 'uppercase' }}>{label}</p>
-      <div style={{ minHeight: multiline ? 72 : 54, border: '1.5px solid #e8e8e8', borderRadius: 14, padding: multiline ? '14px 16px' : '0 16px', display: 'flex', alignItems: multiline ? 'flex-start' : 'center', background: '#fafafa' }}>
-        <span style={{ fontSize: multiline ? 16 : 18, fontWeight: placeholder ? 500 : 600, color: placeholder ? '#c8c8c8' : '#0a0a0a', lineHeight: 1.55 }}>{value}</span>
-      </div>
+      {multiline ? (
+        <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={{ ...base, minHeight: 72, resize: 'none' }} />
+      ) : (
+        <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} inputMode={inputMode} style={{ ...base, height: 54 }} />
+      )}
     </div>
   )
 }
